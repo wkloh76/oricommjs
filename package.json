@@ -1,0 +1,21 @@
+{
+  "name": "oricommjs",
+  "productName": "OriCommJS Framework",
+  "homepage": "",
+  "version": "1.0.0",
+  "description": "CommonJS framework architecture design suite for all console, web and desktop applications",
+  "repository": "",
+  "main": "app.js",
+  "bin": "./app.js",
+  "author": "wkloh",
+  "license": "Mulan PSL v2",
+  "dependencies": {
+    "@ltd/j-toml": "1.38.0",
+    "lodash": "4.17.21",
+    "log4js": "6.9.1",
+    "dayjs": "1.11.10"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  }
+}
