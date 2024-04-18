@@ -20,11 +20,8 @@
  */
 (async () => {
   try {
-    const os = require("os");
-
     let argv = [];
     let lib = {};
-
     global.coresetting = {
       args: {},
       splitter: "/",
@@ -32,19 +29,16 @@
     };
     global.sysmodule = {};
     global.kernel = {};
-
     kernel.app = {};
     kernel.core = {};
     kernel.atomic = {};
     kernel.components = {};
-
     sysmodule.path = require("path");
     sysmodule.fs = require("fs");
     sysmodule.events = require("events");
     sysmodule.lodash = require("lodash");
     sysmodule.dayjs = require("dayjs");
     sysmodule.toml = require("@ltd/j-toml");
-
     sysmodule.events.EventEmitter.defaultMaxListeners = 50;
     global.emitter = new sysmodule.events.EventEmitter();
 
@@ -85,9 +79,7 @@
           if (process.argv.length > 1)
             kernel.dir = path.resolve(path.dirname(process.argv[1]));
           else kernel.dir = path.resolve(path.dirname(process.argv[0]));
-
           if (platform == "win32") splitter = "\\";
-
           process.argv.map((value) => {
             if (value.match("=")) {
               let arg = value.split("=");
@@ -108,7 +100,6 @@
             }
             if (tempcur != "") kernel.dir = tempcur;
           }
-
           if (
             fs.existsSync(
               `${kernel.dir}${splitter}resources${splitter}app.asar`
@@ -119,17 +110,13 @@
             fs.existsSync(`${kernel.dir}${splitter}resources${splitter}app`)
           )
             kernel.dir += `${splitter}resources${splitter}app${splitter}`;
-
           if (coresetting.args["mode"]) kernel.mode = coresetting.args["mode"];
           else kernel.mode = "production";
-
           let tomlpath = path.join(kernel.dir, `.${splitter}coresetting.toml`);
-
           if (fs.existsSync(tomlpath)) {
             let psetting = toml.parse(fs.readFileSync(tomlpath), {
               bigint: false,
             });
-
             let { debug, production, ...setting } = psetting;
             coresetting = { ...coresetting, ...setting };
             coresetting["nodepath"] = path.join(kernel.dir, "node_modules");
@@ -137,25 +124,20 @@
             coresetting[kernel.mode] = { ...psetting[kernel.mode] };
             coresetting["ongoing"] = { ...psetting[kernel.mode] };
           }
-
           coresetting.packagejson = JSON.parse(
             fs.readFileSync(path.join(kernel.dir, "package.json"), "utf8")
           );
-
           coresetting.logpath = path.join(
-            os.homedir(),
+            require("os").homedir(),
             `.${coresetting.packagejson.name}`
           );
-
           coresetting.general.engine = coresetting.general.engine.filter(
             (item) => item !== coresetting.args.engine
           );
-
           coresetting["core"] = lib.filter_module(
             path.join(kernel.dir, "core"),
             coresetting.general.engine
           );
-
           coresetting["atomic"] = {};
           for (let val of coresetting.general.atomic) {
             coresetting["atomic"][val] = lib.filter_module(
@@ -163,7 +145,6 @@
               []
             );
           }
-
           coresetting["components"] = lib.filter_module(
             path.join(kernel.dir, "components"),
             []
@@ -193,7 +174,6 @@
           msg: "",
           data: null,
         };
-
         try {
           fs.access(logpath, (notexist) => {
             // To check if given directory exists or not
@@ -256,7 +236,6 @@
               info: { appenders: ["error"], level: "ALL" },
             },
           });
-
           sysmodule = {
             ...sysmodule,
             ...{
@@ -326,25 +305,18 @@
               params: ["atomic", "coresetting.atomic"],
             },
             {
-              func: "call_message",
-              merge: {},
-              joinp: false,
-              params: ["components", "coresetting.components"],
-            },
-            {
-              func: "delay",
-              merge: {},
-              joinp: false,
-              params: ["coresetting.general.timeout"],
-            },
-            {
               func: "load",
               merge: {},
               joinp: false,
               params: ["coresetting.components", "components"],
             },
+            {
+              func: "call_message",
+              merge: {},
+              joinp: false,
+              params: ["components", "coresetting.components"],
+            },
           ];
-
           let rtn = await serialize(
             {
               library: {
@@ -388,7 +360,6 @@
                 },
                 call_message: (...args) => {
                   const [name, value] = args;
-
                   let emitdata = {};
                   emitdata[name] = value;
                   emitter.emit("onapp", emitdata);
@@ -397,21 +368,7 @@
                       .dayjs()
                       .format("DD-MM-YYYY HH:mm:ss")})`
                   );
-
                   return { code: 0, msg: "", data: null };
-                },
-                delay: (...args) => {
-                  return new Promise(async (resolve, reject) => {
-                    const [timer] = args;
-                    setTimeout(() => {
-                      console.log("Delay done!");
-                      resolve({
-                        code: 0,
-                        msg: 0,
-                        data: {},
-                      });
-                    }, timer);
-                  });
                 },
               },
               params: {
@@ -429,7 +386,6 @@
               },
             }
           );
-
           if (rtn.code != 0) throw rtn;
           else resolve(output);
         } catch (error) {
@@ -450,7 +406,6 @@
       const [pathname] = args;
       const { fs, path } = sysmodule;
       const { excludefile } = coresetting.general;
-
       return fs.readdirSync(path.join(pathname)).filter((filename) => {
         if (path.extname(filename) == "" && !excludefile.includes(filename)) {
           return filename;
@@ -473,7 +428,6 @@
         const {
           path: { join },
         } = sysmodule;
-
         try {
           let modules = {};
           let arr_process = [];
@@ -487,7 +441,6 @@
             if (curdir != "components") modules[arr_modname[idx]] = val;
             else val.done();
           }
-
           resolve(modules);
         } catch (error) {
           reject(errhandler(error));
@@ -539,7 +492,6 @@
         const pathArr = dotSeparatedKeys
           .split(splitRegex)
           .filter((k) => k !== "");
-
         // eslint-disable-next-line no-param-reassign, no-confusing-arrow
         obj = pathArr.reduce(
           (o, key) => (o && o[key] !== "undefined" ? o[key] : undefined),
@@ -560,7 +512,6 @@
      */
     kernel.app["updateObject"] = (key, newValue, obj) => {
       let newObj = Object.assign({}, obj); // Make new object
-
       function updateKey(key, newValue, obj) {
         if (typeof obj !== "object") return; // Basecase
         if (obj[key]) obj[key] = newValue; // Look for and edit property
@@ -590,7 +541,6 @@
           msg: "",
           data: null,
         };
-
         try {
           const pre_funcparam = (...args) => {
             let [obj, params] = args;
@@ -601,7 +551,6 @@
             }
             return output;
           };
-
           for (let [, compval] of Object.entries(proc)) {
             let { func } = compval;
             let fn = getNestedObject(obj.library, func);
@@ -632,10 +581,8 @@
                 ];
                 funcparam_next = undefined;
               }
-
               queuertn = await fn.apply(null, funcparams);
               funcparam_next = structuredClone(funcparams);
-
               let { code, data } = queuertn;
               if (code == 0) {
                 if (merge) {
@@ -750,7 +697,6 @@
         },
       }
     );
-
     if (rtn.code != 0) throw rtn;
   } catch (error) {
     sysmodule.logger.error(error.stack);

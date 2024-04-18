@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove unused variable from `app.js`. Completed on 2024-04-18
+- Remove `delay` sub function in `lib["startup]` function. Completed on 2024-04-18
+- Remove empty rows from `app.js`. Completed on 2024-04-18
 
 ### Fixed
 

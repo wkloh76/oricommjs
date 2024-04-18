@@ -4,7 +4,6 @@ atomic = ["atom", "molecule", "organism", "template", "page"]
 excludefile = [".git", ".gitignore", ".gitmodule", ".gitkeep"]
 engine = ["webbunjs", "webnodejs", "deskelectronjs"]
 sudopwd = ""
-timeout = 2000
 
 [log]
 [log.success]
