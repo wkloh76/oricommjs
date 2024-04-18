@@ -20,3 +20,8 @@ keepFileExt = true
 maxLogSize = "10M"
 numBackups = 10
 error.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+[production]
+remote = { cdn = "" }
+[debug]
+remote = { cdn = "" }

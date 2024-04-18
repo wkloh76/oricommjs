@@ -12,12 +12,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The code manages the entire engine in a more organized way. Completed on 2024-04-17
+- Add `kernel.app["errhandler"]` function to produce all try catch error returning data format. Completed on 2024-04-18
 
 ### Changed
+
+- Apply `kernel.app["errhandler"]` function to enrire app.js all try catch error exculde the final/parent function. Completed on 2024-04-18
+- Apply `throw error` instead `process.exit()` and let the `app.js` parent catch to proceed the error statement into `error.log` file. Completed on 2024-04-18
+- Apply `kernel.app["serialize"]` function to `lib["startup"]` function. Completed on 2024-04-18
 
 ### Deprecated
 
 ### Removed
+
+- Remove unused variable from `app.js`. Completed on 2024-04-18
 
 ### Fixed
 

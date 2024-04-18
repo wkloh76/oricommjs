@@ -287,55 +287,153 @@
     };
 
     /**
-     * Start the system operation
+     * Start loading main project
      * @alias module:app.startup
-     * @param {...Object} args - 1 parameters
-     * @param {Array} args[0] - logpath is directory path
      * @returns {Object} - Return value
      */
-    lib["startup"] = (...args) => {
+    lib["startup"] = () => {
       return new Promise(async (resolve, reject) => {
-        const { core, atomic, components } = coresetting;
-        const { load_module } = kernel.app;
+        const { errhandler, serialize } = kernel.app;
         let output = {
           code: 0,
           msg: "app.js configlog done!",
           data: null,
         };
         try {
-          const call_message = (name, value) => {
-            let emitdata = {};
-            emitdata[name] = value;
-            emitter.emit("onapp", emitdata);
-            console.log(
-              `Import ${name} done (${sysmodule
-                .dayjs()
-                .format("DD-MM-YYYY HH:mm:ss")})`
-            );
-          };
+          let cond = [
+            {
+              func: "load",
+              merge: {},
+              joinp: false,
+              params: ["coresetting.core", "core"],
+            },
+            {
+              func: "call_message",
+              merge: {},
+              joinp: false,
+              params: ["core", "coresetting.core"],
+            },
+            {
+              func: "nested_load",
+              merge: {},
+              joinp: false,
+              params: ["coresetting.atomic", "coresetting.general.atomic"],
+            },
+            {
+              func: "call_message",
+              merge: {},
+              joinp: false,
+              params: ["atomic", "coresetting.atomic"],
+            },
+            {
+              func: "call_message",
+              merge: {},
+              joinp: false,
+              params: ["components", "coresetting.components"],
+            },
+            {
+              func: "delay",
+              merge: {},
+              joinp: false,
+              params: ["coresetting.general.timeout"],
+            },
+            {
+              func: "load",
+              merge: {},
+              joinp: false,
+              params: ["coresetting.components", "components"],
+            },
+          ];
 
-          kernel.core = await load_module(core.path, core.module, "core");
-          call_message("core", core);
+          let rtn = await serialize(
+            {
+              library: {
+                load: (...args) => {
+                  return new Promise(async (resolve, reject) => {
+                    const [params, modname] = args;
+                    const { load_module } = kernel.app;
+                    let output = { code: 0, msg: "", data: null };
+                    try {
+                      kernel[modname] = await load_module(
+                        params.path,
+                        params.module,
+                        modname
+                      );
+                      resolve(output);
+                    } catch (error) {
+                      reject(errhandler(error));
+                    }
+                  });
+                },
+                nested_load: (...args) => {
+                  return new Promise(async (resolve, reject) => {
+                    const [atomic, general] = args;
+                    const { load_module } = kernel.app;
+                    let output = { code: 0, msg: "", data: null };
+                    let rtn = {};
+                    try {
+                      for (let val of general) {
+                        rtn[val] = await load_module(
+                          atomic[val].path,
+                          atomic[val].module,
+                          "atomic"
+                        );
+                      }
+                      kernel["atomic"] = rtn;
+                      resolve(output);
+                    } catch (error) {
+                      reject(errhandler(error));
+                    }
+                  });
+                },
+                call_message: (...args) => {
+                  const [name, value] = args;
 
-          for (let val of coresetting.general.atomic) {
-            kernel.atomic[val] = await load_module(
-              atomic[val].path,
-              atomic[val].module,
-              "atomic"
-            );
-          }
-          call_message("atomic", atomic);
+                  let emitdata = {};
+                  emitdata[name] = value;
+                  emitter.emit("onapp", emitdata);
+                  console.log(
+                    `Import ${name} done (${sysmodule
+                      .dayjs()
+                      .format("DD-MM-YYYY HH:mm:ss")})`
+                  );
 
-          emitter.emit("onapp", { components: components });
-          setTimeout(async () => {
-            await load_module(components.path, components.module, "components");
-            call_message("components", components);
-            resolve(output);
-          }, coresetting.general.timeout);
+                  return { code: 0, msg: "", data: null };
+                },
+                delay: (...args) => {
+                  return new Promise(async (resolve, reject) => {
+                    const [timer] = args;
+                    setTimeout(() => {
+                      console.log("Delay done!");
+                      resolve({
+                        code: 0,
+                        msg: 0,
+                        data: {},
+                      });
+                    }, timer);
+                  });
+                },
+              },
+              params: {
+                kernel: kernel,
+                coresetting: coresetting,
+                core: "core",
+                atomic: "atomic",
+                components: "components",
+              },
+            },
+            cond,
+            {
+              failure: (error) => {
+                throw error;
+              },
+            }
+          );
+
+          if (rtn.code != 0) throw rtn;
+          else resolve(output);
         } catch (error) {
-          output.code = -1;
-          output.msg = error.message;
-          resolve(output);
+          resolve(errhandler(error));
         }
       });
     };
@@ -371,6 +469,7 @@
     kernel.app["load_module"] = (...args) => {
       return new Promise(async (resolve, reject) => {
         const [pathname, arr_modname, curdir] = args;
+        const { errhandler } = kernel.app;
         const {
           path: { join },
         } = sysmodule;
@@ -391,7 +490,7 @@
 
           resolve(modules);
         } catch (error) {
-          reject(error);
+          reject(errhandler(error));
         }
       });
     };
@@ -406,16 +505,16 @@
      */
     kernel.app["dyimport "] = async (...args) => {
       return new Promise(async (resolve, reject) => {
-        let [name, fn] = args;
-        let output;
+        const [name, fn] = args;
+        const { dir_module, load_module, errhandler } = kernel.app;
+        let output = { code: 0, msg: "", data: null };
         try {
           let df = await import(name);
           if (fn) output = df[fn];
-          else output = df.default;
-        } catch (error) {
-          output = error;
-        } finally {
+          else output.data = df.default;
           resolve(output);
+        } catch (error) {
+          reject(errhandler(error));
         }
       });
     };
@@ -485,7 +584,7 @@
     kernel.app["serialize"] = async (...args) => {
       return new Promise(async (resolve, reject) => {
         const [obj, proc, next] = args;
-        const { getNestedObject, updateObject } = kernel.app;
+        const { getNestedObject, updateObject, errhandler } = kernel.app;
         let output = {
           code: 0,
           msg: "",
@@ -532,17 +631,12 @@
                   ...pre_funcparam(obj.params, params),
                 ];
                 funcparam_next = undefined;
-                // funcparams.push(structuredClone(funcparam_next));
-                // for (let queue of params) {
-                //   let paramdata = getNestedObject(obj.params, queue);
-                //   if (paramdata) funcparams.push(paramdata);
-                // }
               }
 
               queuertn = await fn.apply(null, funcparams);
               funcparam_next = structuredClone(funcparams);
 
-              let { code, data, msg } = queuertn;
+              let { code, data } = queuertn;
               if (code == 0) {
                 if (merge) {
                   for (let [mkey, mval] of Object.entries(merge)) {
@@ -561,11 +655,36 @@
           }
           resolve(output);
         } catch (error) {
-          output.code = -1;
-          output.msg = error.message;
-          reject(error);
+          reject(errhandler(error));
         }
       });
+    };
+
+    /**
+     *  Produce all try catch error returning data format
+     * @alias module:app.errhandler
+     * @param {...Object} args - 1 parameters
+     * @param {Object} args[0] - error try catch errror value
+     * @returns {Object} - Return value
+     */
+    kernel.app["errhandler"] = (...args) => {
+      let [error] = args;
+      if (error.errno)
+        return {
+          code: error.errno,
+          errno: error.errno,
+          message: error.message,
+          stack: error.stack,
+          data: error,
+        };
+      else
+        return {
+          code: -1,
+          errno: -1,
+          message: error.message,
+          stack: error.stack,
+          data: error,
+        };
     };
 
     let cond = [
@@ -627,20 +746,14 @@
       cond,
       {
         failure: (error) => {
-          if (sysmodule.logger) sysmodule.logger.error(error.msg);
-          console.log(error.msg);
-          process.exit();
+          throw error;
         },
       }
     );
 
-    if (rtn.code != 0) {
-      sysmodule.logger.error(error.message);
-      console.log(error.message);
-      process.exit();
-    }
+    if (rtn.code != 0) throw rtn;
   } catch (error) {
-    sysmodule.logger.error(error.message);
-    console.log(error);
+    sysmodule.logger.error(error.stack);
+    console.log(error.stack);
   }
 })();
