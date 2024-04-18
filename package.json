@@ -7,7 +7,7 @@
   "repository": "",
   "main": "app.js",
   "bin": "./app.js",
-  "author": "wkloh",
+  "author": "Loh Wah Kiang",
   "license": "Mulan PSL v2",
   "dependencies": {
     "@ltd/j-toml": "1.38.0",
