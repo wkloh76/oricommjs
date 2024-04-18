@@ -1,4 +1,4 @@
-# oricommjs
+# OriCommJS
 
 - The main purpose of this architectural design is to develop all console, web and desktop applications based on commonJS and javascript runtime engine supports NodeJS, BunJS and electronJS.
 - Support Nodejs version 20.11.0 and above.
@@ -179,3 +179,9 @@ bun.lockb
 - run: node app.js --mode=debug
 - debug: node --inspect=0.0.0.0:9229 app.js --mode=production
 - debug: node --inspect=0.0.0.0:9229 app.js --mode=debug
+
+# License
+
+OriCommJS is freely distributable under the terms of the [Mulan PSL v2 license][license-url].
+
+[license-url]: License
