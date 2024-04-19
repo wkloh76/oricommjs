@@ -121,8 +121,10 @@ module.exports = (...args) => {
             }
             let arrrtn = await Promise.all(arr_process);
             for (let [idx, val] of Object.entries(arrrtn)) {
-              if (curdir != "components") modules[arr_name[idx]] = val;
-              else val.done();
+              let { default: bare, ...value } = val;
+              let combine = { ...value, ...bare };
+              if (curdir != "components") modules[arr_name[idx]] = combine;
+              else combine.done();
             }
             resolve(modules);
           } catch (error) {
