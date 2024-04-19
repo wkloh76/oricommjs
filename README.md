@@ -8,7 +8,7 @@
 ## Features
 
 - Utilies JS global variable manage node_modules and custom module which can directly apply to anywhere.
-- When system ready {sysmodule,kernel.app,kernel.core,kernel.atomic,kernel.components}.
+- When system ready {sysmodule,kernel.utils,kernel.engine,kernel.atomic,kernel.components}.
 - A maximum of 3 parameters per module or function is the design principle of the framework.
 - Reusable or re-applied modules are one of the design features of this framework to avoid copying code everywhere and wasting resources.
 
@@ -26,9 +26,8 @@
 
 - It is the main core engine of the entire project and determines whether the project is a console, web or desktop application.
 
-- startup require:
-  - oricjsutils
-  - shell
+- Framework comes with functions:
+  - utils {helper,handler and powersehll}
 - Choose one engine:
   - webbunjs (bunJS)
   - webnodejs (NodeJS)

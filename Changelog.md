@@ -12,20 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - The code manages the entire engine in a more organized way. Completed on 2024-04-17
-- Add `kernel.app["errhandler"]` function to produce all try catch error returning data format. Completed on 2024-04-18
+- ~~Add `kernel.app["errhandler"]` function to produce all try catch error returning data format. Completed on 2024-04-18~~
+- Add helper,hanlder and powershell modules to utils. Completed on 2024-04-19
 
 ### Changed
 
-- Apply `kernel.app["errhandler"]` function to enrire app.js all try catch error exculde the final/parent function. Completed on 2024-04-18
+- ~~Apply `kernel.app["errhandler"]` function to enrire app.js all try catch error exculde the final/parent function. Completed on 2024-04-18~~
 - Apply `throw error` instead `process.exit()` and let the `app.js` parent catch to proceed the error statement into `error.log` file. Completed on 2024-04-18
-- Apply `kernel.app["serialize"]` function to `lib["startup"]` function. Completed on 2024-04-18
+- ~~Apply `kernel.app["serialize"]` function to `lib["startup"]` function. Completed on 2024-04-18~~
+- ALl `kernel.app` original source code move to utils folder and `kernel.app` rename to `kernel.utils`. Completed on 2024-04-19
+- Rename `core` folder to `engine` and `kernel.core` rename to `kernel.engine`. Completed on 2024-04-19
 
 ### Deprecated
 
 ### Removed
 
 - Remove unused variable from `app.js`. Completed on 2024-04-18
-- Remove `delay` sub function in `lib["startup]` function. Completed on 2024-04-18
+- ~~Remove `delay` sub function in `lib["startup]` function. Completed on 2024-04-18~~
 - Remove empty rows from `app.js`. Completed on 2024-04-18
 
 ### Fixed

@@ -22,43 +22,30 @@
   try {
     let argv = [];
     let lib = {};
+    global.sysmodule = {
+      path: require("path"),
+      fs: require("fs"),
+      events: require("events"),
+      lodash: require("lodash"),
+      dayjs: require("dayjs"),
+      toml: require("@ltd/j-toml"),
+    };
+    global.kernel = {
+      dir: process.cwd(),
+      utils: {},
+      engine: {},
+      atomic: {},
+      components: {},
+    };
     global.coresetting = {
       args: {},
       splitter: "/",
       platform: process.platform,
+      homedir: require("os").homedir(),
     };
-    global.sysmodule = {};
-    global.kernel = {};
-    kernel.app = {};
-    kernel.core = {};
-    kernel.atomic = {};
-    kernel.components = {};
-    sysmodule.path = require("path");
-    sysmodule.fs = require("fs");
-    sysmodule.events = require("events");
-    sysmodule.lodash = require("lodash");
-    sysmodule.dayjs = require("dayjs");
-    sysmodule.toml = require("@ltd/j-toml");
+
     sysmodule.events.EventEmitter.defaultMaxListeners = 50;
     global.emitter = new sysmodule.events.EventEmitter();
-
-    /**
-     * Filter out some specific modules
-     * @alias module:app.filter_module
-     * @param {...Object} args - 1 parameters
-     * @param {Array} args[0] - path is directory path
-     * @param {Array} args[1] - excluded skip module
-     * @returns {Object} - Return value
-     **/
-    lib["filter_module"] = (...args) => {
-      const [path, excluded] = args;
-      const { dir_module } = kernel.app;
-      let output = {
-        path: path,
-        module: dir_module(path).filter((item) => !excluded.includes(item)),
-      };
-      return output;
-    };
 
     /**
      * initialize pre process setting
@@ -66,7 +53,7 @@
      * @param {...Object} args - 0 parameters
      * @returns {Object} - Return value
      */
-    lib["initialize"] = (...args) => {
+    const initialize = (...args) => {
       return new Promise(async (resolve, reject) => {
         const { fs, path, toml } = sysmodule;
         let { platform, splitter } = coresetting;
@@ -76,9 +63,6 @@
           data: null,
         };
         try {
-          if (process.argv.length > 1)
-            kernel.dir = path.resolve(path.dirname(process.argv[1]));
-          else kernel.dir = path.resolve(path.dirname(process.argv[0]));
           if (platform == "win32") splitter = "\\";
           process.argv.map((value) => {
             if (value.match("=")) {
@@ -112,8 +96,10 @@
             kernel.dir += `${splitter}resources${splitter}app${splitter}`;
           if (coresetting.args["mode"]) kernel.mode = coresetting.args["mode"];
           else kernel.mode = "production";
+
           let tomlpath = path.join(kernel.dir, `.${splitter}coresetting.toml`);
-          if (fs.existsSync(tomlpath)) {
+
+          if (sysmodule.fs.existsSync(tomlpath)) {
             let psetting = toml.parse(fs.readFileSync(tomlpath), {
               bigint: false,
             });
@@ -124,31 +110,48 @@
             coresetting[kernel.mode] = { ...psetting[kernel.mode] };
             coresetting["ongoing"] = { ...psetting[kernel.mode] };
           }
+
           coresetting.packagejson = JSON.parse(
             fs.readFileSync(path.join(kernel.dir, "package.json"), "utf8")
           );
+
           coresetting.logpath = path.join(
-            require("os").homedir(),
+            coresetting.homedir,
             `.${coresetting.packagejson.name}`
           );
           coresetting.general.engine = coresetting.general.engine.filter(
             (item) => item !== coresetting.args.engine
           );
-          coresetting["core"] = lib.filter_module(
-            path.join(kernel.dir, "core"),
-            coresetting.general.engine
-          );
+
+          kernel.utils = {
+            ...(await require(sysmodule.path.join(kernel.dir, "utils"))(
+              sysmodule.path.join(kernel.dir, "utils"),
+              "utils",
+              coresetting
+            )),
+          };
+
+          coresetting["engine"] = [
+            path.join(kernel.dir, "engine"),
+            kernel.utils.dir_module(
+              path.join(kernel.dir, "engine"),
+              coresetting.general.engine
+            ),
+            "engine",
+          ];
           coresetting["atomic"] = {};
           for (let val of coresetting.general.atomic) {
-            coresetting["atomic"][val] = lib.filter_module(
+            coresetting["atomic"][val] = [
               path.join(kernel.dir, "atomic", val),
-              []
-            );
+              kernel.utils.dir_module(path.join(kernel.dir, "atomic", val), []),
+              val,
+            ];
           }
-          coresetting["components"] = lib.filter_module(
+          coresetting["components"] = [
             path.join(kernel.dir, "components"),
-            []
-          );
+            kernel.utils.dir_module(path.join(kernel.dir, "components"), []),
+            "components",
+          ];
           output.data = { coresetting: coresetting };
         } catch (error) {
           output.code = -1;
@@ -165,7 +168,7 @@
      * @param {String} logpath - Log file path
      * @returns {Object} - Return value
      */
-    lib["mkdirlog"] = (...args) => {
+    const mkdirlog = (...args) => {
       return new Promise(async (resolve, reject) => {
         const [logpath] = args;
         const { fs } = sysmodule;
@@ -208,7 +211,7 @@
      * @param {Array} args[0] - logpath is directory path
      * @returns {Object} - Return value
      */
-    lib["configlog"] = (...args) => {
+    const configlog = (...args) => {
       return new Promise(async (resolve, reject) => {
         const [logpath, log] = args;
         const { splitter } = coresetting;
@@ -270,9 +273,9 @@
      * @alias module:app.startup
      * @returns {Object} - Return value
      */
-    lib["startup"] = () => {
+    const startup = () => {
       return new Promise(async (resolve, reject) => {
-        const { errhandler, serialize } = kernel.app;
+        const { errhandler, import_cjs, serialize } = kernel.utils;
         let output = {
           code: 0,
           msg: "app.js configlog done!",
@@ -284,19 +287,23 @@
               func: "load",
               merge: {},
               joinp: false,
-              params: ["coresetting.core", "core"],
+              params: ["coresetting.engine", "kernel.utils"],
             },
             {
               func: "call_message",
               merge: {},
               joinp: false,
-              params: ["core", "coresetting.core"],
+              params: ["engine", "coresetting.engine"],
             },
             {
               func: "nested_load",
               merge: {},
               joinp: false,
-              params: ["coresetting.atomic", "coresetting.general.atomic"],
+              params: [
+                "coresetting.atomic",
+                "coresetting.general.atomic",
+                "kernel.utils",
+              ],
             },
             {
               func: "call_message",
@@ -308,7 +315,7 @@
               func: "load",
               merge: {},
               joinp: false,
-              params: ["coresetting.components", "components"],
+              params: ["coresetting.components", "kernel.utils"],
             },
             {
               func: "call_message",
@@ -319,18 +326,14 @@
           ];
           let rtn = await serialize(
             {
+              utils: kernel.utils,
               library: {
                 load: (...args) => {
                   return new Promise(async (resolve, reject) => {
-                    const [params, modname] = args;
-                    const { load_module } = kernel.app;
+                    const [params, obj] = args;
                     let output = { code: 0, msg: "", data: null };
                     try {
-                      kernel[modname] = await load_module(
-                        params.path,
-                        params.module,
-                        modname
-                      );
+                      kernel[params[2]] = await import_cjs(params, obj);
                       resolve(output);
                     } catch (error) {
                       reject(errhandler(error));
@@ -339,17 +342,12 @@
                 },
                 nested_load: (...args) => {
                   return new Promise(async (resolve, reject) => {
-                    const [atomic, general] = args;
-                    const { load_module } = kernel.app;
+                    const [params, general, obj] = args;
                     let output = { code: 0, msg: "", data: null };
                     let rtn = {};
                     try {
                       for (let val of general) {
-                        rtn[val] = await load_module(
-                          atomic[val].path,
-                          atomic[val].module,
-                          "atomic"
-                        );
+                        rtn[val] = await import_cjs(params[val], obj);
                       }
                       kernel["atomic"] = rtn;
                       resolve(output);
@@ -370,11 +368,12 @@
                   );
                   return { code: 0, msg: "", data: null };
                 },
+                utils: kernel.utils,
               },
               params: {
                 kernel: kernel,
                 coresetting: coresetting,
-                core: "core",
+                engine: "engine",
                 atomic: "atomic",
                 components: "components",
               },
@@ -394,310 +393,12 @@
       });
     };
 
-    /**
-     * The main objective is find the value base on nested keyname
-     * The detail refer to https://github.com/flexdinesh/typy
-     * @alias module:app.dir_module
-     * @param {Object} obj - Object
-     * @param {String} dotSeparatedKeys - Nested keyname
-     * @returns {Object} - Return modules | undefined
-     */
-    kernel.app["dir_module"] = (...args) => {
-      const [pathname] = args;
-      const { fs, path } = sysmodule;
-      const { excludefile } = coresetting.general;
-      return fs.readdirSync(path.join(pathname)).filter((filename) => {
-        if (path.extname(filename) == "" && !excludefile.includes(filename)) {
-          return filename;
-        }
-      });
-    };
-
-    /**
-     * The main objective is find the value base on nested keyname
-     * The detail refer to https://github.com/flexdinesh/typy
-     * @alias module:app.load_module
-     * @param {Object} obj - Object
-     * @param {String} dotSeparatedKeys - Nested keyname
-     * @returns {Object} - Return modules | undefined
-     */
-    kernel.app["load_module"] = (...args) => {
-      return new Promise(async (resolve, reject) => {
-        const [pathname, arr_modname, curdir] = args;
-        const { errhandler } = kernel.app;
-        const {
-          path: { join },
-        } = sysmodule;
-        try {
-          let modules = {};
-          let arr_process = [];
-          for (let val of arr_modname) {
-            let modpath = join(pathname, val);
-            let module = require(join(modpath), "utf8")(modpath, val, curdir);
-            arr_process.push(module);
-          }
-          let arrrtn = await Promise.all(arr_process);
-          for (let [idx, val] of Object.entries(arrrtn)) {
-            if (curdir != "components") modules[arr_modname[idx]] = val;
-            else val.done();
-          }
-          resolve(modules);
-        } catch (error) {
-          reject(errhandler(error));
-        }
-      });
-    };
-
-    /**
-     * The main objective is find the value base on nested keyname
-     * The detail refer to https://github.com/flexdinesh/typy
-     * @alias module:app.dyimport
-     * @param {Object} obj - Object
-     * @param {String} dotSeparatedKeys - Nested keyname
-     * @returns {Object} - Return modules | undefined
-     */
-    kernel.app["dyimport "] = async (...args) => {
-      return new Promise(async (resolve, reject) => {
-        const [name, fn] = args;
-        const { dir_module, load_module, errhandler } = kernel.app;
-        let output = { code: 0, msg: "", data: null };
-        try {
-          let df = await import(name);
-          if (fn) output = df[fn];
-          else output.data = df.default;
-          resolve(output);
-        } catch (error) {
-          reject(errhandler(error));
-        }
-      });
-    };
-
-    /**
-     * The main objective is find the value base on nested keyname
-     * The detail refer to https://github.com/flexdinesh/typy
-     * @alias module:app.getNestedObject
-     * @param {Object} obj - Object
-     * @param {String} dotSeparatedKeys - Nested keyname
-     * @returns {Object} - Return modules | undefined
-     */
-    kernel.app["getNestedObject"] = (obj, dotSeparatedKeys) => {
-      if (
-        dotSeparatedKeys !== undefined &&
-        typeof dotSeparatedKeys !== "string"
-      )
-        return undefined;
-      if (typeof obj !== "undefined" && typeof dotSeparatedKeys === "string") {
-        // split on ".", "[", "]", "'", """ and filter out empty elements
-        const splitRegex = /[.\[\]'"]/g; // eslint-disable-line no-useless-escape
-        const pathArr = dotSeparatedKeys
-          .split(splitRegex)
-          .filter((k) => k !== "");
-        // eslint-disable-next-line no-param-reassign, no-confusing-arrow
-        obj = pathArr.reduce(
-          (o, key) => (o && o[key] !== "undefined" ? o[key] : undefined),
-          obj
-        );
-      }
-      return obj;
-    };
-
-    /**
-     * Update object value by keyname
-     * The detail refer to https://stackoverflow.com/questions/73071777/function-to-update-any-value-by-key-in-nested-object
-     * @alias module:app.updateObject
-     *  @param {String} key - keyname
-     * @param {Array|Object|String|Integer} newValue - Value support all data type
-     * @param {Object} obj - Object
-     * @returns {Object} - Return modules | undefined
-     */
-    kernel.app["updateObject"] = (key, newValue, obj) => {
-      let newObj = Object.assign({}, obj); // Make new object
-      function updateKey(key, newValue, obj) {
-        if (typeof obj !== "object") return; // Basecase
-        if (obj[key]) obj[key] = newValue; // Look for and edit property
-        else
-          for (let prop in obj) {
-            updateKey(key, newValue, obj[prop]); // Go deeper
-          }
-      }
-      updateKey(key, newValue, newObj);
-      return newObj;
-    };
-
-    /**
-     * Serialize execution of a set of functions
-     * @alias module:app.serialize
-     *  @param {Object} obj - The source of functions prepare to call by proc defination
-     * @param {Object} proc - Value support all data type
-     * @param {Object} next - When error happen will execution if not undefined
-     * @returns {Object} - Return final result
-     */
-    kernel.app["serialize"] = async (...args) => {
-      return new Promise(async (resolve, reject) => {
-        const [obj, proc, next] = args;
-        const { getNestedObject, updateObject, errhandler } = kernel.app;
-        let output = {
-          code: 0,
-          msg: "",
-          data: null,
-        };
-        try {
-          const pre_funcparam = (...args) => {
-            let [obj, params] = args;
-            let output = [];
-            for (let queue of params) {
-              let paramdata = getNestedObject(obj, queue);
-              if (paramdata) output.push(paramdata);
-            }
-            return output;
-          };
-          for (let [, compval] of Object.entries(proc)) {
-            let { func } = compval;
-            let fn = getNestedObject(obj.library, func);
-            if (!fn) {
-              output.code = -3;
-              output.msg = `Cannot find "${func}" function int object!`;
-              break;
-            }
-          }
-          if (output.code == 0) {
-            let funcparam_next;
-            for (let [, compval] of Object.entries(proc)) {
-              let { func, merge, joinp, params } = compval;
-              let fn = getNestedObject(obj.library, func);
-              let funcparams = [];
-              let queuertn;
-              if (params) {
-                funcparams = [
-                  ...funcparams,
-                  ...pre_funcparam(obj.params, params),
-                ];
-                funcparam_next = undefined;
-              } else if (joinp) {
-                funcparams = [
-                  ...funcparams,
-                  ...structuredClone(funcparam_next),
-                  ...pre_funcparam(obj.params, params),
-                ];
-                funcparam_next = undefined;
-              }
-              queuertn = await fn.apply(null, funcparams);
-              funcparam_next = structuredClone(funcparams);
-              let { code, data } = queuertn;
-              if (code == 0) {
-                if (merge) {
-                  for (let [mkey, mval] of Object.entries(merge)) {
-                    obj[mkey] = {
-                      ...obj[mkey],
-                      ...updateObject(mval, data[mval], obj[mkey]),
-                    };
-                  }
-                }
-              } else {
-                if (next) next.failure(queuertn);
-              }
-            }
-          } else {
-            if (next.failure) next.failure(output);
-          }
-          resolve(output);
-        } catch (error) {
-          reject(errhandler(error));
-        }
-      });
-    };
-
-    /**
-     *  Produce all try catch error returning data format
-     * @alias module:app.errhandler
-     * @param {...Object} args - 1 parameters
-     * @param {Object} args[0] - error try catch errror value
-     * @returns {Object} - Return value
-     */
-    kernel.app["errhandler"] = (...args) => {
-      let [error] = args;
-      if (error.errno)
-        return {
-          code: error.errno,
-          errno: error.errno,
-          message: error.message,
-          stack: error.stack,
-          data: error,
-        };
-      else
-        return {
-          code: -1,
-          errno: -1,
-          message: error.message,
-          stack: error.stack,
-          data: error,
-        };
-    };
-
-    let cond = [
-      {
-        func: "lib.initialize",
-        merge: { params: "coresetting" },
-        joinp: false,
-        params: [],
-      },
-      {
-        func: "lib.mkdirlog",
-        merge: {},
-        joinp: false,
-        params: ["coresetting.logpath"],
-      },
-      {
-        func: "lib.configlog",
-        merge: {},
-        joinp: false,
-        params: ["coresetting.logpath", "coresetting.log"],
-      },
-      {
-        func: "lib.startup",
-        merge: {},
-        joinp: false,
-        params: [],
-      },
-      {
-        func: "lib.job_done",
-        merge: {},
-        joinp: false,
-        params: [],
-      },
-    ];
-
-    let rtn = await kernel.app["serialize"](
-      {
-        library: {
-          app: kernel.app,
-          lib: {
-            ...lib,
-            job_done: () => {
-              console.log(
-                `done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`
-              );
-              return {
-                code: 0,
-                msg: "",
-                data: null,
-              };
-            },
-          },
-          sysmodule: sysmodule,
-        },
-        params: {
-          coresetting: coresetting,
-        },
-      },
-      cond,
-      {
-        failure: (error) => {
-          throw error;
-        },
-      }
-    );
+    await initialize();
+    await mkdirlog(coresetting.logpath);
+    await configlog(coresetting.logpath, coresetting.log);
+    let rtn = await startup();
     if (rtn.code != 0) throw rtn;
+    console.log(`done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`);
   } catch (error) {
     sysmodule.logger.error(error.stack);
     console.log(error.stack);
