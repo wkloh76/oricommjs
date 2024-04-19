@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - The code manages the entire engine in a more organized way. Completed on 2024-04-17
 - ~~Add `kernel.app["errhandler"]` function to produce all try catch error returning data format. Completed on 2024-04-18~~
 - Add helper,hanlder and powershell modules to utils. Completed on 2024-04-19
+- Add if empty folder `import_cjs` function will not import. Completed on 2024-04-19
+- Add if empty folder `import_mjs` function will not import. Completed on 2024-04-19
 
 ### Changed
 

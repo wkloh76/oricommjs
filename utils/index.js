@@ -62,15 +62,23 @@ module.exports = (...args) => {
           const { join } = path;
           try {
             let modules = {};
-            let arr_process = [];
+            let arr_process = [],
+              arr_name = [];
             for (let val of arr_modname) {
               let modpath = join(pathname, val);
-              let module = require(join(modpath), "utf8")(modpath, val, curdir);
-              arr_process.push(module);
+              if (fs.readdirSync(modpath).length > 0) {
+                let module = require(join(modpath), "utf8")(
+                  modpath,
+                  val,
+                  curdir
+                );
+                arr_name.push(val);
+                arr_process.push(module);
+              }
             }
             let arrrtn = await Promise.all(arr_process);
             for (let [idx, val] of Object.entries(arrrtn)) {
-              if (curdir != "components") modules[arr_modname[idx]] = val;
+              if (curdir != "components") modules[arr_name[idx]] = val;
               else val.done();
             }
             resolve(modules);
@@ -97,16 +105,24 @@ module.exports = (...args) => {
           const { join } = path;
           try {
             let modules = {};
-            let arr_process = [];
+            let arr_process = [],
+              arr_name = [];
             for (let val of arr_modname) {
-              let modpath = join(pathname, val) + ".js";
-              let module = import(join(modpath))(modpath, val, curdir);
-              arr_process.push(module);
+              let modpath = join(pathname, val);
+              if (fs.readdirSync(modpath).length > 0) {
+                let module = require(join(modpath), "utf8")(
+                  modpath,
+                  val,
+                  curdir
+                );
+                arr_name.push(val);
+                arr_process.push(module);
+              }
             }
             let arrrtn = await Promise.all(arr_process);
             for (let [idx, val] of Object.entries(arrrtn)) {
-              let { default: fn, ...value } = val;
-              modules[arr_modname[idx]] = { ...value, ...fn };
+              if (curdir != "components") modules[arr_name[idx]] = val;
+              else val.done();
             }
             resolve(modules);
           } catch (error) {
