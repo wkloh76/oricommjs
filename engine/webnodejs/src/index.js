@@ -1,0 +1,59 @@
+/**
+ * Copyright (c) 2024   Loh Wah Kiang
+ *
+ * openGauss is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *
+ *          http://license.coscl.org.cn/MulanPSL2
+ *
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * -------------------------------------------------------------------------
+ */
+"use strict";
+/**
+ * The asistant of main module which is handle the submodule in each sub folder.
+ * @module src_index
+ */
+module.exports = async (...args) => {
+  return new Promise(async (resolve, reject) => {
+    const [pathname, curdir] = args;
+    try {
+      let urlhandler = await require("./urlhandler")(pathname, curdir);
+      let webserver = await require("./webserver")(pathname, curdir);
+
+      let lib = {};
+
+      lib["config"] = (...args) => {
+        let [oncomponents] = args;
+        urlhandler["config"](oncomponents);
+      };
+
+      lib["start"] = (...args) => {
+        try {
+          let [compname, setting] = args;
+          let rtn = webserver.start(
+            setting,
+            urlhandler["guiapi"](compname),
+            urlhandler["onrequest"]
+          );
+          if (rtn) throw rtn;
+          return;
+        } catch (error) {
+          return error;
+        }
+      };
+
+      lib["done"] = () => {
+        webserver.end(urlhandler["onrequest"]);
+      };
+
+      resolve(lib);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};

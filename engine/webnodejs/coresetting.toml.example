@@ -1,0 +1,20 @@
+[webbackend]
+[webbackend.parser]
+json = { limit = "1mb" }
+urlencoded = { limit = "1mb", extended = true, parameterLimit = 2000 }
+raw = { limit = "10mb" }
+text = { limit = "1mb" }
+
+[webbackend.session]
+secret = "testing"
+path = "/index"
+httpOnly = true
+resave = false
+saveUninitialized = false
+cookie = { secure = false, maxAge = 1800000 }
+
+[webbackend.helmet]
+contentSecurityPolicy = { directives = { "script-src" = [
+  "'self'",
+  "example.com",
+] } }
