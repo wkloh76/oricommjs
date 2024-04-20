@@ -20,13 +20,15 @@
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
+    const [params, obj] = args;
+    const [pathname, curdir] = params;
+    const [library, sys, cosetting] = obj;
     const { minify } = require("html-minifier-terser");
     const jsdom = require("jsdom");
     const { fs, path, logger } = sysmodule;
     const {
       utils: { handler, helper, getNestedObject },
-    } = kernel;
+    } = library;
     try {
       let components = {};
 

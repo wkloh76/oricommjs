@@ -20,7 +20,9 @@
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
+    const [params, obj] = args;
+    const [pathname, curdir] = params;
+    const [library, sys, cosetting] = obj;
     try {
       let lib = {};
 

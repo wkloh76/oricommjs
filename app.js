@@ -398,7 +398,9 @@
     await configlog(coresetting.logpath, coresetting.log);
     let rtn = await startup();
     if (rtn.code != 0) throw rtn;
-    console.log(`done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`);
+    console.log(
+      `done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`
+    );
   } catch (error) {
     sysmodule.logger.error(error.stack);
     console.log(error.stack);

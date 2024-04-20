@@ -21,11 +21,11 @@
  */
 module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
+    const [params, obj] = args;
     try {
       let lib = {
-        ...(await require("./method")(pathname, curdir)),
-        ...(await require("./property")(pathname, curdir)),
+        ...(await require("./method")(params, obj)),
+        ...(await require("./property")(params, obj)),
       };
 
       resolve(lib);

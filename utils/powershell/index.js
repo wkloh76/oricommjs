@@ -20,9 +20,9 @@
  */
 module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
+    const [params, obj] = args;
     try {
-      let lib = { ...(await require("./execute")(pathname, curdir)) };
+      let lib = { ...(await require("./execute")(params, obj)) };
 
       resolve(lib);
     } catch (error) {

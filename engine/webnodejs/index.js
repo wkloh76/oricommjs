@@ -21,11 +21,14 @@
  */
 module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [mpath, mname] = args;
-    const { path } = sysmodule;
+    const [params, obj] = args;
+    const [mpath, mname] = params;
+    const [library, sys, cosetting] = obj;
+
+    const { path } = sys;
     try {
       let dir = path.join(mpath, "src");
-      let lib = await require(dir)(dir, mname);
+      let lib = await require(dir)([dir, mname], obj);
       resolve(lib);
     } catch (error) {
       reject(error);

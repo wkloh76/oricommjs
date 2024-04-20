@@ -92,9 +92,8 @@ module.exports = async (...args) => {
               let modpath = join(pathname, val);
               if (fs.readdirSync(modpath).length > 0) {
                 let module = require(join(modpath), "utf8")(
-                  modpath,
-                  val,
-                  curdir
+                  [modpath, val, curdir],
+                  [kernel, sysmodule, coresetting]
                 );
                 arr_name.push(val);
                 arr_process.push(module);
@@ -135,9 +134,8 @@ module.exports = async (...args) => {
               let modpath = join(pathname, val);
               if (fs.readdirSync(modpath).length > 0) {
                 let module = require(join(modpath), "utf8")(
-                  modpath,
-                  val,
-                  curdir
+                  [modpath, val, curdir],
+                  [kernel, sysmodule, coresetting]
                 );
                 arr_name.push(val);
                 arr_process.push(module);
