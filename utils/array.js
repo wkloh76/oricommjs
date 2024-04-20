@@ -38,8 +38,8 @@ module.exports = async (...args) => {
             output.push(sysmodule.lodash.pick(obj, option));
           }
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 
@@ -74,8 +74,8 @@ module.exports = async (...args) => {
             return rtnobj;
           });
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 
@@ -95,8 +95,8 @@ module.exports = async (...args) => {
             });
             return output;
           });
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 
@@ -115,8 +115,8 @@ module.exports = async (...args) => {
             output[val] = Object.assign(output[val], objval);
           });
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 
@@ -137,8 +137,8 @@ module.exports = async (...args) => {
             });
           });
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 
@@ -159,8 +159,8 @@ module.exports = async (...args) => {
             });
           });
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 

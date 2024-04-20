@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `core` folder to `engine` and `kernel.core` rename to `kernel.engine`. Completed on 2024-04-19
 - `import_mjs` function import ES module and set the default content become parent property. Completed on 2024-04-20
 - Apply first draft design of webnodejs module into engine. Completed on 2024-04-20
+- Move `array.js` from helper to utils folder. Completed on 2024-04-21
+- Create `utils.js` to utils folder and move all lib from `index.js` to `utils.js`. Completed on 2024-04-21
 
 ### Deprecated
 
@@ -34,8 +36,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove unused variable from `app.js`. Completed on 2024-04-18
 - ~~Remove `delay` sub function in `lib["startup]` function. Completed on 2024-04-18~~
 - Remove empty rows from `app.js`. Completed on 2024-04-18
+- Delete helper folder from utils. Completed on 2024-04-21
 
 ### Fixed
+
+- Fix `utils.renameObjectKeys` function bug. Completed on 2024-04-21
 
 ### Security
 
