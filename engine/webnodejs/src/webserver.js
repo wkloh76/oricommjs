@@ -73,25 +73,13 @@ module.exports = async (...args) => {
         switch (error.code) {
           case "EACCES":
             console.error(bind + " requires elevated privileges");
-            process.exit(1);
             break;
           case "EADDRINUSE":
             console.error(bind + " is already in use");
-            process.exit(1);
             break;
           default:
-            throw error;
         }
-      };
-
-      /**
-       * Event listener for HTTP server "listening" event.
-       * @alias module:webapp.onListening
-       */
-      const onListening = () => {
-        let addr = app.server.address();
-        let bind =
-          typeof addr === "string" ? "pipe " + addr : "port " + addr.port;
+        throw error;
       };
 
       /**
@@ -110,15 +98,15 @@ module.exports = async (...args) => {
           app.use(require("cors")());
           app.use(require("helmet")(helmet));
           // Setup server log
-          app.use(sysmodule.loghttp);
+          app.use(sys.loghttp);
           // parse various different custom JSON types as JSON
           app.use(bodyParser.json(parser.json));
 
-          app.use(bodyParser.urlencoded(bodyParser.urlencoded));
+          app.use(bodyParser.urlencoded(parser.urlencoded));
           // parse some custom thing into a Buffer
-          app.use(bodyParser.raw(bodyParser.raw));
+          app.use(bodyParser.raw(parser.raw));
           // parse an HTML body into a string
-          app.use(bodyParser.text(bodyParser.text));
+          app.use(bodyParser.text(parser.text));
 
           app.use(expsession(session));
           app.use(cookieParser(session.secret));
@@ -130,9 +118,8 @@ module.exports = async (...args) => {
             normalizePort(process.env.PORT || general.portlistener)
           );
 
-          app.server = app.listen(general.portlistener);
           app.on("error", onError);
-          app.on("listening", onListening);
+          app.server = app.listen(general.portlistener);
           if (!app.server.address())
             throw {
               errno: -4,

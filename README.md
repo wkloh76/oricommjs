@@ -7,7 +7,7 @@
 
 ## Features
 
-- Utilies JS global variable manage node_modules and custom module which can directly apply to anywhere.
+- Utilies JS global variable manage node_modules and custom module which can directly inherit from parent and apply to anywhere.
 - When system ready {sysmodule,kernel.utils,kernel.engine,kernel.atomic,kernel.components}.
 - A maximum of 3 parameters per module or function is the design principle of the framework.
 - Reusable or re-applied modules are one of the design features of this framework to avoid copying code everywhere and wasting resources.

@@ -335,7 +335,6 @@
                     const [params, obj, rtn] = args;
                     let output = { code: 0, msg: "", data: null };
                     try {
-                      // kernel[params[2]] = await import_cjs(params, obj);
                       output.data = await import_cjs(params, obj);
                       resolve(output);
                     } catch (error) {
@@ -374,7 +373,6 @@
                 utils: kernel.utils,
               },
               params: {
-                engin: kernel.engine,
                 kernel: kernel,
                 coresetting: coresetting,
                 engine: "engine",
