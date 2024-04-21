@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Move `array.js` from helper to utils folder. Completed on 2024-04-21
 - Create `utils.js` to utils folder and move all lib from `index.js` to `utils.js`. Completed on 2024-04-21
 - Modify `import_cjs` and `import_mjs` function import library parameters where is user access global variable by the parameter defination. This change affects utils and webnodejs. Completed on 2024-04-21
+- Change the `utils.serialize` function merge returning data method by implement @sagold/json-pointer module. Completed on 2024-04-21
 
 ### Deprecated
 

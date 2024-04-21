@@ -21,7 +21,7 @@
 (async () => {
   try {
     let argv = [];
-    let lib = {};
+
     global.sysmodule = {
       path: require("path"),
       fs: require("fs"),
@@ -29,7 +29,9 @@
       lodash: require("lodash"),
       dayjs: require("dayjs"),
       toml: require("@ltd/j-toml"),
+      jptr: require("@sagold/json-pointer"),
     };
+
     global.kernel = {
       dir: process.cwd(),
       utils: {},
@@ -285,7 +287,7 @@
           let cond = [
             {
               func: "load",
-              merge: {},
+              merge: { param: "/params/kernel/engine" },
               joinp: false,
               params: ["coresetting.engine", "kernel.utils"],
             },
@@ -297,7 +299,7 @@
             },
             {
               func: "nested_load",
-              merge: {},
+              merge: { param: "/params/kernel/atomic" },
               joinp: false,
               params: [
                 "coresetting.atomic",
@@ -330,10 +332,11 @@
               library: {
                 load: (...args) => {
                   return new Promise(async (resolve, reject) => {
-                    const [params, obj] = args;
+                    const [params, obj, rtn] = args;
                     let output = { code: 0, msg: "", data: null };
                     try {
-                      kernel[params[2]] = await import_cjs(params, obj);
+                      // kernel[params[2]] = await import_cjs(params, obj);
+                      output.data = await import_cjs(params, obj);
                       resolve(output);
                     } catch (error) {
                       reject(errhandler(error));
@@ -349,7 +352,7 @@
                       for (let val of general) {
                         rtn[val] = await import_cjs(params[val], obj);
                       }
-                      kernel["atomic"] = rtn;
+                      output.data = rtn;
                       resolve(output);
                     } catch (error) {
                       reject(errhandler(error));
@@ -371,6 +374,7 @@
                 utils: kernel.utils,
               },
               params: {
+                engin: kernel.engine,
                 kernel: kernel,
                 coresetting: coresetting,
                 engine: "engine",

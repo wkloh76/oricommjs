@@ -21,7 +21,7 @@
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
     const [pathname, curdir] = args;
-    const { fs, path } = sysmodule;
+    const { fs, path, jptr } = sysmodule;
     try {
       let lib = {};
 
@@ -394,12 +394,7 @@ module.exports = async (...args) => {
                 let { code, data } = queuertn;
                 if (code == 0) {
                   if (merge) {
-                    for (let [mkey, mval] of Object.entries(merge)) {
-                      obj[mkey] = {
-                        ...obj[mkey],
-                        ...updateObject(mval, data[mval], obj[mkey]),
-                      };
-                    }
+                    jptr.set(obj, merge.param, data);
                   }
                 } else {
                   if (next) next.failure(queuertn);
