@@ -25,9 +25,9 @@ module.exports = async (...args) => {
     const [library, sys, cosetting] = obj;
     const { minify } = require("html-minifier-terser");
     const jsdom = require("jsdom");
-    const { fs, path, logger } = sysmodule;
+    const { fs, path, logger } = sys;
     const {
-      utils: { handler, helper, getNestedObject },
+      utils: { handler, getNestedObject },
     } = library;
     try {
       let components = {};
@@ -54,6 +54,151 @@ module.exports = async (...args) => {
         res.status(200).write(`${css}`);
         res.end();
       };
+
+      const getdoc = async (...args) => {
+        let [file] = args;
+        let output;
+        if (fs.existsSync(file)) {
+          let renderview = fs.readFileSync(file, "utf8");
+          output = await minify(renderview, {
+            collapseWhitespace: true,
+          });
+        }
+        return output;
+      };
+
+      const loadjscssfile = (...args) => {
+        try {
+          const [doc, filename, filetype] = args;
+          let nodekey = [];
+          let nodevalue = [];
+          let attrcss = ["rel", "type", "href"];
+          let attrjs = ["type", "src"];
+          let css = ["stylesheet", "text/css"];
+          let js = ["text/javascript"];
+          let el = doc.getElementsByTagName("head").item(0);
+          let targetelement = "none"; //determine element type to create nodelist from
+
+          if (filetype == "script") {
+            targetelement = "script";
+            nodekey = attrjs;
+            nodevalue = js;
+          } else if (filetype == "css") {
+            targetelement = "link";
+            nodekey = attrcss;
+            nodevalue = css;
+          }
+          nodevalue.push(`${filename}`);
+
+          let gfgData = doc.createElement(targetelement);
+          for (let i in nodekey) {
+            gfgData.setAttribute(nodekey[i], nodevalue[i]);
+          }
+
+          el.appendChild(gfgData);
+          return;
+        } catch (error) {
+          return error;
+        }
+      };
+
+      const loadlessfile = (...args) => {
+        try {
+          const [doc, filename, filetype] = args;
+          let nodekey = [];
+          let nodevalue = [];
+          let attrcss = ["rel", "type", "href"];
+          let attrjs = ["type", "src"];
+          let css = ["stylesheet/less", "text/css"];
+          let js = ["text/javascript"];
+          let el = doc.getElementsByTagName("head").item(0);
+          let targetelement = "none"; //determine element type to create nodelist from
+
+          if (filetype == "script") {
+            targetelement = "script";
+            nodekey = attrjs;
+            nodevalue = js;
+          } else if (filetype == "less") {
+            targetelement = "link";
+            nodekey = attrcss;
+            nodevalue = css;
+          }
+          nodevalue.push(`${filename}`);
+
+          let gfgData = doc.createElement(targetelement);
+          for (let i in nodekey) {
+            gfgData.setAttribute(nodekey[i], nodevalue[i]);
+          }
+
+          el.appendChild(gfgData);
+          return;
+        } catch (error) {
+          return error;
+        }
+      };
+
+      const loadlib = (...args) => {
+        try {
+          let [doc, param] = args;
+          if (param.loads) {
+            for (let item of param.loads) {
+              loadjscssfile(doc, `${param.url}${item}.js`, "script");
+            }
+          }
+          return;
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const loadcss = (...args) => {
+        try {
+          let [doc, param, filetype] = args;
+          for (let item of param.lists) {
+            if (filetype == "css")
+              loadjscssfile(doc, `${param.url}${item}.${filetype}`, filetype);
+            if (filetype == "less")
+              loadlessfile(doc, `${param.url}${item}.${filetype}`, filetype);
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const injection = async (...args) => {
+        let [doc, jscss] = args;
+        if (jscss) {
+          if (jscss.external) {
+            if (jscss.external.css) loadcss(doc, jscss.external.css, "css");
+            if (jscss.external.js) loadlib(doc, jscss.external.js);
+          }
+
+          if (jscss.internal) {
+            if (jscss.internal.css) {
+              loadcss(doc, jscss.internal.css, "css");
+            }
+            if (jscss.internal.js) loadlib(doc, jscss.internal.js);
+            if (jscss.internal.js.lists) {
+              delete jscss.internal.css;
+              delete jscss.internal.js.loads;
+              let js = {
+                initialize: jscss.initialize,
+                internal: jscss.internal,
+              };
+              let script = doc.createElement("script");
+              script.type = "text/javascript";
+              script.innerHTML = `var jscss=${JSON.stringify(js)}`;
+              doc.getElementsByTagName("head")[0].appendChild(script);
+            }
+          }
+
+          if (jscss.less) {
+            if (jscss.less.style) loadcss(doc, jscss.less.style, "less");
+            if (jscss.less.js) loadlib(doc, jscss.less.js);
+          }
+        }
+      };
+
       /**
        * The final process which is sending resutl to frontend
        * @alias module:src_index.processEnd
@@ -71,7 +216,7 @@ module.exports = async (...args) => {
           let isredirect = handler.check_empty(options.redirect);
           let isjson = handler.check_empty(options.json);
           let istext = handler.check_empty(options.text);
-          let iscss = handler.check_empty(options.css);
+          // let iscss = handler.check_empty(options.css);
 
           if (!isredirect) {
             res.redirect(options.redirect);
@@ -79,8 +224,8 @@ module.exports = async (...args) => {
             res.status(status).json(options.json);
           } else if (!istext) {
             res.status(status).send(options.text);
-          } else if (!iscss) {
-            await mergecss(options.css);
+            // } else if (!iscss) {
+            //   await mergecss(options.css);
           } else if (!islayer || !isview) {
             let renderview, extname;
             if (view) extname = path.extname(view);
@@ -245,206 +390,213 @@ module.exports = async (...args) => {
        * @param {Array} args[1] - orires http response module
        */
       lib["onrequest"] = async (...args) => {
-        return new Promise(async (resolve, reject) => {
-          let [orireq, orires, next] = args;
-          let fn;
-          try {
-            let paramres = {};
-            let paramerror;
+        let [orireq, orires, next] = args;
+        let fn;
+        try {
+          let paramres = {};
+          let paramerror;
+          let giftpack = {
+            cosetting: coresetting,
+            engine: kernel.engine,
+            atomic: kernel.engine,
+            utils: kernel.utils,
+            components: kernel.component,
+          };
 
-            for (let [, compval] of Object.entries(components)) {
-              let { api, gui } = compval;
-              if (!handler.check_empty(orireq?.params)) {
-                fn = await guiapi_route_filter(api, gui, {
-                  params: orireq.params,
-                  originalUrl: orireq.originalUrl,
-                });
-              } else {
-                let baseUrl = orireq.originalUrl;
-                let pos = orireq.originalUrl.indexOf("?");
-                if (pos != -1) baseUrl = orireq.originalUrl.substring(0, pos);
-                fn = await guiapi_picker(
-                  getNestedObject(api, baseUrl),
-                  getNestedObject(gui, baseUrl)
-                );
-              }
-              if (fn) break;
+          for (let [, compval] of Object.entries(components)) {
+            let { api, gui } = compval;
+            if (!handler.check_empty(orireq?.params)) {
+              fn = await guiapi_route_filter(api, gui, {
+                params: orireq.params,
+                originalUrl: orireq.originalUrl,
+              });
+            } else {
+              let baseUrl = orireq.originalUrl;
+              let pos = orireq.originalUrl.indexOf("?");
+              if (pos != -1) baseUrl = orireq.originalUrl.substring(0, pos);
+              fn = await guiapi_picker(
+                getNestedObject(api, baseUrl),
+                getNestedObject(gui, baseUrl)
+              );
             }
+            if (fn) break;
+          }
 
-            if (fn) {
-              if (orireq.method == fn.method.toUpperCase()) {
-                let permit = true;
-                for (let [idx, queue] of fn["controller"].entries()) {
-                  let fname = Object.keys(queue)[0];
-                  paramres["onreq"] = {
-                    fname: fname,
-                    index: idx,
-                  };
-                  let {
-                    err: chkerr,
-                    fname: chkfname,
-                    render: chkrender,
-                    ...chkparamres
-                  } = paramres;
+          if (fn) {
+            if (orireq.method == fn.method.toUpperCase()) {
+              let permit = true;
+              for (let [idx, queue] of fn["controller"].entries()) {
+                let fname = Object.keys(queue)[0];
+                paramres["onreq"] = {
+                  fname: fname,
+                  index: idx,
+                };
+                let {
+                  err: chkerr,
+                  fname: chkfname,
+                  render: chkrender,
+                  ...chkparamres
+                } = paramres;
 
-                  let response = {
-                    err: {
-                      error: "",
-                      render: handler.webview,
-                    },
-                    fname: fname,
+                let response = {
+                  err: {
+                    error: "",
                     render: handler.webview,
-                    ...chkparamres,
-                  };
-
-                  let queuertn;
-                  if (permit && fn.idx == idx) {
-                    queuertn = await queue[fname].apply(null, [
-                      orireq,
-                      response,
-                    ]);
-                    queuertn["action"] = queuertn.render;
-                  } else if (fn.idx != idx) {
-                    queuertn = await queue[fname].apply(null, [
-                      orireq,
-                      response,
-                    ]);
-                  }
-                  let { err, render, ...res } = queuertn;
-
-                  if (
-                    err &&
-                    (!isrender(err.render) || !handler.check_empty(err.error))
-                  ) {
-                    paramerror = { ...paramerror, ...err };
-                    if (!isrender(err.render) && permit == true) permit = false;
-                  }
-
-                  if (render) {
-                    if (!isrender(render)) paramres["render"] = render;
-                  }
-                  if (res) paramres = { ...paramres, ...res };
-                  if (paramerror !== undefined) break;
-                }
-              } else {
-                paramerror = {
+                  },
+                  fname: fname,
                   render: handler.webview,
-                  error: "Unmatched the request method!",
+                  ...chkparamres,
                 };
-              }
 
-              // Error checking
-              if (paramerror) {
-                orires.locals = {
-                  render: handler.webview,
-                };
-                let { render: err500 } = orires.locals;
-                let page, pcontent;
-
-                if (!isrender(paramerror.render))
-                  orires.locals.render = paramerror.render;
-                else if (!handler.check_empty(paramerror.error)) {
-                  page = `${pathname}/error/500.eta`;
-                  pcontent = {
-                    title: "System Notification",
-                    msg: `Catch error: ${paramerror.error}`,
-                  };
-                  err500["status"] = 500;
-                  err500["view"] = page;
-                  err500["options"]["params"] = pcontent;
-
-                  if (fn?.from == "api") {
-                    err500["options"]["json"] = {
-                      ...handler.dataformat2,
-                      ...{
-                        code: -1,
-                        msg: paramerror.error,
-                      },
-                    };
-                  }
-
-                  let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${paramerror.error}\n`;
-                  logger.error(errmsg);
+                let queuertn;
+                if (permit && fn.idx == idx) {
+                  queuertn = await queue[fname].apply(null, [
+                    orireq,
+                    response,
+                    giftpack,
+                  ]);
+                  queuertn["action"] = queuertn.render;
+                } else if (fn.idx != idx) {
+                  queuertn = await queue[fname].apply(null, [
+                    orireq,
+                    response,
+                    giftpack,
+                  ]);
                 }
-              } else if (paramres) {
-                if (paramres?.render) {
-                  if (!isrender(paramres.render))
-                    orires.locals = { render: paramres.render };
-                } else orires.locals = { render: handler.webview };
+                let { err, render, ...res } = queuertn;
+
+                if (
+                  err &&
+                  (!isrender(err.render) || !handler.check_empty(err.error))
+                ) {
+                  paramerror = { ...paramerror, ...err };
+                  if (!isrender(err.render) && permit == true) permit = false;
+                }
+
+                if (render) {
+                  if (!isrender(render)) paramres["render"] = render;
+                }
+                if (res) paramres = { ...paramres, ...res };
+                if (paramerror !== undefined) break;
               }
             } else {
-              // Unregistered url
-              orires.locals = { render: handler.webview };
-              let { render: err404 } = orires.locals;
-              err404["status"] = 404;
-              err404["view"] = `${pathname}/error/404.eta`;
-              err404["options"]["params"] = {
-                title: "System Notification",
-                msg: "Page not found",
+              paramerror = {
+                render: handler.webview,
+                error: "Unmatched the request method!",
               };
-
-              let errstatment = err404["options"]["params"]["msg"];
-
-              if (orireq.method != "GET") {
-                err404["options"]["json"] = {
-                  ...handler.dataformat2,
-                  ...{ code: -1, msg: "API not found" },
-                };
-                errstatment = err404["options"]["json"]["msg"];
-              }
-
-              let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 404 Error:${errstatment}`;
-              logerr(errmsg);
             }
 
-            let rtn = await processEnd(orires);
-            if (rtn.code !== 0) {
-              orires.locals = { render: handler.webview };
+            // Error checking
+            if (paramerror) {
+              orires.locals = {
+                render: handler.webview,
+              };
               let { render: err500 } = orires.locals;
-              err500["status"] = 500;
-              err500["view"] = `${pathname}/error/500.eta`;
-              err500["options"]["params"] = {
-                title: "System Notification",
-                msg: rtn.msg,
-              };
-              if (fn?.from == "api") {
-                err500["options"]["json"] = {
-                  ...handler.dataformat2,
-                  ...{
-                    code: -1,
-                    msg: rtn.msg,
-                  },
+              let page, pcontent;
+
+              if (!isrender(paramerror.render))
+                orires.locals.render = paramerror.render;
+              else if (!handler.check_empty(paramerror.error)) {
+                page = `${pathname}/error/500.eta`;
+                pcontent = {
+                  title: "System Notification",
+                  msg: `Catch error: ${paramerror.error}`,
                 };
+                err500["status"] = 500;
+                err500["view"] = page;
+                err500["options"]["params"] = pcontent;
+
+                if (fn?.from == "api") {
+                  err500["options"]["json"] = {
+                    ...handler.dataformat2,
+                    ...{
+                      code: -1,
+                      msg: paramerror.error,
+                    },
+                  };
+                }
+
+                let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${paramerror.error}\n`;
+                logger.error(errmsg);
               }
-
-              let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${rtn.msg}`;
-              logerr(errmsg);
-
-              await processEnd(orires);
+            } else if (paramres) {
+              if (paramres?.render) {
+                if (!isrender(paramres.render))
+                  orires.locals = { render: paramres.render };
+              } else orires.locals = { render: handler.webview };
             }
-            orires.end();
-          } catch (error) {
+          } else {
+            // Unregistered url
+            orires.locals = { render: handler.webview };
+            let { render: err404 } = orires.locals;
+            err404["status"] = 404;
+            err404["view"] = `${pathname}/error/404.eta`;
+            err404["options"]["params"] = {
+              title: "System Notification",
+              msg: "Page not found",
+            };
+
+            let errstatment = err404["options"]["params"]["msg"];
+
+            if (orireq.method != "GET") {
+              err404["options"]["json"] = {
+                ...handler.dataformat2,
+                ...{ code: -1, msg: "API not found" },
+              };
+              errstatment = err404["options"]["json"]["msg"];
+            }
+
+            let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 404 Error:${errstatment}`;
+            logerr(errmsg);
+          }
+
+          let rtn = await processEnd(orires);
+          if (rtn.code !== 0) {
             orires.locals = { render: handler.webview };
             let { render: err500 } = orires.locals;
             err500["status"] = 500;
             err500["view"] = `${pathname}/error/500.eta`;
             err500["options"]["params"] = {
               title: "System Notification",
-              msg: error.message,
+              msg: rtn.msg,
             };
             if (fn?.from == "api") {
               err500["options"]["json"] = {
                 ...handler.dataformat2,
-                ...{ code: -1, msg: error.message },
+                ...{
+                  code: -1,
+                  msg: rtn.msg,
+                },
               };
             }
-            let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${error.message}`;
+
+            let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${rtn.msg}`;
             logerr(errmsg);
 
             await processEnd(orires);
-            orires.end();
           }
-        });
+          orires.end();
+        } catch (error) {
+          orires.locals = { render: handler.webview };
+          let { render: err500 } = orires.locals;
+          err500["status"] = 500;
+          err500["view"] = `${pathname}/error/500.eta`;
+          err500["options"]["params"] = {
+            title: "System Notification",
+            msg: error.message,
+          };
+          if (fn?.from == "api") {
+            err500["options"]["json"] = {
+              ...handler.dataformat2,
+              ...{ code: -1, msg: error.message },
+            };
+          }
+          let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${error.message}`;
+          logerr(errmsg);
+
+          await processEnd(orires);
+          orires.end();
+        }
       };
 
       lib["config"] = (...args) => {
@@ -455,11 +607,14 @@ module.exports = async (...args) => {
         }
       };
 
-      lib["guiapi"] = (...args) => {
-        let [compname] = args;
-        return components[compname];
+      lib = {
+        ...lib,
+        ...{
+          get guiapi() {
+            return components;
+          },
+        },
       };
-
       resolve(lib);
     } catch (error) {
       reject(error);

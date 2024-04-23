@@ -28,27 +28,21 @@ module.exports = async (...args) => {
       let lib = {};
 
       lib["config"] = (...args) => {
-        let [oncomponents] = args;
-        urlhandler["config"](oncomponents);
+        let [oncomponents, compname, engine] = args;
+        if (compname.indexOf(`${engine.type}_`) > -1) {
+          urlhandler["config"](oncomponents);
+        }
       };
 
       lib["start"] = (...args) => {
         try {
-          let [compname, setting] = args;
-          let rtn = webserver.start(
-            setting,
-            urlhandler["guiapi"](compname),
-            urlhandler["onrequest"]
-          );
+          let [setting] = args;
+          let rtn = webserver.start(setting, urlhandler["onrequest"]);
           if (rtn) throw rtn;
           return;
         } catch (error) {
           return error;
         }
-      };
-
-      lib["done"] = () => {
-        webserver.end(urlhandler["onrequest"]);
       };
 
       resolve(lib);

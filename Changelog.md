@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add helper,hanlder and powershell modules to utils. Completed on 2024-04-19
 - Add if empty folder `import_cjs` function will not import. Completed on 2024-04-19
 - Add if empty folder `import_mjs` function will not import. Completed on 2024-04-19
+- ~~Apply first draft design of webnodejs module into engine. Completed on 2024-04-20~~
 
 ### Changed
 
@@ -25,7 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ALl `kernel.app` original source code move to utils folder and `kernel.app` rename to `kernel.utils`. Completed on 2024-04-19
 - Rename `core` folder to `engine` and `kernel.core` rename to `kernel.engine`. Completed on 2024-04-19
 - `import_mjs` function import ES module and set the default content become parent property. Completed on 2024-04-20
-- Apply first draft design of webnodejs module into engine. Completed on 2024-04-20
+
 - Move `array.js` from helper to utils folder. Completed on 2024-04-21
 - Create `utils.js` to utils folder and move all lib from `index.js` to `utils.js`. Completed on 2024-04-21
 - Modify `import_cjs` and `import_mjs` function import library parameters where is user access global variable by the parameter defination. This change affects utils and webnodejs. Completed on 2024-04-21
@@ -33,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change coressting.general.engine defind method. Completed on 2024-04-22
 - Implement workspaces to `package.josn`. Completed on 2024-04-22
 - Alter entire `app.js` function to avoid directly access `sysmodule,kernel,coressting`. All pass thru the functions parameters. Completed on 2024-04-23
+- Remove some unsed script from`import_cjs` and `import_mjs` function due to some design change. Completed on 2024-04-23
+- Re-design webnodejs, optimize and remove unused method. Completed on 2024-04-23
 
 ### Deprecated
 

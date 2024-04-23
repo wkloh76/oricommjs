@@ -100,10 +100,8 @@ module.exports = async (...args) => {
               }
             }
             let arrrtn = await Promise.all(arr_process);
-            for (let [idx, val] of Object.entries(arrrtn)) {
-              if (curdir != "components") modules[arr_name[idx]] = val;
-              else val.done();
-            }
+            for (let [idx, val] of Object.entries(arrrtn))
+              modules[arr_name[idx]] = val;
             resolve(modules);
           } catch (error) {
             reject(errhandler(error));
@@ -144,9 +142,7 @@ module.exports = async (...args) => {
             let arrrtn = await Promise.all(arr_process);
             for (let [idx, val] of Object.entries(arrrtn)) {
               let { default: bare, ...value } = val;
-              let combine = { ...value, ...bare };
-              if (curdir != "components") modules[arr_name[idx]] = combine;
-              else combine.done();
+              modules[arr_name[idx]] = { ...value, ...bare };
             }
             resolve(modules);
           } catch (error) {

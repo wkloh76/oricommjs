@@ -38,7 +38,7 @@
       utils: {},
       engine: {},
       atomic: {},
-      components: {},
+      components: { done: [] },
     };
     global.coresetting = {
       args: {},
@@ -53,8 +53,11 @@
     /**
      * initialize pre process setting
      * @alias module:app.initialize
-     * @param {...Object} args - 0 parameters
-     * @returns {Object} - Return value
+     * @param {...Object} args - 3 parameters
+     * @param {Object} args[0] - cosetting is an object value from global variable coresetting
+     * @param {Object} args[1] - sys is an object value from global variable sysmodule
+     * @param {Object} args[2] - core is an object value from global variable kernel
+     * @returns {Object} - Return value in object type
      */
     const initialize = (...args) => {
       return new Promise(async (resolve, reject) => {
@@ -177,10 +180,12 @@
     };
 
     /**
-     * Make log directory
+     * Create log directory
      * @alias module:app.mkdirlog
-     * @param {String} logpath - Log file path
-     * @returns {Object} - Return value
+     * @param {...Object} args - 2 parameters
+     * @param {String} args[0] - logpath is Log file path
+     * * @param {Object} args[1] - fs is an object value from global variable sysmodule.fs
+     * @returns {Object} - - Return value in object type
      */
     const mkdirlog = (...args) => {
       return new Promise(async (resolve, reject) => {
@@ -234,12 +239,12 @@
      * Configure log module for webexpress and normal log
      * @alias module:app.configlog
      * @param {...Object} args - 1 parameters
-     * @param {Array} args[0] - logpath is directory path
-     * @returns {Object} - Return value
+     * @param {Object} args[0] - cosetting is an object value from global variable coresetting
+     * @returns {Object} - - Return value in object type
      */
     const configlog = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [cosetting, sys] = args;
+        const [cosetting] = args;
         const { log, logpath, splitter } = cosetting;
         let output = {
           code: 0,
@@ -306,12 +311,15 @@
 
     /**
      * Start loading main project
-     * @alias module:app.startup
+     * @param {...Object} args - 3 parameters
+     * @param {Object} args[0] - cosetting is an object value from global variable coresetting
+     * @param {Object} args[1] - sys is an object value from global variable sysmodule
+     * @param {Object} args[2] - core is an object value from global variable kernel
      * @returns {Object} - Return value
      */
     const startup = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [core] = args;
+        const [cosetting, sys, core] = args;
         const { errhandler, import_cjs, serialize } = core.utils;
         let output = {
           code: 0,
@@ -330,7 +338,7 @@
               func: "call_message",
               merge: {},
               joinp: false,
-              params: ["engine", "coresetting.engine"],
+              params: ["msg_engine", "coresetting.engine"],
             },
             {
               func: "nested_load",
@@ -346,7 +354,7 @@
               func: "call_message",
               merge: {},
               joinp: false,
-              params: ["atomic", "coresetting.atomic"],
+              params: ["msg_atomic", "coresetting.atomic"],
             },
             {
               func: "load",
@@ -355,10 +363,16 @@
               params: ["coresetting.components", "kernel.utils"],
             },
             {
+              func: "work",
+              merge: {},
+              joinp: false,
+              params: ["coresetting", "components"],
+            },
+            {
               func: "call_message",
               merge: {},
               joinp: false,
-              params: ["components", "coresetting.components"],
+              params: ["msg_components", "coresetting.components"],
             },
           ];
           let rtn = await serialize(
@@ -399,20 +413,35 @@
                   emitdata[name] = value;
                   emitter.emit("onapp", emitdata);
                   console.log(
-                    `Import ${name} done (${sysmodule
+                    `Import ${name} done (${sys
                       .dayjs()
                       .format("DD-MM-YYYY HH:mm:ss")})`
                   );
                   return { code: 0, msg: "", data: null };
                 },
-                utils: core.utils,
+                work: (...args) => {
+                  return new Promise(async (resolve, reject) => {
+                    const [cosetting, comp] = args;
+                    let output = { code: 0, msg: "", data: null };
+                    try {
+                      if (comp.start) {
+                        let rtn = await comp.start(cosetting);
+                        if (rtn) throw rtn;
+                      }
+                      resolve(output);
+                    } catch (error) {
+                      reject(errhandler(error));
+                    }
+                  });
+                },
               },
               params: {
                 kernel: core,
-                coresetting: coresetting,
-                engine: "engine",
-                atomic: "atomic",
-                components: "components",
+                coresetting: cosetting,
+                msg_engine: "engine",
+                msg_atomic: "atomic",
+                msg_components: "components",
+                components: core.components,
               },
             },
             cond,
@@ -442,7 +471,7 @@
     if (rtnconflog.code != 0) throw rtnconflog;
     else sysmodule = { ...sysmodule, ...rtnconflog.data };
 
-    let rtn = await startup(kernel);
+    let rtn = await startup(coresetting, sysmodule, kernel);
     if (rtn.code != 0) throw rtn;
     console.log(
       `done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`

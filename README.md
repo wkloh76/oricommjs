@@ -1,13 +1,13 @@
 # OriCommJS
 
 - The main purpose of this architectural design is to develop all console, web and desktop applications based on commonJS and javascript runtime engine supports NodeJS, BunJS and electronJS.
+- User can use pure javascript, html,css,and less.js knowledge to design the web server.
 - Support Nodejs version 20.11.0 and above.
 - Support ElectronJS version 28.1.3 and above.
 - Support BunJS version 1.1.3 and above.
 
 ## Features
 
-- Utilies JS global variable manage node_modules and custom module which can directly inherit from parent and apply to anywhere.
 - When system ready {sysmodule,kernel.utils,kernel.engine,kernel.atomic,kernel.components}.
 - A maximum of 3 parameters per module or function is the design principle of the framework.
 - Reusable or re-applied modules are one of the design features of this framework to avoid copying code everywhere and wasting resources.

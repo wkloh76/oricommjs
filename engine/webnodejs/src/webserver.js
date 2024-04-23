@@ -21,7 +21,7 @@
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
     const [params, obj] = args;
-    const [pathname, curdir] = params;
+    // const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const express = require("express");
     const router = express.Router();
@@ -31,14 +31,11 @@ module.exports = async (...args) => {
     const expsession = require("express-session");
     try {
       let lib = {};
-
       let app = require("express")();
-      let appon = false;
-      let flag_request = false;
 
       /**
        * Normalize the port
-       * @alias module:webapp.normalizePort
+       * @alias module:webserver.normalizePort
        */
       const normalizePort = (val) => {
         let port = parseInt(val, 10);
@@ -84,7 +81,7 @@ module.exports = async (...args) => {
 
       /**
        * Express server establish
-       * @alias module:webapp.establish
+       * @alias module:webserver.establish
        */
       const establish = (...args) => {
         try {
@@ -132,61 +129,27 @@ module.exports = async (...args) => {
         }
       };
 
-      const routing = (...args) => {
-        try {
-          let [objs, onrequest] = args;
-          for (let obj of objs) {
-            for (let [key, val] of Object.entries(obj)) {
-              let method = val["method"].toLowerCase();
-              router[method](key, onrequest);
-            }
-          }
-          return;
-        } catch (error) {
-          return error;
-        }
-      };
-
-      const sharing = (...args) => {
-        try {
-          let [obj] = args;
-          for (let [key, val] of Object.entries(obj)) {
-            app.use(key, express.static(val));
-            // app.use(key, val);
-          }
-          return;
-        } catch (error) {
-          return error;
-        }
-      };
-
+      /**
+       * Configure log module for webexpress and normal log
+       * @alias module:webserver.start
+       * @param {...Object} args - 2 parameters
+       * @param {Object} args[0] - setting is coresetting object value
+       * @param {Object} args[1] - onrequest is a function for responding when http client request
+       * @returns {Object} - Return null | error object
+       */
       lib["start"] = (...args) => {
         try {
-          let [setting, component, onrequest] = args;
-          let rtnestablish;
-          if (!appon) {
-            appon = true;
-            rtnestablish = establish(setting);
-          }
-          if (!rtnestablish) {
-            sharing(setting.share);
-            routing(component, onrequest);
-          } else throw rtnestablish;
+          let [setting, onrequest] = args;
+          let rtnestablish = establish(setting);
+          if (rtnestablish) throw rtnestablish;
 
-          return;
-        } catch (error) {
-          return error;
-        }
-      };
-
-      lib["end"] = (...args) => {
-        try {
-          let [onrequest] = args;
-          if (!flag_request) {
-            flag_request = true;
-            router.use(onrequest);
-            app.use(router);
+          if (setting.share) {
+            for (let [key, val] of Object.entries(setting.share)) {
+              app.use(key, express.static(val));
+            }
           }
+
+          app.use(router.use(onrequest));
           return;
         } catch (error) {
           return error;
