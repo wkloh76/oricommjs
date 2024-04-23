@@ -34,6 +34,7 @@
 
     global.kernel = {
       dir: process.cwd(),
+      mode: "",
       utils: {},
       engine: {},
       atomic: {},
@@ -57,8 +58,10 @@
      */
     const initialize = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const { fs, path, toml } = sysmodule;
-        let { platform, splitter } = coresetting;
+        let [cosetting, sys, core] = args;
+        let { fs, path, toml } = sys;
+        let { platform, splitter } = cosetting;
+        let { utils, dir, mode } = core;
         let output = {
           code: 0,
           msg: "",
@@ -70,7 +73,7 @@
             if (value.match("=")) {
               let arg = value.split("=");
               let args_key = arg[0].replace(/[\(,\),\.,\/,\-,\_, ,]/g, "");
-              coresetting.args[args_key] = arg[1];
+              cosetting.args[args_key] = arg[1];
             } else argv.push(value);
           });
 
@@ -84,80 +87,89 @@
             for (let item of argv) {
               if (item.split(splitter).includes("app.js")) tempcur = "";
             }
-            if (tempcur != "") kernel.dir = tempcur;
+            if (tempcur != "") dir = tempcur;
           }
-          if (
-            fs.existsSync(
-              `${kernel.dir}${splitter}resources${splitter}app.asar`
-            )
-          )
-            kernel.dir += `${splitter}resources${splitter}app.asar${splitter}`;
-          else if (
-            fs.existsSync(`${kernel.dir}${splitter}resources${splitter}app`)
-          )
-            kernel.dir += `${splitter}resources${splitter}app${splitter}`;
-          if (coresetting.args["mode"]) kernel.mode = coresetting.args["mode"];
-          else kernel.mode = "production";
+          if (fs.existsSync(`${dir}${splitter}resources${splitter}app.asar`))
+            dir += `${splitter}resources${splitter}app.asar${splitter}`;
+          else if (fs.existsSync(`${dir}${splitter}resources${splitter}app`))
+            dir += `${splitter}resources${splitter}app${splitter}`;
+          if (cosetting.args["mode"]) mode = cosetting.args["mode"];
+          else mode = "production";
 
-          let tomlpath = path.join(kernel.dir, `.${splitter}coresetting.toml`);
+          let tomlpath = path.join(dir, `.${splitter}coresetting.toml`);
 
-          if (sysmodule.fs.existsSync(tomlpath)) {
+          if (fs.existsSync(tomlpath)) {
             let psetting = toml.parse(fs.readFileSync(tomlpath), {
               bigint: false,
             });
             let { debug, production, ...setting } = psetting;
-            coresetting = { ...coresetting, ...setting };
-            coresetting["nodepath"] = path.join(kernel.dir, "node_modules");
+            cosetting = { ...cosetting, ...setting };
+            cosetting["nodepath"] = path.join(dir, "node_modules");
 
-            coresetting[kernel.mode] = { ...psetting[kernel.mode] };
-            coresetting["ongoing"] = { ...psetting[kernel.mode] };
+            cosetting[mode] = { ...psetting[mode] };
+            cosetting["ongoing"] = { ...psetting[mode] };
           }
 
-          coresetting.packagejson = JSON.parse(
-            fs.readFileSync(path.join(kernel.dir, "package.json"), "utf8")
+          cosetting.packagejson = JSON.parse(
+            fs.readFileSync(path.join(dir, "package.json"), "utf8")
           );
 
-          coresetting.logpath = path.join(
-            coresetting.homedir,
-            `.${coresetting.packagejson.name}`
-          );
-          coresetting.general.engine = coresetting.general.engine.filter(
-            (item) => item !== coresetting.args.engine
+          cosetting.logpath = path.join(
+            cosetting.homedir,
+            `.${cosetting.packagejson.name}`
           );
 
-          kernel.utils = {
-            ...(await require(sysmodule.path.join(kernel.dir, "utils"))(
-              sysmodule.path.join(kernel.dir, "utils"),
+          let exlude_engine = [];
+          for (let [item, value] of Object.entries(cosetting.general.engine)) {
+            if (item == cosetting.args.engine) {
+              cosetting.general.engine = { name: item, type: value };
+            } else exlude_engine.push(item);
+          }
+
+          utils = {
+            ...(await require(path.join(dir, "utils"))(
+              path.join(dir, "utils"),
               "utils",
-              coresetting
+              cosetting
             )),
           };
 
-          coresetting["engine"] = [
-            path.join(kernel.dir, "engine"),
-            kernel.utils.dir_module(
-              path.join(kernel.dir, "engine"),
-              coresetting.general.engine
-            ),
+          cosetting["engine"] = [
+            path.join(dir, "engine"),
+            utils.dir_module(path.join(dir, "engine"), exlude_engine),
             "engine",
           ];
-          coresetting["atomic"] = {};
-          for (let val of coresetting.general.atomic) {
-            coresetting["atomic"][val] = [
-              path.join(kernel.dir, "atomic", val),
-              kernel.utils.dir_module(path.join(kernel.dir, "atomic", val), []),
+          cosetting["atomic"] = {};
+          for (let val of cosetting.general.atomic) {
+            cosetting["atomic"][val] = [
+              path.join(dir, "atomic", val),
+              utils.dir_module(path.join(dir, "atomic", val), []),
               val,
             ];
           }
-          coresetting["components"] = [
-            path.join(kernel.dir, "components"),
-            kernel.utils.dir_module(path.join(kernel.dir, "components"), []),
+          cosetting["components"] = [
+            path.join(dir, "components"),
+            utils.dir_module(path.join(dir, "components"), []),
             "components",
           ];
-          output.data = { coresetting: coresetting };
+          output.data = {
+            coresetting: cosetting,
+            kernel: { dir: dir, mode: mode, utils: utils },
+          };
         } catch (error) {
-          output.code = -1;
-          output.msg = error.message;
+          if (error.errno) {
+            output.code = error.errno;
+            output.errno = error.errno;
+            output.message = error.message;
+            output.stack = error.stack;
+            output.data = error;
+          } else {
+            output.code = -1;
+            output.msg = error.message;
+            output.message = error.message;
+            output.stack = error.stack;
+            output.data = error;
+          }
         } finally {
           resolve(output);
         }
@@ -172,8 +184,7 @@
      */
     const mkdirlog = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [logpath] = args;
-        const { fs } = sysmodule;
+        const [logpath, fs] = args;
         let output = {
           code: 0,
           msg: "",
@@ -199,9 +210,22 @@
             }
           });
         } catch (error) {
-          output.code = -1;
-          output.msg = error.message;
-          resolve(output);
+          if (error.errno)
+            resolve({
+              code: error.errno,
+              errno: error.errno,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            });
+          else
+            resolve({
+              code: -1,
+              errno: -1,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            });
         }
       });
     };
@@ -215,8 +239,8 @@
      */
     const configlog = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [logpath, log] = args;
-        const { splitter } = coresetting;
+        const [cosetting, sys] = args;
+        const { log, logpath, splitter } = cosetting;
         let output = {
           code: 0,
           msg: "app.js configlog done!",
@@ -241,31 +265,41 @@
               info: { appenders: ["error"], level: "ALL" },
             },
           });
-          sysmodule = {
-            ...sysmodule,
-            ...{
-              logger: log4js.getLogger("info"),
-              logelectron: log4js.getLogger("access"),
-              loghttp: log4js.connectLogger(log4js.getLogger("access"), {
-                level: log4js.levels.INFO,
-                format: (...params) => {
-                  let [req, res, cb] = params;
-                  cb(
-                    `:remote-addr - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent"\ndata - query: ${JSON.stringify(
-                      req.query
-                    )} body: ${JSON.stringify(
-                      req.body
-                    )} params: ${JSON.stringify(req.params)}`
-                  );
-                },
-              }),
-            },
+          output.data = {
+            logger: log4js.getLogger("info"),
+            logelectron: log4js.getLogger("access"),
+            loghttp: log4js.connectLogger(log4js.getLogger("access"), {
+              level: log4js.levels.INFO,
+              format: (...params) => {
+                let [req, res, cb] = params;
+                cb(
+                  `:remote-addr - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent"\ndata - query: ${JSON.stringify(
+                    req.query
+                  )} body: ${JSON.stringify(req.body)} params: ${JSON.stringify(
+                    req.params
+                  )}`
+                );
+              },
+            }),
           };
           resolve(output);
         } catch (error) {
-          output.code = -1;
-          output.msg = error.message;
-          resolve(output);
+          if (error.errno)
+            resolve({
+              code: error.errno,
+              errno: error.errno,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            });
+          else
+            resolve({
+              code: -1,
+              errno: -1,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            });
         }
       });
     };
@@ -275,9 +309,10 @@
      * @alias module:app.startup
      * @returns {Object} - Return value
      */
-    const startup = () => {
+    const startup = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const { errhandler, import_cjs, serialize } = kernel.utils;
+        const [core] = args;
+        const { errhandler, import_cjs, serialize } = core.utils;
         let output = {
           code: 0,
           msg: "app.js configlog done!",
@@ -328,7 +363,7 @@
           ];
           let rtn = await serialize(
             {
-              utils: kernel.utils,
+              utils: core.utils,
               library: {
                 load: (...args) => {
                   return new Promise(async (resolve, reject) => {
@@ -370,10 +405,10 @@
                   );
                   return { code: 0, msg: "", data: null };
                 },
-                utils: kernel.utils,
+                utils: core.utils,
               },
               params: {
-                kernel: kernel,
+                kernel: core,
                 coresetting: coresetting,
                 engine: "engine",
                 atomic: "atomic",
@@ -395,10 +430,19 @@
       });
     };
 
-    await initialize();
-    await mkdirlog(coresetting.logpath);
-    await configlog(coresetting.logpath, coresetting.log);
-    let rtn = await startup();
+    let rtninit = await initialize(coresetting, sysmodule, kernel);
+    if (rtninit.code != 0) throw rtninit;
+    else {
+      coresetting = { ...coresetting, ...rtninit.data.coresetting };
+      kernel = { ...kernel, ...rtninit.data.kernel };
+    }
+    let rtnmklog = await mkdirlog(coresetting.logpath, sysmodule.fs);
+    if (rtnmklog.code != 0) throw rtnmklog;
+    let rtnconflog = await configlog(coresetting);
+    if (rtnconflog.code != 0) throw rtnconflog;
+    else sysmodule = { ...sysmodule, ...rtnconflog.data };
+
+    let rtn = await startup(kernel);
     if (rtn.code != 0) throw rtn;
     console.log(
       `done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`

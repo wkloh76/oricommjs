@@ -20,8 +20,8 @@
  */
 module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [mpath, mname] = args;
-    const { excludefile } = coresetting.general;
+    const [mpath, mname, cosetting] = args;
+    const { excludefile } = cosetting.general;
     try {
       let lib = await require("./utils")(mpath, mname);
       let modfolders = lib.dir_module(mpath, excludefile);

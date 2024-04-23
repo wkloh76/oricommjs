@@ -9,6 +9,7 @@
   "bin": "./app.js",
   "author": "Loh Wah Kiang",
   "license": "Mulan PSL v2",
+  "private": true,
   "dependencies": {
     "@ltd/j-toml": "1.38.0",
     "@sagold/json-pointer": "6.0.1",
@@ -18,5 +19,8 @@
   },
   "devDependencies": {
     "@types/bun": "latest"
-  }
+  },
+  "workspaces": [
+    "engine/*"
+  ]
 }
