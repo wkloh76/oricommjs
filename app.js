@@ -330,55 +330,94 @@
           let cond = [
             {
               func: "load",
-              merge: { param: "/params/kernel/engine" },
-              joinp: false,
-              params: ["coresetting.engine", "kernel.utils"],
+              save: { param: "/params/kernel/engine" },
+              save_args: true,
+              save_rtn: true,
+              params: {
+                name: "engine",
+                data: ["/params/coresetting/engine", "/params/kernel/utils"],
+              },
             },
             {
               func: "call_message",
-              merge: {},
-              joinp: false,
-              params: ["msg_engine", "coresetting.engine"],
+              save: {},
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "msg_engine",
+                data: ["/save_args/engine/0/2", "/params/coresetting/engine"],
+              },
             },
+
             {
               func: "nested_load",
-              merge: { param: "/params/kernel/atomic" },
-              joinp: false,
-              params: [
-                "coresetting.atomic",
-                "coresetting.general.atomic",
-                "kernel.utils",
-              ],
+              save: { param: "/params/kernel/atomic" },
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "atomic",
+                data: [
+                  "/params/coresetting/atomic",
+                  "/params/coresetting/general/atomic",
+                  "/params/kernel/utils",
+                ],
+              },
             },
             {
               func: "call_message",
-              merge: {},
-              joinp: false,
-              params: ["msg_atomic", "coresetting.atomic"],
+              save: {},
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "msg_atomic",
+                data: ["/params/msg_atomic", "/params/coresetting/atomic"],
+              },
             },
             {
               func: "load",
-              merge: {},
-              joinp: false,
-              params: ["coresetting.components", "kernel.utils"],
+              save: {},
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "components",
+                data: [
+                  "/params/coresetting/components",
+                  "/params/kernel/utils",
+                ],
+              },
             },
             {
               func: "work",
-              merge: {},
-              joinp: false,
-              params: ["coresetting", "components"],
+              save: {},
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "work",
+                data: ["/params/coresetting", "/params/components"],
+              },
             },
             {
               func: "routejson",
-              merge: {},
-              joinp: false,
-              params: ["components", "kernel", "fs"],
+              save: {},
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "routejson",
+                data: ["/params/components", "/params/kernel", "/params/fs"],
+              },
             },
             {
               func: "call_message",
-              merge: {},
-              joinp: false,
-              params: ["msg_components", "coresetting.components"],
+              save: {},
+              save_args: false,
+              save_rtn: false,
+              params: {
+                name: "msg_components",
+                data: [
+                  "/save_args/components/0/2",
+                  "/params/coresetting/components",
+                ],
+              },
             },
           ];
           let rtn = await serialize(

@@ -38,6 +38,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove some unsed script from`import_cjs` and `import_mjs` function due to some design change. Completed on 2024-04-23
 - Re-design webnodejs, optimize and remove unused method. Completed on 2024-04-23
 - Add `routejson` function for `startup` function in `app.js` call. Completed on 2024-04-23
+- Apply new mergDeep function to `utils.js`. Completed on 2024-04-23
+- Improve `utils.serialize` function which can keep all function arguments and return data internally for next function call purpose. Completed on 2024-04-23
 
 ### Deprecated
 

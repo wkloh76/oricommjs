@@ -249,27 +249,55 @@ module.exports = async (...args) => {
        * * @param {...Object} sources - Source object to merge
        * @returns {Object} - Return merge value
        */
-      lib.mergeDeep = (target, ...sources) => {
-        if (!sources.length) return target;
-        const source = sources.shift();
+      // lib.mergeDeep = (target, ...sources) => {
+      //   if (!sources.length) return target;
+      //   const source = sources.shift();
 
-        if (isObject(target) && isObject(source)) {
-          for (const key in source) {
-            if (isObject(source[key])) {
-              if (!target[key]) Object.assign(target, { [key]: {} });
-              lib.mergeDeep(target[key], source[key]);
+      //   if (isObject(target) && isObject(source)) {
+      //     for (const key in source) {
+      //       if (isObject(source[key])) {
+      //         if (!target[key]) Object.assign(target, { [key]: {} });
+      //         lib.mergeDeep(target[key], source[key]);
+      //       } else {
+      //         if (Array.isArray(target[key]) && Array.isArray(source[key])) {
+      //           let concat = target[key].concat(source[key]);
+
+      //           // Set will filter out duplicates automatically
+      //           let data = [...new Set(concat)];
+      //           target[key] = data;
+      //         } else Object.assign(target, { [key]: source[key] });
+      //       }
+      //     }
+      //   }
+      //   return lib.mergeDeep(target, ...sources);
+      // };
+
+      /**
+       * Performs a deep merge of objects and returns new object. Does not modify
+       * objects (immutable) and merges arrays via concatenation.
+       * The detail refer to https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge
+       * @param {...object} objects - Objects to merge
+       * @returns {object} New object with merged key/values
+       */
+      lib.mergeDeep = (...objects) => {
+        const isObject = (obj) => obj && typeof obj === "object";
+
+        return objects.reduce((prev, obj) => {
+          Object.keys(obj).forEach((key) => {
+            const pVal = prev[key];
+            const oVal = obj[key];
+
+            if (Array.isArray(pVal) && Array.isArray(oVal)) {
+              prev[key] = pVal.concat(...oVal);
+            } else if (isObject(pVal) && isObject(oVal)) {
+              prev[key] = mergeDeep(pVal, oVal);
             } else {
-              if (Array.isArray(target[key]) && Array.isArray(source[key])) {
-                let concat = target[key].concat(source[key]);
-
-                // Set will filter out duplicates automatically
-                let data = [...new Set(concat)];
-                target[key] = data;
-              } else Object.assign(target, { [key]: source[key] });
+              prev[key] = oVal;
             }
-          }
-        }
-        return lib.mergeDeep(target, ...sources);
+          });
+
+          return prev;
+        }, {});
       };
 
       /**
@@ -349,7 +377,8 @@ module.exports = async (...args) => {
       lib["serialize"] = async (...args) => {
         return new Promise(async (resolve, reject) => {
           const [obj, proc, next] = args;
-          const { getNestedObject, updateObject, errhandler } = obj.utils;
+          const { getNestedObject, updateObject, errhandler, mergeDeep } =
+            obj.utils;
           let output = {
             code: 0,
             msg: "",
@@ -359,11 +388,17 @@ module.exports = async (...args) => {
             const pre_funcparam = (...args) => {
               let [obj, params] = args;
               let output = [];
-              for (let queue of params) {
-                let paramdata = getNestedObject(obj, queue);
-                if (paramdata) output.push(paramdata);
+              let name;
+              for (let [qname, qvalue] of Object.entries(params)) {
+                if (qname == "name") name = qvalue;
+                else if (qname == "data") {
+                  for (let queue of qvalue) {
+                    let paramdata = jptr.get(obj, queue);
+                    if (paramdata) output.push(paramdata);
+                  }
+                }
               }
-              return output;
+              return [name, output];
             };
             for (let [, compval] of Object.entries(proc)) {
               let { func } = compval;
@@ -375,35 +410,34 @@ module.exports = async (...args) => {
               }
             }
             if (output.code == 0) {
-              let funcparam_next;
+              let funcname;
               for (let [, compval] of Object.entries(proc)) {
-                let { func, merge, joinp, params } = compval;
+                let { func, params, save, save_args, save_rtn } = compval;
                 let fn = getNestedObject(obj.library, func);
                 let funcparams = [];
                 let queuertn;
                 if (params) {
-                  funcparams = [
-                    ...funcparams,
-                    ...pre_funcparam(obj.params, params),
-                  ];
-                  funcparam_next = undefined;
-                } else if (joinp) {
-                  funcparams = [
-                    ...funcparams,
-                    ...structuredClone(funcparam_next),
-                    ...pre_funcparam(obj.params, params),
-                  ];
-                  funcparam_next = undefined;
+                  let [pname, pdata] = pre_funcparam(obj, params);
+                  funcname = pname;
+                  funcparams = pdata;
                 }
                 queuertn = await fn.apply(null, funcparams);
-                funcparam_next = [...funcparams];
                 let { code, data } = queuertn;
                 if (code == 0) {
-                  if (merge) {
-                    jptr.set(obj, merge.param, data);
+                  if (save) {
+                    jptr.set(obj, save.param, data);
                   }
                 } else {
                   if (next) next.failure(queuertn);
+                }
+
+                if (save_args) {
+                  if (!obj.save_args) obj.save_args = {};
+                  obj.save_args[funcname] = funcparams;
+                }
+                if (save_rtn) {
+                  if (!obj.save_rtn) obj.save_rtn = {};
+                  obj.save_rtn[funcname] = data;
                 }
               }
             } else {
