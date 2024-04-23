@@ -26,6 +26,16 @@ module.exports = async (...args) => {
       let lib = {};
 
       /**
+       * Return true where item is object
+       * @alias module:utils.isObject
+       * @param {Object|Array|String} item - Any data type
+       * @returns {Boolean}
+       */
+      const isObject = (item) => {
+        return item && typeof item === "object" && !Array.isArray(item);
+      };
+
+      /**
        * Get the data type
        * @alias module:utils.datatype
        * @param {string| number| boolean| Object| Array} value - Determine the data type of the parameter

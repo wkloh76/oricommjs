@@ -369,6 +369,12 @@
               params: ["coresetting", "components"],
             },
             {
+              func: "routejson",
+              merge: {},
+              joinp: false,
+              params: ["components", "kernel", "fs"],
+            },
+            {
               func: "call_message",
               merge: {},
               joinp: false,
@@ -434,6 +440,43 @@
                     }
                   });
                 },
+                routejson: (...args) => {
+                  return new Promise(async (resolve, reject) => {
+                    const [comp, core, func] = args;
+                    let output = { code: 0, msg: "", data: null };
+                    try {
+                      if (comp.routejson) {
+                        let routefilename = func.path.join(
+                          core.dir,
+                          "components",
+                          "route.json"
+                        );
+                        let routefile;
+                        if (func.fs.existsSync(routefilename))
+                          routefile = JSON.parse(
+                            func.fs.readFileSync(routefilename, "utf8")
+                          );
+
+                        if (!routefile)
+                          func.fs.writeFileSync(
+                            routefilename,
+                            JSON.stringify(comp.routejson)
+                          );
+                        else if (
+                          JSON.stringify(comp.routejson) !==
+                          JSON.stringify(routefile)
+                        )
+                          func.fs.writeFileSync(
+                            routefilename,
+                            JSON.stringify(comp.routejson)
+                          );
+                      }
+                      resolve(output);
+                    } catch (error) {
+                      reject(errhandler(error));
+                    }
+                  });
+                },
               },
               params: {
                 kernel: core,
@@ -442,6 +485,7 @@
                 msg_atomic: "atomic",
                 msg_components: "components",
                 components: core.components,
+                fs: sys,
               },
             },
             cond,

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add if empty folder `import_cjs` function will not import. Completed on 2024-04-19
 - Add if empty folder `import_mjs` function will not import. Completed on 2024-04-19
 - ~~Apply first draft design of webnodejs module into engine. Completed on 2024-04-20~~
+- Add `isObject` function to `uitls.js`. Completed on 2024-04-23
 
 ### Changed
 
@@ -36,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alter entire `app.js` function to avoid directly access `sysmodule,kernel,coressting`. All pass thru the functions parameters. Completed on 2024-04-23
 - Remove some unsed script from`import_cjs` and `import_mjs` function due to some design change. Completed on 2024-04-23
 - Re-design webnodejs, optimize and remove unused method. Completed on 2024-04-23
+- Add `routejson` function for `startup` function in `app.js` call. Completed on 2024-04-23
 
 ### Deprecated
 
@@ -45,6 +47,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ~~Remove `delay` sub function in `lib["startup]` function. Completed on 2024-04-18~~
 - Remove empty rows from `app.js`. Completed on 2024-04-18
 - Delete helper folder from utils. Completed on 2024-04-21
+- Delete `components: kernel.component,` from `urlhandler.js` giftpack variable. Completed on 2024-04-23
 
 ### Fixed
 

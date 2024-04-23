@@ -400,7 +400,6 @@ module.exports = async (...args) => {
             engine: kernel.engine,
             atomic: kernel.engine,
             utils: kernel.utils,
-            components: kernel.component,
           };
 
           for (let [, compval] of Object.entries(components)) {
