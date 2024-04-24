@@ -93,7 +93,7 @@ module.exports = async (...args) => {
 
           //set up our express application
           app.use(require("cors")());
-          app.use(require("helmet")(helmet));
+          // app.use(require("helmet")(helmet));
           // Setup server log
           app.use(sys.loghttp);
           // parse various different custom JSON types as JSON

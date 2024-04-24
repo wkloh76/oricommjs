@@ -22,22 +22,22 @@ module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
     const [params, obj] = args;
     try {
-      let urlhandler = await require("./urlhandler")(params, obj);
+      let reaction = await require("./reaction")(params, obj);
       let webserver = await require("./webserver")(params, obj);
 
       let lib = {};
 
-      lib["config"] = (...args) => {
+      lib["register"] = (...args) => {
         let [oncomponents, compname, engine] = args;
         if (compname.indexOf(`${engine.type}_`) > -1) {
-          urlhandler["config"](oncomponents);
+          reaction["register"](oncomponents);
         }
       };
 
       lib["start"] = (...args) => {
         try {
           let [setting] = args;
-          let rtn = webserver.start(setting, urlhandler["onrequest"]);
+          let rtn = webserver.start(setting, reaction["onrequest"]);
           if (rtn) throw rtn;
           return;
         } catch (error) {

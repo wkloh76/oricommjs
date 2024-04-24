@@ -26,16 +26,6 @@ module.exports = async (...args) => {
       let lib = {};
 
       /**
-       * Return true where item is object
-       * @alias module:utils.isObject
-       * @param {Object|Array|String} item - Any data type
-       * @returns {Boolean}
-       */
-      const isObject = (item) => {
-        return item && typeof item === "object" && !Array.isArray(item);
-      };
-
-      /**
        * Get the data type
        * @alias module:utils.datatype
        * @param {string| number| boolean| Object| Array} value - Determine the data type of the parameter
@@ -71,7 +61,7 @@ module.exports = async (...args) => {
        * @returns {Object} - Return modules | undefined
        */
       lib["dir_module"] = (...args) => {
-        const [pathname, excluded] = args;
+        const [pathname, excluded = []] = args;
         return fs.readdirSync(path.join(pathname)).filter((filename) => {
           if (path.extname(filename) == "" && !excluded.includes(filename)) {
             return filename;

@@ -27,7 +27,7 @@ module.exports = async (...args) => {
     const jsdom = require("jsdom");
     const { fs, path, logger } = sys;
     const {
-      utils: { handler, getNestedObject },
+      utils: { arr_selected, handler, getNestedObject, datatype },
     } = library;
     try {
       let components = {};
@@ -55,7 +55,7 @@ module.exports = async (...args) => {
         res.end();
       };
 
-      const getdoc = async (...args) => {
+      const get_domhtml = async (...args) => {
         let [file] = args;
         let output;
         if (fs.existsSync(file)) {
@@ -199,6 +199,98 @@ module.exports = async (...args) => {
         }
       };
 
+      const dirlist = async (...args) => {
+        const [node, included = []] = args;
+        let files = await fs
+          .readdirSync(path.join(node.path))
+          .filter((filename) => {
+            let extname = path.extname(filename);
+            if (
+              extname !== "" &&
+              !included.includes(extname) &&
+              !node.excluded.includes(filename)
+            ) {
+              return filename;
+            }
+          });
+        let docs = [];
+        if (!files) return [];
+        for (let val of files) {
+          docs.push(get_domhtml(path.join(node.path, val)));
+        }
+        return await Promise.all(docs);
+      };
+
+      const combine_layer = async (...args) => {
+        const [layer, elcontent, params] = args;
+        const { JSDOM } = jsdom;
+        try {
+          let output = { code: 0, msg: "", data: null };
+          let master_dom, master_doc;
+          let [layouts, childlists] = await Promise.all([
+            get_domhtml(layer.layouts),
+            dirlist(layer.childs, ["*.html"]),
+          ]);
+
+          if (layouts) {
+            master_dom = new JSDOM(layouts);
+            master_doc = master_dom.window.document;
+
+            for (let childlist of childlists) {
+              let child_doc = new JSDOM().window.document;
+              let body = child_doc.querySelector("body");
+              body.innerHTML = childlist;
+              let body_node = body.childNodes[0];
+              if (body_node && body_node.nodeName == "STATEMENT") {
+                let statement = body
+                  .querySelector(body_node.nodeName)
+                  .querySelectorAll("*");
+                let attrname = body_node.getAttribute("name");
+                let attraction = body_node.getAttribute("action");
+                switch (attraction) {
+                  case "overwrite":
+                    master_doc.querySelector(attrname).innerHTML =
+                      body_node.innerHTML;
+                    break;
+
+                  case "append":
+                    for (const el of statement) {
+                      let nodename = el.nodeName.toLocaleLowerCase();
+                      if (nodename == "remotely" || nodename == "locally") {
+                        let append = child_doc.createElement(attraction);
+                        append.innerHTML =
+                          body.querySelector(nodename).innerHTML;
+                        for (const el of append.querySelectorAll("*")) {
+                          let alterkeys = ["src", "href"];
+                          let { code, data } = arr_selected(el, alterkeys);
+                          if ((code = 0)) {
+                            let value = el.getAttribute(data.toString());
+                            el.setAttribute(key, params[nodename] + value);
+                            master_doc.querySelector(attrname).innerHTML +=
+                              el.outerHTML;
+                          }
+                        }
+                      }
+                    }
+                    break;
+                }
+              }
+            }
+
+            for (let [el, content] of Object.entries(elcontent)) {
+              master_doc.querySelector(el).innerHTML = content;
+            }
+            output.data = master_dom.serialize();
+          } else {
+            output.code = 1;
+            output.msg = "Unable to get the content of layouts! ";
+          }
+          return output;
+        } catch (error) {
+          return { code: -1, msg: error.message, data: null };
+        }
+      };
+
       /**
        * The final process which is sending resutl to frontend
        * @alias module:src_index.processEnd
@@ -209,70 +301,72 @@ module.exports = async (...args) => {
         const { JSDOM } = jsdom;
         let [res] = args;
         try {
-          let { status, view, options } = res.locals.render;
+          let {
+            status,
+            view,
+            options: {
+              css,
+              js,
+              elcontent,
+              json,
+              layer,
+              params,
+              redirect,
+              text,
+            },
+          } = res.locals.render;
           let rtn = handler.dataformat2;
           let isview = handler.check_empty(view);
-          let islayer = handler.check_empty(options.layer);
-          let isredirect = handler.check_empty(options.redirect);
-          let isjson = handler.check_empty(options.json);
-          let istext = handler.check_empty(options.text);
+          let islayer = handler.check_empty(layer.layouts);
+          let isredirect = handler.check_empty(redirect);
+          let isjson = handler.check_empty(json);
+          let istext = handler.check_empty(text);
           // let iscss = handler.check_empty(options.css);
 
           if (!isredirect) {
-            res.redirect(options.redirect);
+            res.redirect(redirect);
           } else if (!isjson) {
-            res.status(status).json(options.json);
+            res.status(status).json(json);
           } else if (!istext) {
-            res.status(status).send(options.text);
+            res.status(status).send(text);
             // } else if (!iscss) {
-            //   await mergecss(options.css);
+            //   await mergecss(.css);
           } else if (!islayer || !isview) {
-            let renderview, extname;
-            if (view) extname = path.extname(view);
-            else extname = ".eta";
+            let dom, extname, layouts, renderview;
+            if (!isview) extname = path.extname(view);
+            else if (!islayer) extname = path.extname(layer.layouts);
 
-            if (extname == ".eta") {
-              let { Eta } = require("eta");
-
-              let { layer } = options;
-              if (handler.check_empty(layer)) layer = view;
-              let template = path.basename(layer);
-              let templatesrc = layer.substring(0, layer.lastIndexOf(template));
-              let eta = new Eta({
-                views: templatesrc,
-                cache: true,
-                autoEscape: true,
-              });
-
-              if (!handler.check_empty(view, helper.get_datatype(view))) {
-                options.params["body"] = fs.readFileSync(view, "utf8");
+            if (extname == ".html") {
+              if (!islayer) {
+                let { code, data } = await combine_layer(
+                  layer,
+                  elcontent,
+                  params
+                );
+                if (code == 0) layouts = data;
+              }
+              if (!isview) {
+                let subdom = new JSDOM(await get_domhtml(view));
+                view = subdom.serialize();
               }
 
-              if (status != 200) {
-                renderview = options?.["params"]
-                  ? eta.render(template, options.params)
-                  : eta.render(template);
-                renderview = await minify(renderview, {
-                  collapseWhitespace: true,
-                });
-                res.status(status).send(renderview);
+              if (!handler.check_empty(layouts)) {
+                dom = new JSDOM(view);
               } else {
-                if (options?.["params"]) {
-                  renderview = eta.render(template, options.params);
-                } else renderview = eta.render(template);
-
-                renderview = await minify(renderview, {
-                  collapseWhitespace: true,
-                });
-                let dom = new JSDOM(renderview);
-                let document = dom.window.document;
-                let script = document.createElement("script");
-                script.type = "text/javascript";
-                script.innerHTML = `var jscss=${options.params.jscss}`;
-                document.getElementsByTagName("head")[0].appendChild(script);
-                let window = dom.serialize();
-                res.status(status).send(window);
+                dom = new JSDOM(layouts);
+                let mainbody = dom.window.document.querySelector("mainbody");
+                mainbody.innerHTML = new JSDOM(
+                  await view
+                ).window.document.querySelector("body").innerHTML;
               }
+
+              let document = dom.window.document;
+              // let script = document.createElement("script");
+              // script.type = "text/javascript";
+              // script.innerHTML = `var jscss=${params.jscss}`;
+              // document.getElementsByTagName("head")[0].appendChild(script);
+              let window = dom.serialize();
+              res.status(status).send(window);
             }
           } else {
             rtn.code = -1;
@@ -395,12 +489,6 @@ module.exports = async (...args) => {
         try {
           let paramres = {};
           let paramerror;
-          let giftpack = {
-            cosetting: coresetting,
-            engine: kernel.engine,
-            atomic: kernel.engine,
-            utils: kernel.utils,
-          };
 
           for (let [, compval] of Object.entries(components)) {
             let { api, gui } = compval;
@@ -449,18 +537,10 @@ module.exports = async (...args) => {
 
                 let queuertn;
                 if (permit && fn.idx == idx) {
-                  queuertn = await queue[fname].apply(null, [
-                    orireq,
-                    response,
-                    giftpack,
-                  ]);
+                  queuertn = await queue[fname].apply(null, [orireq, response]);
                   queuertn["action"] = queuertn.render;
                 } else if (fn.idx != idx) {
-                  queuertn = await queue[fname].apply(null, [
-                    orireq,
-                    response,
-                    giftpack,
-                  ]);
+                  queuertn = await queue[fname].apply(null, [orireq, response]);
                 }
                 let { err, render, ...res } = queuertn;
 
@@ -496,7 +576,7 @@ module.exports = async (...args) => {
               if (!isrender(paramerror.render))
                 orires.locals.render = paramerror.render;
               else if (!handler.check_empty(paramerror.error)) {
-                page = `${pathname}/error/500.eta`;
+                page = `${pathname}/error/500.html`;
                 pcontent = {
                   title: "System Notification",
                   msg: `Catch error: ${paramerror.error}`,
@@ -529,7 +609,7 @@ module.exports = async (...args) => {
             orires.locals = { render: handler.webview };
             let { render: err404 } = orires.locals;
             err404["status"] = 404;
-            err404["view"] = `${pathname}/error/404.eta`;
+            err404["view"] = `${pathname}/error/404.html`;
             err404["options"]["params"] = {
               title: "System Notification",
               msg: "Page not found",
@@ -554,7 +634,7 @@ module.exports = async (...args) => {
             orires.locals = { render: handler.webview };
             let { render: err500 } = orires.locals;
             err500["status"] = 500;
-            err500["view"] = `${pathname}/error/500.eta`;
+            err500["view"] = `${pathname}/error/500.html`;
             err500["options"]["params"] = {
               title: "System Notification",
               msg: rtn.msg,
@@ -579,7 +659,7 @@ module.exports = async (...args) => {
           orires.locals = { render: handler.webview };
           let { render: err500 } = orires.locals;
           err500["status"] = 500;
-          err500["view"] = `${pathname}/error/500.eta`;
+          err500["view"] = `${pathname}/error/500.html`;
           err500["options"]["params"] = {
             title: "System Notification",
             msg: error.message,
@@ -598,7 +678,13 @@ module.exports = async (...args) => {
         }
       };
 
-      lib["config"] = (...args) => {
+      /**
+       * The main objective is register api,gui modules into the cache memory
+       * @alias module:src_index.register
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - oncomponents gui and api modules
+       */
+      lib["register"] = (...args) => {
         let [oncomponents] = args;
         for (let [key, val] of Object.entries(oncomponents)) {
           let { api, gui } = val;

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add if empty folder `import_mjs` function will not import. Completed on 2024-04-19
 - ~~Apply first draft design of webnodejs module into engine. Completed on 2024-04-20~~
 - Add `isObject` function to `uitls.js`. Completed on 2024-04-23
+- Add `elcontent` key to `handler.js` webview property. Completed on 2024-04-24
 
 ### Changed
 
@@ -40,6 +41,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `routejson` function for `startup` function in `app.js` call. Completed on 2024-04-23
 - Apply new mergDeep function to `utils.js`. Completed on 2024-04-23
 - Improve `utils.serialize` function which can keep all function arguments and return data internally for next function call purpose. Completed on 2024-04-23
+- Rename `urlhander.js` to `reaction.js`purpose. Completed on 2024-04-24
+- Redesign `processEnd` function at `reaction.js` which fully utilise jsdom to editing html file before render to browser. Completed on 2024-04-24
 
 ### Deprecated
 
@@ -53,7 +56,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fix `utils.renameObjectKeys` function bug. Completed on 2024-04-21
+- Fix bug `utils.renameObjectKeys` function. Completed on 2024-04-21
+- Fix bug `utils.dir_module` when param 2 is undefined. Completed on 2024-04-24
 
 ### Security
 
