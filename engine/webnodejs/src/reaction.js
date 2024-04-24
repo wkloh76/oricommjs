@@ -55,18 +55,6 @@ module.exports = async (...args) => {
         res.end();
       };
 
-      const get_domhtml = async (...args) => {
-        let [file] = args;
-        let output;
-        if (fs.existsSync(file)) {
-          let renderview = fs.readFileSync(file, "utf8");
-          output = await minify(renderview, {
-            collapseWhitespace: true,
-          });
-        }
-        return output;
-      };
-
       const loadjscssfile = (...args) => {
         try {
           const [doc, filename, filetype] = args;
@@ -199,7 +187,18 @@ module.exports = async (...args) => {
         }
       };
 
-      const dirlist = async (...args) => {
+      const get_domhtml = async (...args) => {
+        let [file] = args;
+        let output;
+        if (fs.existsSync(file)) {
+          let renderview = fs.readFileSync(file, "utf8");
+          output = await minify(renderview, {
+            collapseWhitespace: true,
+          });
+        }
+        return output;
+      };
+      const get_filenames = async (...args) => {
         const [node, included = []] = args;
         let files = await fs
           .readdirSync(path.join(node.path))
@@ -229,7 +228,7 @@ module.exports = async (...args) => {
           let master_dom, master_doc;
           let [layouts, childlists] = await Promise.all([
             get_domhtml(layer.layouts),
-            dirlist(layer.childs, ["*.html"]),
+            get_filenames(layer.childs, ["*.html"]),
           ]);
 
           if (layouts) {
@@ -352,6 +351,10 @@ module.exports = async (...args) => {
 
               if (!handler.check_empty(layouts)) {
                 dom = new JSDOM(view);
+                let document = dom.window.document;
+                for (let [el, content] of Object.entries(elcontent)) {
+                  document.querySelector(el).innerHTML = content;
+                }
               } else {
                 dom = new JSDOM(layouts);
                 let mainbody = dom.window.document.querySelector("mainbody");
@@ -583,7 +586,7 @@ module.exports = async (...args) => {
                 };
                 err500["status"] = 500;
                 err500["view"] = page;
-                err500["options"]["params"] = pcontent;
+                err500["options"]["elcontent"] = pcontent;
 
                 if (fn?.from == "api") {
                   err500["options"]["json"] = {
@@ -610,7 +613,7 @@ module.exports = async (...args) => {
             let { render: err404 } = orires.locals;
             err404["status"] = 404;
             err404["view"] = `${pathname}/error/404.html`;
-            err404["options"]["params"] = {
+            err404["options"]["elcontent"] = {
               title: "System Notification",
               msg: "Page not found",
             };
@@ -635,7 +638,7 @@ module.exports = async (...args) => {
             let { render: err500 } = orires.locals;
             err500["status"] = 500;
             err500["view"] = `${pathname}/error/500.html`;
-            err500["options"]["params"] = {
+            err500["options"]["elcontent"] = {
               title: "System Notification",
               msg: rtn.msg,
             };
@@ -660,6 +663,7 @@ module.exports = async (...args) => {
           let { render: err500 } = orires.locals;
           err500["status"] = 500;
           err500["view"] = `${pathname}/error/500.html`;
+          err500["elcontent"]["title"] = "System Notification";
           err500["options"]["params"] = {
             title: "System Notification",
             msg: error.message,
