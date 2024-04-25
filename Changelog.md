@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - ~~Apply first draft design of webnodejs module into engine. Completed on 2024-04-20~~
 - Add `isObject` function to `uitls.js`. Completed on 2024-04-23
 - Add `elcontent` key to `handler.js` webview property. Completed on 2024-04-24
+- Redefine webview property. Completed on 2024-04-25
+- webnodejs module design done. Completed on 2024-04-25
 
 ### Changed
 
@@ -45,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redesign `processEnd` function at `reaction.js` which fully utilise jsdom to editing html file before render to browser. Completed on 2024-04-24
 
 ### Deprecated
+
+- eta node module no longer to use. Completed on 2024-04-25
 
 ### Removed
 

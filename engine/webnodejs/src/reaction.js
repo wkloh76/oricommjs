@@ -36,7 +36,7 @@ module.exports = async (...args) => {
 
       /**
        * Merge multi css file to be sinlge string and render to frontend
-       * @alias module:src_index.mergecss
+       * @alias module:reaction.mergecss
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - res the object for render to frontend
        * @param {Object} args[1] - files array of css file name
@@ -55,138 +55,115 @@ module.exports = async (...args) => {
         res.end();
       };
 
-      const loadjscssfile = (...args) => {
+      /**
+       * The main objective is convert css data in object type to jsdom format and append to parent
+       * @alias module:reaction.import_css
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - doc is an object of jsdom window.document
+       * @param {Object} args[1] - data is an object which listing css link source
+       * @param {Object} args[2] - params is an object which use to concat data object value
+       */
+      const import_css = (...args) => {
+        let [doc, data, params] = args;
         try {
-          const [doc, filename, filetype] = args;
-          let nodekey = [];
-          let nodevalue = [];
-          let attrcss = ["rel", "type", "href"];
-          let attrjs = ["type", "src"];
-          let css = ["stylesheet", "text/css"];
-          let js = ["text/javascript"];
           let el = doc.getElementsByTagName("head").item(0);
-          let targetelement = "none"; //determine element type to create nodelist from
+          for (let [key, val] of Object.entries(data)) {
+            if (val.length > 0) {
+              for (let href of val) {
+                let gfgData = doc.createElement("link");
+                let attributes = JSON.parse(
+                  `{"rel":"stylesheet","type":"text/css","href":"${params[key]}${href}"}`
+                );
 
-          if (filetype == "script") {
-            targetelement = "script";
-            nodekey = attrjs;
-            nodevalue = js;
-          } else if (filetype == "css") {
-            targetelement = "link";
-            nodekey = attrcss;
-            nodevalue = css;
+                Object.keys(attributes).forEach((attr) => {
+                  gfgData.setAttribute(attr, attributes[attr]);
+                });
+                el.appendChild(gfgData);
+              }
+            }
           }
-          nodevalue.push(`${filename}`);
-
-          let gfgData = doc.createElement(targetelement);
-          for (let i in nodekey) {
-            gfgData.setAttribute(nodekey[i], nodevalue[i]);
-          }
-
-          el.appendChild(gfgData);
           return;
         } catch (error) {
           return error;
         }
       };
 
-      const loadlessfile = (...args) => {
+      /**
+       * The main objective is convert js data in object type to jsdom format and append to parent
+       * @alias module:reaction.import_js
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - doc is an object of jsdom window.document
+       * @param {Object} args[1] - data is an object which listing js link source
+       * @param {Object} args[2] - params is an object which use to concat data object value
+       */
+      const import_js = (...args) => {
+        let [doc, data, params] = args;
         try {
-          const [doc, filename, filetype] = args;
-          let nodekey = [];
-          let nodevalue = [];
-          let attrcss = ["rel", "type", "href"];
-          let attrjs = ["type", "src"];
-          let css = ["stylesheet/less", "text/css"];
-          let js = ["text/javascript"];
           let el = doc.getElementsByTagName("head").item(0);
-          let targetelement = "none"; //determine element type to create nodelist from
+          for (let [key, val] of Object.entries(data)) {
+            if (val.length > 0) {
+              for (let href of val) {
+                let gfgData = doc.createElement("script");
+                let attributes = JSON.parse(
+                  `{"rel":"stylesheet","type":"text/javascript","src":"${params[key]}${href}"}`
+                );
 
-          if (filetype == "script") {
-            targetelement = "script";
-            nodekey = attrjs;
-            nodevalue = js;
-          } else if (filetype == "less") {
-            targetelement = "link";
-            nodekey = attrcss;
-            nodevalue = css;
+                Object.keys(attributes).forEach((attr) => {
+                  gfgData.setAttribute(attr, attributes[attr]);
+                });
+                el.appendChild(gfgData);
+              }
+            }
           }
-          nodevalue.push(`${filename}`);
-
-          let gfgData = doc.createElement(targetelement);
-          for (let i in nodekey) {
-            gfgData.setAttribute(nodekey[i], nodevalue[i]);
-          }
-
-          el.appendChild(gfgData);
           return;
         } catch (error) {
           return error;
         }
       };
 
-      const loadlib = (...args) => {
+      /**
+       * The main objective is convert less.js data in object type to jsdom format and append to parent
+       * @alias module:reaction.import_less
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - doc is an object of jsdom window.document
+       * @param {Object} args[1] - data is an object which listing less.js link source
+       * @param {Object} args[2] - params is an object which use to concat data object value
+       */
+      const import_less = (...args) => {
+        let [doc, data, params] = args;
         try {
-          let [doc, param] = args;
-          if (param.loads) {
-            for (let item of param.loads) {
-              loadjscssfile(doc, `${param.url}${item}.js`, "script");
+          let el = doc.getElementsByTagName("head").item(0);
+          for (let [key, val] of Object.entries(data.style)) {
+            if (val.length > 0) {
+              for (let href of val) {
+                let gfgData = doc.createElement("link");
+                let attributes = JSON.parse(
+                  `{"rel":"stylesheet/less","type":"text/css","href":"${params[key]}${href}"}`
+                );
+
+                Object.keys(attributes).forEach((attr) => {
+                  gfgData.setAttribute(attr, attributes[attr]);
+                });
+                el.appendChild(gfgData);
+              }
             }
           }
+          let engine = {};
+          engine[data.engine.domain] = [data.engine.location];
+          import_js(doc, engine, params);
           return;
         } catch (error) {
-          console.log(error);
+          return error;
         }
       };
 
-      const loadcss = (...args) => {
-        try {
-          let [doc, param, filetype] = args;
-          for (let item of param.lists) {
-            if (filetype == "css")
-              loadjscssfile(doc, `${param.url}${item}.${filetype}`, filetype);
-            if (filetype == "less")
-              loadlessfile(doc, `${param.url}${item}.${filetype}`, filetype);
-          }
-        } catch (error) {
-          console.log(error);
-        }
-      };
-
-      const injection = async (...args) => {
-        let [doc, jscss] = args;
-        if (jscss) {
-          if (jscss.external) {
-            if (jscss.external.css) loadcss(doc, jscss.external.css, "css");
-            if (jscss.external.js) loadlib(doc, jscss.external.js);
-          }
-
-          if (jscss.internal) {
-            if (jscss.internal.css) {
-              loadcss(doc, jscss.internal.css, "css");
-            }
-            if (jscss.internal.js) loadlib(doc, jscss.internal.js);
-            if (jscss.internal.js.lists) {
-              delete jscss.internal.css;
-              delete jscss.internal.js.loads;
-              let js = {
-                initialize: jscss.initialize,
-                internal: jscss.internal,
-              };
-              let script = doc.createElement("script");
-              script.type = "text/javascript";
-              script.innerHTML = `var jscss=${JSON.stringify(js)}`;
-              doc.getElementsByTagName("head")[0].appendChild(script);
-            }
-          }
-
-          if (jscss.less) {
-            if (jscss.less.style) loadcss(doc, jscss.less.style, "less");
-            if (jscss.less.js) loadlib(doc, jscss.less.js);
-          }
-        }
-      };
-
+      /**
+       * The main objective is read a file content and minify become one row
+       * @alias module:reaction.get_domhtml
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - file is file name which emebed absolute path
+       * @returns {String} - Return undefined|text
+       */
       const get_domhtml = async (...args) => {
         let [file] = args;
         let output;
@@ -198,6 +175,15 @@ module.exports = async (...args) => {
         }
         return output;
       };
+
+      /**
+       * The main objective is read a list of file content and minify become one row
+       * @alias module:reaction.get_filenames
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - node is an object provide directory path and filter list
+       * @param {Array} args[1] - included is check the file type which accept form the list
+       * @returns {Object} - Return undefined|text
+       */
       const get_filenames = async (...args) => {
         const [node, included = []] = args;
         let files = await fs
@@ -220,6 +206,15 @@ module.exports = async (...args) => {
         return await Promise.all(docs);
       };
 
+      /**
+       * The main objective is combine a list of file become one html text
+       * @alias module:reaction.combine_layer
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - layer is an object the list of files for merge purpose
+       * @param {Object} args[1] - elcontent is object use for write data to relevent html element
+       * @param {Object} args[2] - params is an object which use to concat data object value
+       * @returns {Object} - Return object
+       */
       const combine_layer = async (...args) => {
         const [layer, elcontent, params] = args;
         const { JSDOM } = jsdom;
@@ -292,7 +287,7 @@ module.exports = async (...args) => {
 
       /**
        * The final process which is sending resutl to frontend
-       * @alias module:src_index.processEnd
+       * @alias module:reaction.processEnd
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - res the object for render to frontend
        */
@@ -305,10 +300,11 @@ module.exports = async (...args) => {
             view,
             options: {
               css,
-              js,
               elcontent,
+              js,
               json,
               layer,
+              less,
               params,
               redirect,
               text,
@@ -349,12 +345,8 @@ module.exports = async (...args) => {
                 view = subdom.serialize();
               }
 
-              if (!handler.check_empty(layouts)) {
+              if (!layouts) {
                 dom = new JSDOM(view);
-                let document = dom.window.document;
-                for (let [el, content] of Object.entries(elcontent)) {
-                  document.querySelector(el).innerHTML = content;
-                }
               } else {
                 dom = new JSDOM(layouts);
                 let mainbody = dom.window.document.querySelector("mainbody");
@@ -364,25 +356,55 @@ module.exports = async (...args) => {
               }
 
               let document = dom.window.document;
-              // let script = document.createElement("script");
-              // script.type = "text/javascript";
-              // script.innerHTML = `var jscss=${params.jscss}`;
-              // document.getElementsByTagName("head")[0].appendChild(script);
-              let window = dom.serialize();
-              res.status(status).send(window);
+              for (let [el, content] of Object.entries(elcontent)) {
+                let found = document.querySelector(el);
+                if (found) found.innerHTML = content;
+              }
+
+              let preload = await get_domhtml(
+                path.join(pathname, "browser", "preload.html")
+              );
+              document.querySelector("body").innerHTML += preload;
+              let script = document.createElement("script");
+              script.type = "text/javascript";
+              script.innerHTML = `var mjs=${params.mjs}`;
+              document.getElementsByTagName("head")[0].appendChild(script);
+              let rtnimport_css = import_css(document, css, params);
+              if (rtnimport_css) throw rtnimport_css;
+              let rtnimport_js = import_js(document, js, params);
+              if (rtnimport_js) throw rtnimport_js;
+              let rtnimport_less = import_less(document, less, params);
+              if (rtnimport_less) throw rtnimport_less;
+
+              res.status(status).send(dom.serialize());
             }
           } else {
             rtn.code = -1;
           }
           return rtn;
         } catch (error) {
-          return { code: -1, msg: error.message, data: null };
+          if (error.errno)
+            return {
+              code: error.errno,
+              errno: error.errno,
+              message: error.message,
+              stack: error.stack,
+              data: null,
+            };
+          else
+            return {
+              code: -1,
+              errno: -1,
+              message: error.message,
+              stack: error.stack,
+              data: null,
+            };
         }
       };
 
       /**
        * The main objective is check the selected keys value either one is not empty
-       * @alias module:src_index.isrender
+       * @alias module:reaction.isrender
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - render modules
        * @param {Array} args[1] - gui modules
@@ -401,7 +423,7 @@ module.exports = async (...args) => {
 
       /**
        * The main objective is pick function from api or gui base on key name
-       * @alias module:src_index.guiapi_picker
+       * @alias module:reaction.guiapi_picker
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - api modules
        * @param {Array} args[1] - gui modules
@@ -426,7 +448,7 @@ module.exports = async (...args) => {
 
       /**
        * The main objective is find the register url which embed restful route params
-       * @alias module:src_index.guiapi_params_filter
+       * @alias module:reaction.guiapi_params_filter
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - api modules
        * @param {Array} args[1] - gui modules
@@ -474,6 +496,12 @@ module.exports = async (...args) => {
         });
       };
 
+      /**
+       * The main objective is write the error statement to error.log
+       * @alias module:reaction.logerr
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - message is error statement in text
+       */
       const logerr = (...args) => {
         let [message] = args;
         logger.error(message);
@@ -481,7 +509,7 @@ module.exports = async (...args) => {
 
       /**
        * The main objective is on listen register url from http client
-       * @alias module:src_index.onrequest
+       * @alias module:reaction.onrequest
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - orireq http request module
        * @param {Array} args[1] - orires http response module
@@ -684,7 +712,7 @@ module.exports = async (...args) => {
 
       /**
        * The main objective is register api,gui modules into the cache memory
-       * @alias module:src_index.register
+       * @alias module:reaction.register
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - oncomponents gui and api modules
        */
