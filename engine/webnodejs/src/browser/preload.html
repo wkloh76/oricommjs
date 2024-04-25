@@ -18,22 +18,13 @@
   var glib = {};
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {
-      if (jscss.external) {
-        if (jscss.external?.css) await loadcss(jscss.external.css, "css");
-        if (jscss.external?.js) await loadlib(jscss.external.js);
-      }
+      if (mjs.external)
+        if (mjs.external?.js) await loadlib(mjs.external.js);
 
-      if (jscss.internal) {
-        if (jscss.internal.css) await loadcss(jscss.internal.css, "css");
-        if (jscss.internal.js) await loadlib(jscss.internal.js);
-      }
+      if (mjs.internal)
+        if (mjs.internal.js) await loadlib(mjs.internal.js);
 
-      if (jscss.less) {
-        if (jscss.less.style) await loadcss(jscss.less.style, "less");
-        if (jscss.less.js) await loadlib(jscss.less.js);
-      }
-
-      if (jscss.initialize) await initialize(jscss.initialize);
+      if (mjs.initialize) await initialize(mjs.initialize);
     }
   });
 
@@ -58,118 +49,9 @@
           glib[fn] = { ...df };
         }
       }
-      if (param?.loads) {
-        for (let item of param.loads) {
-          await loadjscssfile(`${param.url}${item}.js`, "script");
-        }
-      }
       return;
     } catch (error) {
       console.log(error);
     }
-  };
-
-  const loadcss = async (...args) => {
-    try {
-      let [param, filetype] = args;
-      for (let item of param.lists) {
-        if (filetype == "css")
-          await loadjscssfile(`${param.url}${item}.${filetype}`, filetype);
-        if (filetype == "less")
-          await loadlessfile(`${param.url}${item}.${filetype}`, filetype);
-      }
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const loadjscssfile = (...args) => {
-    return new Promise(function (resolve, reject) {
-      try {
-        const [filename, filetype] = args;
-        let nodekey = [];
-        let nodevalue = [];
-        let attrcss = ["rel", "type", "href"];
-        let attrjs = ["type", "src"];
-        let css = ["stylesheet", "text/css"];
-        let js = ["text/javascript"];
-        let el = document.getElementsByTagName("head").item(0);
-        let targetelement = "none"; //determine element type to create nodelist from
-
-        if (filetype == "script") {
-          targetelement = "script";
-          nodekey = attrjs;
-          nodevalue = js;
-        } else if (filetype == "css") {
-          targetelement = "link";
-          nodekey = attrcss;
-          nodevalue = css;
-        }
-        nodevalue.push(`${filename}`);
-
-        let gfgData = document.createElement(targetelement);
-        for (let i in nodekey) {
-          gfgData.setAttribute(nodekey[i], nodevalue[i]);
-        }
-
-        gfgData.async = false;
-        gfgData.onload = () => {
-          resolve();
-        };
-        gfgData.onerror = () => {
-          reject(filename);
-        };
-        el.appendChild(gfgData);
-      } catch (error) {
-        reject(error);
-      }
-    });
-  };
-
-  const loadlessfile = (...args) => {
-    return new Promise(function (resolve, reject) {
-      try {
-        const [filename, filetype] = args;
-        let nodekey = [];
-        let nodevalue = [];
-        let attrcss = ["rel", "type", "href"];
-        let attrjs = ["type", "src"];
-        let css = ["stylesheet/less", "text/css"];
-        let js = ["text/javascript"];
-        let el = document.getElementsByTagName("head").item(0);
-        let targetelement = "none"; //determine element type to create nodelist from
-
-        if (filetype == "script") {
-          targetelement = "script";
-          nodekey = attrjs;
-          nodevalue = js;
-        } else if (filetype == "less") {
-          targetelement = "link";
-          nodekey = attrcss;
-          nodevalue = css;
-        }
-        nodevalue.push(`${filename}`);
-
-        let gfgData = document.createElement(targetelement);
-        for (let i in nodekey) {
-          gfgData.setAttribute(nodekey[i], nodevalue[i]);
-        }
-
-        el.appendChild(gfgData);
-        if (filetype == "less") {
-          resolve();
-        } else {
-          gfgData.async = false;
-          gfgData.onload = () => {
-            resolve();
-          };
-          gfgData.onerror = () => {
-            reject(filename);
-          };
-        }
-      } catch (error) {
-        reject(error);
-      }
-    });
   };
 </script>

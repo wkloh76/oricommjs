@@ -367,7 +367,7 @@ module.exports = async (...args) => {
               document.querySelector("body").innerHTML += preload;
               let script = document.createElement("script");
               script.type = "text/javascript";
-              script.innerHTML = `var mjs=${params.mjs}`;
+              script.innerHTML = `var mjs=${JSON.stringify(params.mjs)}`;
               document.getElementsByTagName("head")[0].appendChild(script);
               let rtnimport_css = import_css(document, css, params);
               if (rtnimport_css) throw rtnimport_css;
