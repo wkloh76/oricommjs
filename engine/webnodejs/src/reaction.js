@@ -691,8 +691,7 @@ module.exports = async (...args) => {
           let { render: err500 } = orires.locals;
           err500["status"] = 500;
           err500["view"] = `${pathname}/error/500.html`;
-          err500["elcontent"]["title"] = "System Notification";
-          err500["options"]["params"] = {
+          err500["options"]["elcontent"] = {
             title: "System Notification",
             msg: error.message,
           };

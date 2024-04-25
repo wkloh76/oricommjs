@@ -64,6 +64,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix bug `utils.dir_module` when param 2 is undefined. Completed on 2024-04-24
 - Fix bug `processEnd` function at `reaction.js` which unable write the message and title to the specifiy html element and title. Completed on 2024-04-24
 - Fix bug `preload.html` and mjs variable undeclare issue. Completed on 2024-04-25
+- Fix bug err500 object missing options key in lib["onrequest"] function. Completed on 2024-04-25
 
 ### Security
 
