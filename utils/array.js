@@ -164,33 +164,6 @@ module.exports = async (...args) => {
         }
       };
 
-      lib.arr_selected = (...args) => {
-        const [source, compare] = args;
-        try {
-          let output = { code: 0, msg: "", data: null };
-          output.data = source.getAttributeNames().filter(function (val) {
-            return compare.indexOf(val) != -1;
-          });
-          return output;
-        } catch (error) {
-          if (error.errno)
-            return {
-              code: error.errno,
-              errno: error.errno,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
-          else
-            return {
-              code: -1,
-              errno: -1,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
-        }
-      };
       resolve(lib);
     } catch (error) {
       reject(error);

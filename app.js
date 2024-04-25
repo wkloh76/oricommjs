@@ -348,7 +348,6 @@
                 data: ["/save_args/engine/0/2", "/params/coresetting/engine"],
               },
             },
-
             {
               func: "nested_load",
               save: { param: "/params/kernel/atomic" },
@@ -375,7 +374,7 @@
             },
             {
               func: "load",
-              save: {},
+              save: { param: "/params/tmp" },
               save_args: true,
               save_rtn: false,
               params: {
@@ -387,13 +386,23 @@
               },
             },
             {
+              func: "mergedata",
+              save: { param: "/params/coresetting" },
+              save_args: true,
+              save_rtn: false,
+              params: {
+                name: "merge_coresetting",
+                data: ["/params/coresetting", "/params/tmp"],
+              },
+            },
+            {
               func: "work",
               save: {},
               save_args: true,
               save_rtn: false,
               params: {
                 name: "work",
-                data: ["/params/coresetting", "/params/components"],
+                data: ["/params/coresetting", "/params/kernel/components"],
               },
             },
             {
@@ -426,10 +435,15 @@
               library: {
                 load: (...args) => {
                   return new Promise(async (resolve, reject) => {
-                    const [params, obj, rtn] = args;
+                    const [params, obj] = args;
                     let output = { code: 0, msg: "", data: null };
                     try {
-                      output.data = await import_cjs(params, obj);
+                      output.data = await import_cjs(params, obj, [
+                        core,
+                        sys,
+                        cosetting,
+                      ]);
+                      if (output.code != 0) throw output;
                       resolve(output);
                     } catch (error) {
                       reject(errhandler(error));
@@ -443,9 +457,28 @@
                     let rtn = {};
                     try {
                       for (let val of general) {
-                        rtn[val] = await import_cjs(params[val], obj);
+                        rtn[val] = await import_cjs(params[val], obj, [
+                          kernel,
+                          sysmodule,
+                          coresetting,
+                        ]);
                       }
                       output.data = rtn;
+                      resolve(output);
+                    } catch (error) {
+                      reject(errhandler(error));
+                    }
+                  });
+                },
+                mergedata: (...args) => {
+                  return new Promise(async (resolve, reject) => {
+                    const [cosetting, tmp] = args;
+                    let output = { code: 0, msg: "", data: null };
+                    try {
+                      output.data = { ...cosetting };
+                      for (let [, v] of Object.entries(tmp)) {
+                        output.data = { ...output.data, ...v };
+                      }
                       resolve(output);
                     } catch (error) {
                       reject(errhandler(error));
@@ -523,8 +556,8 @@
                 msg_engine: "engine",
                 msg_atomic: "atomic",
                 msg_components: "components",
-                components: core.components,
                 fs: sys,
+                tmp: {},
               },
             },
             cond,

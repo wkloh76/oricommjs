@@ -80,7 +80,7 @@ module.exports = async (...args) => {
        */
       lib["import_cjs"] = (...args) => {
         return new Promise(async (resolve, reject) => {
-          const [list, obj] = args;
+          const [list, obj, optional] = args;
           const [pathname, arr_modname, curdir] = list;
           const { errhandler } = obj;
           const { join } = path;
@@ -93,7 +93,7 @@ module.exports = async (...args) => {
               if (fs.readdirSync(modpath).length > 0) {
                 let module = require(join(modpath), "utf8")(
                   [modpath, val, curdir],
-                  [kernel, sysmodule, coresetting]
+                  optional
                 );
                 arr_name.push(val);
                 arr_process.push(module);
@@ -120,7 +120,7 @@ module.exports = async (...args) => {
        */
       lib["import_mjs"] = async (...args) => {
         return new Promise(async (resolve, reject) => {
-          const [list, obj] = args;
+          const [list, obj, optional] = args;
           const [pathname, arr_modname, curdir] = list;
           const { errhandler } = obj;
           const { join } = path;
@@ -133,7 +133,7 @@ module.exports = async (...args) => {
               if (fs.readdirSync(modpath).length > 0) {
                 let module = require(join(modpath), "utf8")(
                   [modpath, val, curdir],
-                  [kernel, sysmodule, coresetting]
+                  optional
                 );
                 arr_name.push(val);
                 arr_process.push(module);
@@ -209,10 +209,10 @@ module.exports = async (...args) => {
       /**
        * Rename object all keys base on schema
        * The detail refer to https://stackoverflow.com/questions/62135524/how-to-rename-the-object-key-in-nested-array-of-object-in-javascript-dynamically
-       * @alias module:object.renameKeys
+       * @alias module:utils.renameObjectKeys
        * @param {Object} keysMaps - The new keys schema.
        * @param {Object} node  - Data source.
-       * @returns {Object}
+       * @returns {Object} - Return modules | undefined
        */
       lib["renameObjectKeys"] = (node, keysMaps) => {
         const renameKeys = (node, keysMaps) => {
@@ -232,44 +232,14 @@ module.exports = async (...args) => {
       };
 
       /**
-       * The main objective is find the value base on nested keyname
-       * The detail refer to https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge
-       * @alias module:utils.mergeDeep
-       * @param {Object} target - Target object to merge
-       * * @param {...Object} sources - Source object to merge
-       * @returns {Object} - Return merge value
-       */
-      // lib.mergeDeep = (target, ...sources) => {
-      //   if (!sources.length) return target;
-      //   const source = sources.shift();
-
-      //   if (isObject(target) && isObject(source)) {
-      //     for (const key in source) {
-      //       if (isObject(source[key])) {
-      //         if (!target[key]) Object.assign(target, { [key]: {} });
-      //         lib.mergeDeep(target[key], source[key]);
-      //       } else {
-      //         if (Array.isArray(target[key]) && Array.isArray(source[key])) {
-      //           let concat = target[key].concat(source[key]);
-
-      //           // Set will filter out duplicates automatically
-      //           let data = [...new Set(concat)];
-      //           target[key] = data;
-      //         } else Object.assign(target, { [key]: source[key] });
-      //       }
-      //     }
-      //   }
-      //   return lib.mergeDeep(target, ...sources);
-      // };
-
-      /**
        * Performs a deep merge of objects and returns new object. Does not modify
        * objects (immutable) and merges arrays via concatenation.
        * The detail refer to https://stackoverflow.com/questions/27936772/how-to-deep-merge-instead-of-shallow-merge
+       * @alias module:utils.mergeDeep
        * @param {...object} objects - Objects to merge
        * @returns {object} New object with merged key/values
        */
-      lib.mergeDeep = (...objects) => {
+      lib["mergeDeep"] = (...objects) => {
         const isObject = (obj) => obj && typeof obj === "object";
 
         return objects.reduce((prev, obj) => {
@@ -292,7 +262,7 @@ module.exports = async (...args) => {
 
       /**
        * Return object where option is the key, value is the value for the key
-       * @alias module:object.insert2obj
+       * @alias module:utils.insert2obj
        * @param {Array} option - Array of string for key.
        * @param {Array} value  - Array of value for the key that must be sequence as the option.
        * @returns {Object} - Object that has been assigned to the key and value.
@@ -465,6 +435,42 @@ module.exports = async (...args) => {
             stack: error.stack,
             data: error,
           };
+      };
+
+      /**
+       * Compare both array and only return same values from jsdom element
+       * @alias module:utils.arr_selected
+       * @param {...Object} args - 2 parameters
+       * @param {Array} args[0] - source the data to to compare
+       * @param {Array} args[1] - compare base on the array list.
+       * @returns {Array} - Nothing change if some value not meet to requirement
+       */
+      lib["arr_selected"] = (...args) => {
+        const [source, compare] = args;
+        try {
+          let output = { code: 0, msg: "", data: null };
+          output.data = source.getAttributeNames().filter(function (val) {
+            return compare.indexOf(val) != -1;
+          });
+          return output;
+        } catch (error) {
+          if (error.errno)
+            return {
+              code: error.errno,
+              errno: error.errno,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            };
+          else
+            return {
+              code: -1,
+              errno: -1,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            };
+        }
       };
 
       resolve(lib);

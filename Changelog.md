@@ -45,6 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Improve `utils.serialize` function which can keep all function arguments and return data internally for next function call purpose. Completed on 2024-04-23
 - Rename `urlhander.js` to `reaction.js`purpose. Completed on 2024-04-24
 - Redesign `processEnd` function at `reaction.js` which fully utilise jsdom to editing html file before render to browser. Completed on 2024-04-24
+- Add third parameters to `import_cjs` and `import_mjs` instead `[kernel,sysmodule,coresetting]`. Completed on 2024-04-25
+- Update new sub function to `app.js` at `startup` function. Completed on 2024-04-25
 
 ### Deprecated
 

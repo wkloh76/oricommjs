@@ -28,7 +28,11 @@ module.exports = (...args) => {
       lib = {
         ...lib,
         ...(await require("./array")(mpath, mname)),
-        ...(await lib.import_cjs([mpath, modfolders, mname], lib)),
+        ...(await lib.import_cjs([mpath, modfolders, mname], lib, [
+          kernel,
+          sysmodule,
+          cosetting,
+        ])),
       };
       resolve(lib);
     } catch (error) {
