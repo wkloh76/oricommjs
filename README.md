@@ -1,16 +1,25 @@
 # OriCommJS
 
-- The main purpose of this architectural design is to develop all console, web and desktop applications based on commonJS and javascript runtime engine supports NodeJS, BunJS and electronJS.
-- User can use pure javascript, html,css,and less.js knowledge to design the web server.
-- Support Nodejs version 20.11.0 and above.
-- Support ElectronJS version 28.1.3 and above.
-- Support BunJS version 1.1.3 and above.
+![Static Badge](https://img.shields.io/badge/License-Mulan_PSL_v2-_)
+![Static Badge](https://img.shields.io/badge/NodeJS-V20_.11_.0-_)
+![Static Badge](https://img.shields.io/badge/BunJS-V1_.1_.4-_)
+![Static Badge](https://img.shields.io/badge/ElectronJS-V28_.1_.3-_)
+![Static Badge](https://img.shields.io/badge/OS_Platform-Linux_Ubuntu%7C-_)
 
-## Features
 
-- When system ready {sysmodule,kernel.utils,kernel.engine,kernel.atomic,kernel.components}.
-- A maximum of 3 parameters per module or function is the design principle of the framework.
-- Reusable or re-applied modules are one of the design features of this framework to avoid copying code everywhere and wasting resources.
+A JavaScript project framework that provides an engine to handle desktop, web, and non-GUI application development. Node JS, bun JS and Electron JS are the backbone engines of this framework. The idea behind the framework is to develop a code model that can switch engines and build desktop, web, and non-GUI applications without changing the design.
+
+## Idea
+
+- The `webnodejs` engine is a web server designed based on the expressjs framework. It can runs on bith NodeJS and BunJS
+- The `webbunjs` engine is a web server designed based on the bunrest framework. It can runs BunJS
+- The `deskelectronjs` engine is a desktop application designed to be executed only through ElectronJS.
+- The `appservicejs` engine is non-GUI application desgined which can directlly run in pc background service or executed from Linux console or Windows CMD. It can runs on bith NodeJS and BunJS
+- Reusable or reappliable modules are one of the design features of the framework to avoid duplicating code everywhere and wasting resources.
+
+## Design principle
+
+- It is worth noting that each module or function can only have a maximum of 3 arguments/parameters. This is to better manage and teach developers how to make the most of object types within constraints.
 
 ## components
 
@@ -18,22 +27,22 @@
 - The skelethon can refer to node_component_template.
 - Support multiple components in one project.
   The prefix for the folder:
-  - `app_` is console application.
-  - `web_` is web application.
-  - `desktop_` is desktop application.
+  - `app_` for non-GUI application.
+  - `web_` for web application.
+  - `desktop_` for desktop application.
 
-## core
+## engine
 
 - It is the main core engine of the entire project and determines whether the project is a console, web or desktop application.
 
 - Framework comes with functions:
-  - utils {helper,handler and powersehll}
+  - utils {handler and powersehll}
 - Choose one engine:
+  - appservicejs(NodeJS,Bunjs)
   - webbunjs (bunJS)
-  - webnodejs (NodeJS)
+  - webnodejs (NodeJS,bunJS)
   - deskeletronjs (ElectronJS)
 - Optional modules:
-  - goturl
   - sqlmanager
 
 ## atomic
@@ -48,24 +57,20 @@
 ## .gitignore setting
 
 ```
-.vscode
-package.json
-yarn.lock
-yarn-error.log
-node_modules
-.gitignore
-bun.lockb
+  .vscode
+  package.json
+  yarn.lock
+  yarn-error.log
+  node_modules
+  .gitignore
+  bun.lockb
 ```
 
 ## package.josn setting
 
 - For startup, you can change the values from package.json suite to your design (name,productName,homepage,version,description,repository,author).
 
-## Visual Studio Code Debug
-
----
-
-### launch.json setting
+## Debug: vscodelaunch.json setting
 
 ```
 {
@@ -83,7 +88,8 @@ bun.lockb
       ],
       "program": "${workspaceFolder}/app.js",
       "args": [
-        "--mode=debug"
+        "--mode=debug",
+        "--engine=webnodejs"
       ]
     },
     {
@@ -103,7 +109,8 @@ bun.lockb
       "program": "app.js",
       "cwd": "${workspaceFolder}",
       "args": [
-        "--mode=debug"
+        "--mode=debug",
+        "--engine=webnodejs"
       ],
       "stopOnEntry": false,
       "watchMode": false,
@@ -116,7 +123,8 @@ bun.lockb
       "program": "app.js",
       "cwd": "${workspaceFolder}",
       "args": [
-        "--mode=debug"
+        "--mode=debug",
+        "--engine=webnodejs"
       ],
       "noDebug": true,
       "watchMode": false,
@@ -142,6 +150,7 @@ bun.lockb
         "${workspaceRoot}/app.js",
         "--remote-debugging-port=9223",
         "--mode=debug",
+        "--engine=webnodejs"
         "--disable-gpu",
         "--no-sandbox"
       ],
@@ -167,17 +176,16 @@ bun.lockb
 }
 ```
 
+## Launch: Linux console or Window CMD
+
+- NodeJS: node app.js --mode=debug --engine=webnodejs
+- BunJS: Bun app.js --mode=debug --engine=webnodejs
+- ElectronJS: electron
+
 ## Handle package.json dependencies and devdependencies
 
 - Dependencies: The modules will bundle to the project and standby for deployment.
 - Devdependencies: The modules will bundle to project for development and testing purpose. The deployment stage can be ignore the modules.
-
-## yarn run and debug remotely in package.json script setting
-
-- run: node app.js --mode=production/debug
-- run: node app.js --mode=debug
-- debug: node --inspect=0.0.0.0:9229 app.js --mode=production
-- debug: node --inspect=0.0.0.0:9229 app.js --mode=debug
 
 # License
 
