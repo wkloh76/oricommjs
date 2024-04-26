@@ -6,8 +6,7 @@
 ![Static Badge](https://img.shields.io/badge/ElectronJS-V28_.1_.3-_)
 ![Static Badge](https://img.shields.io/badge/OS_Platform-Linux_Ubuntu%7C-_)
 
-
-A JavaScript project framework that provides an engine to handle desktop, web, and non-GUI application development. Node JS, bun JS and Electron JS are the backbone engines of this framework. The idea behind the framework is to develop a code model that can switch engines and build desktop, web, and non-GUI applications without changing the design.
+A JavaScript project framework that provides an engine to handle desktop, web, and non-GUI application development. Node JS, bun JS and Electron JS are the backbone engines of this framework. The idea behind the framework is to develop a code model that can switch engines and build desktop, web, and non-GUI applications without changing the design. Due to some module issues, the framework design still retains the CommonJS design method.
 
 ## Idea
 
