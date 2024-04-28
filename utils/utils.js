@@ -250,7 +250,7 @@ module.exports = async (...args) => {
             if (Array.isArray(pVal) && Array.isArray(oVal)) {
               prev[key] = pVal.concat(...oVal);
             } else if (isObject(pVal) && isObject(oVal)) {
-              prev[key] = mergeDeep(pVal, oVal);
+              prev[key] = lib["mergeDeep"](pVal, oVal);
             } else {
               prev[key] = oVal;
             }
