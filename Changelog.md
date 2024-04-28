@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-[1.0.1]: https://github.com/wkloh76/oricommjs/tree/1.0.1
+[1.0.1]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.1
 
 ## [1.0.0] - 2024-04-12
 
