@@ -412,7 +412,7 @@
               save_rtn: false,
               params: {
                 name: "routejson",
-                data: ["/params/components", "/params/kernel", "/params/fs"],
+                data: ["/params/kernel/components", "/params/kernel", "/params/fs"],
               },
             },
             {

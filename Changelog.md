@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] - 2024-04-26
+
+### Summary
+
+### Added
+
+- Add `arr_diff` function to `utils.js` for Compare 2 array values and return values differently. Completed on 2024-04-26
+
+### Changed
+
+- Redefine the source as pure arrary in `arr_selected` function at `utils.js`. Completed on 2024-04-28
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Fix bug where is assign the wrong first parameter value for `routejson` function at `app.js`. Completed on 2024-04-27
+- Fix bug `combine_layer` function at `reaction.js` in webnodejs engine. Completed on 2024-04-27
+- Fix bug `import_less` function at `reaction.js` in webnodejs engine where is empty domain string cause inline load less script undefined issue. Completed on 2024-04-28
+
+### Security
+
+[1.0.1]: https://github.com/wkloh76/oricommjs/tree/1.0.1
+
 ## [1.0.0] - 2024-04-12
 
 ### Summary
@@ -70,4 +96,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Security
 
-<!-- [1.0.0]:  -->
+[1.0.0]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.0

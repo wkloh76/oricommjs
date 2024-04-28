@@ -6,7 +6,7 @@
 
 ## Startup
 
-1. Below code apply to your components project if the web design use 
+1. Apply code below to oricommjs_components coresetting.toml 
 
 ```
 [webnodejs]

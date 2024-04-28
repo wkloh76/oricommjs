@@ -148,9 +148,11 @@ module.exports = async (...args) => {
               }
             }
           }
-          let engine = {};
-          engine[data.engine.domain] = [data.engine.location];
-          import_js(doc, engine, params);
+          if (data.engine.domain !== "") {
+            let engine = {};
+            engine[data.engine.domain] = [data.engine.location];
+            import_js(doc, engine, params);
+          }
           return;
         } catch (error) {
           return error;
@@ -256,10 +258,11 @@ module.exports = async (...args) => {
                           body.querySelector(nodename).innerHTML;
                         for (const el of append.querySelectorAll("*")) {
                           let alterkeys = ["src", "href"];
-                          let { code, data } = arr_selected(el, alterkeys);
-                          if ((code = 0)) {
+                          let attrs = el.getAttributeNames();
+                          let { code, data } = arr_selected(attrs, alterkeys);
+                          if (code == 0) {
                             let value = el.getAttribute(data.toString());
-                            el.setAttribute(key, params[nodename] + value);
+                            el.setAttribute(data.toString(), params[nodename] + value);
                             master_doc.querySelector(attrname).innerHTML +=
                               el.outerHTML;
                           }

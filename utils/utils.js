@@ -438,7 +438,7 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Compare both array and only return same values from jsdom element
+       * Compare 2 array values and return the same values
        * @alias module:utils.arr_selected
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - source the data to to compare
@@ -449,7 +449,7 @@ module.exports = async (...args) => {
         const [source, compare] = args;
         try {
           let output = { code: 0, msg: "", data: null };
-          output.data = source.getAttributeNames().filter(function (val) {
+          output.data = source.filter(function (val) {
             return compare.indexOf(val) != -1;
           });
           return output;
@@ -473,6 +473,43 @@ module.exports = async (...args) => {
         }
       };
 
+      /**
+       * Compare 2 array values and return values differently
+       * The detail refer to https://stackoverflow.com/questions/1187518/how-to-get-the-difference-between-two-arrays-in-javascript
+       * @alias module:utils.arr_diff
+       * @param {...Object} args - 2 parameters
+       * @param {Array} args[0] - source the data to to compare
+       * @param {Array} args[1] - compare base on the array list.
+       * @returns {Array} - Return the different value in array type
+       */
+      lib["arr_diff"] = (...args) => {
+        const [source, compare] = args;
+        try {
+          let output = { code: 0, msg: "", data: null };
+          output.data = source
+            .concat(compare)
+            .filter((val) => !(source.includes(val) && compare.includes(val)));
+
+          return output;
+        } catch (error) {
+          if (error.errno)
+            return {
+              code: error.errno,
+              errno: error.errno,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            };
+          else
+            return {
+              code: -1,
+              errno: -1,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            };
+        }
+      };
       resolve(lib);
     } catch (error) {
       reject(error);
