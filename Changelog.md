@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.3] - 2024-04-29
+
+### Summary
+
+### Added
+
+- Add new action `update ` to `combine_layer` function at `reaction.js` in `webnodejs` to concate the `src/href` value with components name. Completed on 2024-04-29
+
+### Changed
+
+- Change action `overwrite ` content method to `combine_layer` function at `reaction.js` in `webnodejs`. Completed on 2024-04-29
+
+### Deprecated
+
+### Removed
+
+- Remove unused attribute from `import_js` function at `reaction.js` in webnodejs engine. Completed on 2024-04-29
+
+### Fixed
+
+### Security
+
+[1.0.3]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.3
+
 ## [1.0.2] - 2024-04-28
 
 ### Summary

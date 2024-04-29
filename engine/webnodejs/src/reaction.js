@@ -105,7 +105,7 @@ module.exports = async (...args) => {
               for (let href of val) {
                 let gfgData = doc.createElement("script");
                 let attributes = JSON.parse(
-                  `{"rel":"stylesheet","type":"text/javascript","src":"${params[key]}${href}"}`
+                  `{"type":"text/javascript","src":"${params[key]}${href}"}`
                 );
 
                 Object.keys(attributes).forEach((attr) => {
@@ -245,8 +245,15 @@ module.exports = async (...args) => {
                 let attraction = body_node.getAttribute("action");
                 switch (attraction) {
                   case "overwrite":
+                    let mel = master_doc.querySelector(attrname);
+                    let cel = body_node.querySelector(attrname);
+                    let attrs = cel.getAttributeNames();
+                    for (let attr of attrs) {
+                      let val = cel.getAttribute(attr);
+                      mel.setAttribute(attr, val);
+                    }
                     master_doc.querySelector(attrname).innerHTML =
-                      body_node.innerHTML;
+                      cel.innerHTML;
                     break;
 
                   case "append":
@@ -262,9 +269,51 @@ module.exports = async (...args) => {
                           let { code, data } = arr_selected(attrs, alterkeys);
                           if (code == 0) {
                             let value = el.getAttribute(data.toString());
-                            el.setAttribute(data.toString(), params[nodename] + value);
+                            el.setAttribute(
+                              data.toString(),
+                              params[nodename] + value
+                            );
                             master_doc.querySelector(attrname).innerHTML +=
                               el.outerHTML;
+                          }
+                        }
+                      }
+                    }
+                    break;
+
+                  case "update":
+                    for (const el of statement) {
+                      let nodename = el.nodeName.toLocaleLowerCase();
+                      if (nodename == "remotely" || nodename == "locally") {
+                        let update = child_doc.createElement(attraction);
+                        update.innerHTML =
+                          body.querySelector(nodename).innerHTML;
+                        for (const el of update.querySelectorAll("*")) {
+                          let nodename = el.nodeName.toLocaleLowerCase();
+                          let alterkeys = ["src", "href"];
+                          let attrs = el.getAttributeNames();
+                          let { code, data } = arr_selected(attrs, alterkeys);
+                          if (code == 0) {
+                            let value = el.getAttribute(data.toString());
+                            for (const mel of master_doc.querySelectorAll(
+                              nodename
+                            )) {
+                              let mattrs = mel.getAttributeNames();
+                              let { code, data } = arr_selected(
+                                mattrs,
+                                alterkeys
+                              );
+                              if (code == 0) {
+                                let mvalue = mel.getAttribute(data.toString());
+                                if (mvalue.indexOf(value) > -1) {
+                                  console.log(value);
+                                  mel.setAttribute(
+                                    data.toString(),
+                                    params[nodename] + mvalue
+                                  );
+                                }
+                              }
+                            }
                           }
                         }
                       }
@@ -330,7 +379,7 @@ module.exports = async (...args) => {
             // } else if (!iscss) {
             //   await mergecss(.css);
           } else if (!islayer || !isview) {
-            let dom, extname, layouts, renderview;
+            let dom, extname, layouts;
             if (!isview) extname = path.extname(view);
             else if (!islayer) extname = path.extname(layer.layouts);
 
