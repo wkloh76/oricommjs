@@ -11,17 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add new action `update ` to `combine_layer` function at `reaction.js` in `webnodejs` to concate the `src/href` value with components name. Completed on 2024-04-29
+- ~~Add new action `update ` to `combine_layer` function at `reaction.js` in `webnodejs` to concate the `src/href` value with components name. Completed on 2024-04-29~~
+- Apply return promise to `combine_layer` and `processEnd` functions at `reaction.js` in `webnodejs`. Completed on 2024-05-01
 
 ### Changed
 
 - Change action `overwrite ` content method to `combine_layer` function at `reaction.js` in `webnodejs`. Completed on 2024-04-29
 
+- Change action `append ` content method to `combine_layer` function at `reaction.js` in `webnodejs`. Completed on 2024-05-01
+
 ### Deprecated
+
+- Remove action `update ` to `combine_layer` function at `reaction.js` in `webnodejs`. Completed on 2024-05-01
 
 ### Removed
 
 - Remove unused attribute from `import_js` function at `reaction.js` in webnodejs engine. Completed on 2024-04-29
+- Remove `minify` process from `get_domhtml` at `reaction.js` in webnodejs engine. Completed on 2024-05-01
 
 ### Fixed
 

@@ -166,14 +166,11 @@ module.exports = async (...args) => {
        * @param {String} args[0] - file is file name which emebed absolute path
        * @returns {String} - Return undefined|text
        */
-      const get_domhtml = async (...args) => {
+      const get_domhtml = (...args) => {
         let [file] = args;
         let output;
         if (fs.existsSync(file)) {
-          let renderview = fs.readFileSync(file, "utf8");
-          output = await minify(renderview, {
-            collapseWhitespace: true,
-          });
+          output = fs.readFileSync(file, "utf8");
         }
         return output;
       };
@@ -181,7 +178,7 @@ module.exports = async (...args) => {
       /**
        * The main objective is read a list of file content and minify become one row
        * @alias module:reaction.get_filenames
-       * @param {...Object} args - 1 parameters
+       * @param {...Object} args - 2 parameters
        * @param {Object} args[0] - node is an object provide directory path and filter list
        * @param {Array} args[1] - included is check the file type which accept form the list
        * @returns {Object} - Return undefined|text
@@ -209,6 +206,31 @@ module.exports = async (...args) => {
       };
 
       /**
+       * Replace specific character from text base on object key name
+       * Keyword <-{name}>
+       * @alias module:reaction.str_replace
+       * @param {...Object} args - 2 parameters
+       * @param {String} args[0] - text is a statement in string value
+       * @param {Object} args[1] - params a sets of values for change
+       * @returns {String} - Return unchange or changed text
+       */
+      const str_replace = (...args) => {
+        let [text, params] = args;
+        let output = text;
+        for (let [key, val] of Object.entries(params)) {
+          let name = `<-{${key}}>`;
+          while (output.indexOf(name) > -1) {
+            let idx = output.indexOf(name);
+            output =
+              output.substring(0, idx) +
+              val +
+              output.substring(idx + name.length);
+          }
+        }
+        return output;
+      };
+
+      /**
        * The main objective is combine a list of file become one html text
        * @alias module:reaction.combine_layer
        * @param {...Object} args - 1 parameters
@@ -217,124 +239,108 @@ module.exports = async (...args) => {
        * @param {Object} args[2] - params is an object which use to concat data object value
        * @returns {Object} - Return object
        */
-      const combine_layer = async (...args) => {
-        const [layer, elcontent, params] = args;
-        const { JSDOM } = jsdom;
-        try {
-          let output = { code: 0, msg: "", data: null };
-          let master_dom, master_doc;
-          let [layouts, childlists] = await Promise.all([
-            get_domhtml(layer.layouts),
-            get_filenames(layer.childs, ["*.html"]),
-          ]);
+      const combine_layer = (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [layer, elcontent, params] = args;
+          const { JSDOM } = jsdom;
+          try {
+            let output = { code: 0, msg: "", data: null };
+            let master_dom, master_doc;
+            let [layouts, childlists] = await Promise.all([
+              get_domhtml(layer.layouts),
+              get_filenames(layer.childs, ["*.html"]),
+            ]);
 
-          if (layouts) {
-            master_dom = new JSDOM(layouts);
-            master_doc = master_dom.window.document;
+            if (layouts) {
+              master_dom = new JSDOM(str_replace(layouts, layer.params));
+              master_doc = master_dom.window.document;
 
-            for (let childlist of childlists) {
-              let child_doc = new JSDOM().window.document;
-              let body = child_doc.querySelector("body");
-              body.innerHTML = childlist;
-              let body_node = body.childNodes[0];
-              if (body_node && body_node.nodeName == "STATEMENT") {
-                let statement = body
-                  .querySelector(body_node.nodeName)
-                  .querySelectorAll("*");
-                let attrname = body_node.getAttribute("name");
-                let attraction = body_node.getAttribute("action");
-                switch (attraction) {
-                  case "overwrite":
-                    let mel = master_doc.querySelector(attrname);
-                    let cel = body_node.querySelector(attrname);
-                    let attrs = cel.getAttributeNames();
-                    for (let attr of attrs) {
-                      let val = cel.getAttribute(attr);
-                      mel.setAttribute(attr, val);
-                    }
-                    master_doc.querySelector(attrname).innerHTML =
-                      cel.innerHTML;
-                    break;
-
-                  case "append":
-                    for (const el of statement) {
-                      let nodename = el.nodeName.toLocaleLowerCase();
-                      if (nodename == "remotely" || nodename == "locally") {
-                        let append = child_doc.createElement(attraction);
-                        append.innerHTML =
-                          body.querySelector(nodename).innerHTML;
-                        for (const el of append.querySelectorAll("*")) {
-                          let alterkeys = ["src", "href"];
-                          let attrs = el.getAttributeNames();
-                          let { code, data } = arr_selected(attrs, alterkeys);
-                          if (code == 0) {
-                            let value = el.getAttribute(data.toString());
-                            el.setAttribute(
-                              data.toString(),
-                              params[nodename] + value
-                            );
-                            master_doc.querySelector(attrname).innerHTML +=
-                              el.outerHTML;
-                          }
-                        }
+              for (let childlist of childlists) {
+                let child_doc = new JSDOM().window.document;
+                let body = child_doc.querySelector("body");
+                body.innerHTML = str_replace(childlist, layer.params);
+                let body_node = body.childNodes[0];
+                if (body_node && body_node.nodeName == "STATEMENT") {
+                  let statement = body
+                    .querySelector(body_node.nodeName)
+                    .querySelectorAll("*");
+                  let attrname = body_node.getAttribute("name");
+                  let attraction = body_node.getAttribute("action");
+                  switch (attraction) {
+                    case "overwrite":
+                      let mel = master_doc.querySelector(attrname);
+                      let cel = body_node.querySelector(attrname);
+                      let attrs = cel.getAttributeNames();
+                      for (let attr of attrs) {
+                        let val = cel.getAttribute(attr);
+                        mel.setAttribute(attr, val);
                       }
-                    }
-                    break;
+                      master_doc.querySelector(attrname).innerHTML =
+                        cel.innerHTML;
+                      break;
 
-                  case "update":
-                    for (const el of statement) {
-                      let nodename = el.nodeName.toLocaleLowerCase();
-                      if (nodename == "remotely" || nodename == "locally") {
-                        let update = child_doc.createElement(attraction);
-                        update.innerHTML =
-                          body.querySelector(nodename).innerHTML;
-                        for (const el of update.querySelectorAll("*")) {
-                          let nodename = el.nodeName.toLocaleLowerCase();
-                          let alterkeys = ["src", "href"];
-                          let attrs = el.getAttributeNames();
-                          let { code, data } = arr_selected(attrs, alterkeys);
-                          if (code == 0) {
-                            let value = el.getAttribute(data.toString());
-                            for (const mel of master_doc.querySelectorAll(
-                              nodename
-                            )) {
-                              let mattrs = mel.getAttributeNames();
-                              let { code, data } = arr_selected(
-                                mattrs,
-                                alterkeys
-                              );
-                              if (code == 0) {
-                                let mvalue = mel.getAttribute(data.toString());
-                                if (mvalue.indexOf(value) > -1) {
-                                  console.log(value);
-                                  mel.setAttribute(
-                                    data.toString(),
-                                    params[nodename] + mvalue
+                    case "append":
+                      let childNodes = master_doc.querySelector(attrname);
+                      for (const el of statement) childNodes.append(el);
+
+                      break;
+
+                    case "update":
+                      for (const el of statement) {
+                        let nodename = el.nodeName.toLocaleLowerCase();
+                        if (nodename == "remotely" || nodename == "locally") {
+                          let update = child_doc.createElement(attraction);
+                          update.innerHTML =
+                            body.querySelector(nodename).innerHTML;
+                          for (const el of update.querySelectorAll("*")) {
+                            let nodename = el.nodeName.toLocaleLowerCase();
+                            let alterkeys = ["src", "href"];
+                            let attrs = el.getAttributeNames();
+                            let { code, data } = arr_selected(attrs, alterkeys);
+                            if (code == 0) {
+                              let value = el.getAttribute(data.toString());
+                              for (const mel of master_doc.querySelectorAll(
+                                nodename
+                              )) {
+                                let mattrs = mel.getAttributeNames();
+                                let { code, data } = arr_selected(
+                                  mattrs,
+                                  alterkeys
+                                );
+                                if (code == 0) {
+                                  let mvalue = mel.getAttribute(
+                                    data.toString()
                                   );
+                                  if (mvalue.indexOf(value) > -1) {
+                                    mel.setAttribute(
+                                      data.toString(),
+                                      params[nodename] + mvalue
+                                    );
+                                  }
                                 }
                               }
                             }
                           }
                         }
                       }
-                    }
-                    break;
+                      break;
+                  }
                 }
               }
-            }
 
-            for (let [el, content] of Object.entries(elcontent)) {
-              master_doc.querySelector(el).innerHTML = content;
+              for (let [el, content] of Object.entries(elcontent)) {
+                master_doc.querySelector(el).innerHTML = content;
+              }
+              output.data = master_dom.serialize();
+            } else {
+              output.code = 1;
+              output.msg = "Unable to get the content of layouts! ";
             }
-            output.data = master_dom.serialize();
-          } else {
-            output.code = 1;
-            output.msg = "Unable to get the content of layouts! ";
+            resolve(output);
+          } catch (error) {
+            resolve({ code: -1, msg: error.message, data: null });
           }
-          return output;
-        } catch (error) {
-          return { code: -1, msg: error.message, data: null };
-        }
+        });
       };
 
       /**
@@ -343,115 +349,122 @@ module.exports = async (...args) => {
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - res the object for render to frontend
        */
-      const processEnd = async (...args) => {
-        const { JSDOM } = jsdom;
-        let [res] = args;
-        try {
-          let {
-            status,
-            view,
-            options: {
-              css,
-              elcontent,
-              js,
-              json,
-              layer,
-              less,
-              params,
-              redirect,
-              text,
-            },
-          } = res.locals.render;
-          let rtn = handler.dataformat2;
-          let isview = handler.check_empty(view);
-          let islayer = handler.check_empty(layer.layouts);
-          let isredirect = handler.check_empty(redirect);
-          let isjson = handler.check_empty(json);
-          let istext = handler.check_empty(text);
-          // let iscss = handler.check_empty(options.css);
+      const processEnd = (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const { JSDOM } = jsdom;
+          let [res] = args;
+          try {
+            let {
+              status,
+              view,
+              options: {
+                css,
+                elcontent,
+                js,
+                json,
+                layer,
+                less,
+                params,
+                redirect,
+                text,
+              },
+            } = res.locals.render;
+            let rtn = handler.dataformat2;
+            let isview = handler.check_empty(view);
+            let islayer = handler.check_empty(layer.layouts);
+            let isredirect = handler.check_empty(redirect);
+            let isjson = handler.check_empty(json);
+            let istext = handler.check_empty(text);
+            // let iscss = handler.check_empty(options.css);
 
-          if (!isredirect) {
-            res.redirect(redirect);
-          } else if (!isjson) {
-            res.status(status).json(json);
-          } else if (!istext) {
-            res.status(status).send(text);
-            // } else if (!iscss) {
-            //   await mergecss(.css);
-          } else if (!islayer || !isview) {
-            let dom, extname, layouts;
-            if (!isview) extname = path.extname(view);
-            else if (!islayer) extname = path.extname(layer.layouts);
+            if (!isredirect) {
+              res.redirect(redirect);
+            } else if (!isjson) {
+              res.status(status).json(json);
+            } else if (!istext) {
+              res.status(status).send(text);
+              // } else if (!iscss) {
+              //   await mergecss(.css);
+            } else if (!islayer || !isview) {
+              let dom, extname, layouts;
+              if (!isview) extname = path.extname(view);
+              else if (!islayer) extname = path.extname(layer.layouts);
 
-            if (extname == ".html") {
-              if (!islayer) {
-                let { code, data } = await combine_layer(
-                  layer,
-                  elcontent,
-                  params
+              if (extname == ".html") {
+                if (!islayer) {
+                  let { code, msg, data } = await combine_layer(
+                    layer,
+                    elcontent,
+                    params
+                  );
+                  if (code == 0) layouts = data;
+                  else throw { code: code, msg: msg, data: data };
+                }
+                if (!isview) {
+                  let subdom = new JSDOM(await get_domhtml(view));
+                  view = subdom.serialize();
+                }
+
+                if (!layouts) {
+                  dom = new JSDOM(view);
+                } else {
+                  dom = new JSDOM(layouts);
+                  let mainbody = dom.window.document.querySelector("mainbody");
+                  mainbody.innerHTML = new JSDOM(
+                    await view
+                  ).window.document.querySelector("body").innerHTML;
+                }
+
+                let document = dom.window.document;
+                for (let [el, content] of Object.entries(elcontent)) {
+                  let found = document.querySelector(el);
+                  if (found) found.innerHTML = content;
+                }
+
+                let preload = await get_domhtml(
+                  path.join(pathname, "browser", "preload.html")
                 );
-                if (code == 0) layouts = data;
+                document.querySelector("body").innerHTML += preload;
+                let script = document.createElement("script");
+                script.type = "text/javascript";
+                script.innerHTML = `var mjs=${JSON.stringify(params.mjs)}`;
+                document.getElementsByTagName("head")[0].appendChild(script);
+                let rtnimport_css = import_css(document, css, params);
+                if (rtnimport_css) throw rtnimport_css;
+                let rtnimport_js = import_js(document, js, params);
+                if (rtnimport_js) throw rtnimport_js;
+                let rtnimport_less = import_less(document, less, params);
+                if (rtnimport_less) throw rtnimport_less;
+                res.status(status).send(
+                  await minify(dom.serialize(), {
+                    collapseWhitespace: true,
+                  })
+                );
+                // res.status(status).send(dom.serialize());
               }
-              if (!isview) {
-                let subdom = new JSDOM(await get_domhtml(view));
-                view = subdom.serialize();
-              }
-
-              if (!layouts) {
-                dom = new JSDOM(view);
-              } else {
-                dom = new JSDOM(layouts);
-                let mainbody = dom.window.document.querySelector("mainbody");
-                mainbody.innerHTML = new JSDOM(
-                  await view
-                ).window.document.querySelector("body").innerHTML;
-              }
-
-              let document = dom.window.document;
-              for (let [el, content] of Object.entries(elcontent)) {
-                let found = document.querySelector(el);
-                if (found) found.innerHTML = content;
-              }
-
-              let preload = await get_domhtml(
-                path.join(pathname, "browser", "preload.html")
-              );
-              document.querySelector("body").innerHTML += preload;
-              let script = document.createElement("script");
-              script.type = "text/javascript";
-              script.innerHTML = `var mjs=${JSON.stringify(params.mjs)}`;
-              document.getElementsByTagName("head")[0].appendChild(script);
-              let rtnimport_css = import_css(document, css, params);
-              if (rtnimport_css) throw rtnimport_css;
-              let rtnimport_js = import_js(document, js, params);
-              if (rtnimport_js) throw rtnimport_js;
-              let rtnimport_less = import_less(document, less, params);
-              if (rtnimport_less) throw rtnimport_less;
-
-              res.status(status).send(dom.serialize());
+            } else {
+              rtn.code = -1;
             }
-          } else {
-            rtn.code = -1;
+            return rtn;
+          } catch (error) {
+            if (error.errno)
+              resolve({
+                code: error.errno,
+                errno: error.errno,
+                message: error.message,
+                stack: error.stack,
+                data: null,
+              });
+            else
+              resolve({
+                code: -1,
+                errno: -1,
+                message: error.message,
+                stack: error.stack,
+                data: null,
+              });
           }
-          return rtn;
-        } catch (error) {
-          if (error.errno)
-            return {
-              code: error.errno,
-              errno: error.errno,
-              message: error.message,
-              stack: error.stack,
-              data: null,
-            };
-          else
-            return {
-              code: -1,
-              errno: -1,
-              message: error.message,
-              stack: error.stack,
-              data: null,
-            };
-        }
+        });
       };
 
       /**
