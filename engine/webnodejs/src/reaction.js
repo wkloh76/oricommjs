@@ -236,12 +236,11 @@ module.exports = async (...args) => {
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - layer is an object the list of files for merge purpose
        * @param {Object} args[1] - elcontent is object use for write data to relevent html element
-       * @param {Object} args[2] - params is an object which use to concat data object value
        * @returns {Object} - Return object
        */
       const combine_layer = (...args) => {
         return new Promise(async (resolve, reject) => {
-          const [layer, elcontent, params] = args;
+          const [layer, elcontent] = args;
           const { JSDOM } = jsdom;
           try {
             let output = { code: 0, msg: "", data: null };
@@ -282,47 +281,6 @@ module.exports = async (...args) => {
                     case "append":
                       let childNodes = master_doc.querySelector(attrname);
                       for (const el of statement) childNodes.append(el);
-
-                      break;
-
-                    case "update":
-                      for (const el of statement) {
-                        let nodename = el.nodeName.toLocaleLowerCase();
-                        if (nodename == "remotely" || nodename == "locally") {
-                          let update = child_doc.createElement(attraction);
-                          update.innerHTML =
-                            body.querySelector(nodename).innerHTML;
-                          for (const el of update.querySelectorAll("*")) {
-                            let nodename = el.nodeName.toLocaleLowerCase();
-                            let alterkeys = ["src", "href"];
-                            let attrs = el.getAttributeNames();
-                            let { code, data } = arr_selected(attrs, alterkeys);
-                            if (code == 0) {
-                              let value = el.getAttribute(data.toString());
-                              for (const mel of master_doc.querySelectorAll(
-                                nodename
-                              )) {
-                                let mattrs = mel.getAttributeNames();
-                                let { code, data } = arr_selected(
-                                  mattrs,
-                                  alterkeys
-                                );
-                                if (code == 0) {
-                                  let mvalue = mel.getAttribute(
-                                    data.toString()
-                                  );
-                                  if (mvalue.indexOf(value) > -1) {
-                                    mel.setAttribute(
-                                      data.toString(),
-                                      params[nodename] + mvalue
-                                    );
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
                       break;
                   }
                 }
@@ -394,8 +352,7 @@ module.exports = async (...args) => {
                 if (!islayer) {
                   let { code, msg, data } = await combine_layer(
                     layer,
-                    elcontent,
-                    params
+                    elcontent
                   );
                   if (code == 0) layouts = data;
                   else throw { code: code, msg: msg, data: data };
