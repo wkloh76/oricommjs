@@ -16,7 +16,7 @@
 "use strict";
 /**
  * Submodule handles http responses, which are preprocessed by jsdom to manipulate the data before presenting to the client
- * @module src_urlhandler
+ * @module src_reaction
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
@@ -27,12 +27,13 @@ module.exports = async (...args) => {
     const jsdom = require("jsdom");
     const { fs, path, logger } = sys;
     const {
-      utils: { arr_selected, handler, getNestedObject, datatype },
+      utils: { handler, getNestedObject },
     } = library;
     try {
-      let components = {};
+      const molecule = await require("./reaction/molecule")(params, obj);
 
       let lib = {};
+      let components = {};
 
       /**
        * Merge multi css file to be sinlge string and render to frontend
@@ -53,252 +54,6 @@ module.exports = async (...args) => {
         res.writeHead(200, { "Content-Type": "text/css" });
         res.status(200).write(`${css}`);
         res.end();
-      };
-
-      /**
-       * The main objective is convert css data in object type to jsdom format and append to parent
-       * @alias module:reaction.import_css
-       * @param {...Object} args - 3 parameters
-       * @param {Object} args[0] - doc is an object of jsdom window.document
-       * @param {Object} args[1] - data is an object which listing css link source
-       * @param {Object} args[2] - params is an object which use to concat data object value
-       */
-      const import_css = (...args) => {
-        let [doc, data, params] = args;
-        try {
-          let el = doc.getElementsByTagName("head").item(0);
-          for (let [key, val] of Object.entries(data)) {
-            if (val.length > 0) {
-              for (let href of val) {
-                let gfgData = doc.createElement("link");
-                let attributes = JSON.parse(
-                  `{"rel":"stylesheet","type":"text/css","href":"${params[key]}${href}"}`
-                );
-
-                Object.keys(attributes).forEach((attr) => {
-                  gfgData.setAttribute(attr, attributes[attr]);
-                });
-                el.appendChild(gfgData);
-              }
-            }
-          }
-          return;
-        } catch (error) {
-          return error;
-        }
-      };
-
-      /**
-       * The main objective is convert js data in object type to jsdom format and append to parent
-       * @alias module:reaction.import_js
-       * @param {...Object} args - 3 parameters
-       * @param {Object} args[0] - doc is an object of jsdom window.document
-       * @param {Object} args[1] - data is an object which listing js link source
-       * @param {Object} args[2] - params is an object which use to concat data object value
-       */
-      const import_js = (...args) => {
-        let [doc, data, params] = args;
-        try {
-          let el = doc.getElementsByTagName("head").item(0);
-          for (let [key, val] of Object.entries(data)) {
-            if (val.length > 0) {
-              for (let href of val) {
-                let gfgData = doc.createElement("script");
-                let attributes = JSON.parse(
-                  `{"type":"text/javascript","src":"${params[key]}${href}"}`
-                );
-
-                Object.keys(attributes).forEach((attr) => {
-                  gfgData.setAttribute(attr, attributes[attr]);
-                });
-                el.appendChild(gfgData);
-              }
-            }
-          }
-          return;
-        } catch (error) {
-          return error;
-        }
-      };
-
-      /**
-       * The main objective is convert less.js data in object type to jsdom format and append to parent
-       * @alias module:reaction.import_less
-       * @param {...Object} args - 3 parameters
-       * @param {Object} args[0] - doc is an object of jsdom window.document
-       * @param {Object} args[1] - data is an object which listing less.js link source
-       * @param {Object} args[2] - params is an object which use to concat data object value
-       */
-      const import_less = (...args) => {
-        let [doc, data, params] = args;
-        try {
-          let el = doc.getElementsByTagName("head").item(0);
-          for (let [key, val] of Object.entries(data.style)) {
-            if (val.length > 0) {
-              for (let href of val) {
-                let gfgData = doc.createElement("link");
-                let attributes = JSON.parse(
-                  `{"rel":"stylesheet/less","type":"text/css","href":"${params[key]}${href}"}`
-                );
-
-                Object.keys(attributes).forEach((attr) => {
-                  gfgData.setAttribute(attr, attributes[attr]);
-                });
-                el.appendChild(gfgData);
-              }
-            }
-          }
-          if (data.engine.domain !== "") {
-            let engine = {};
-            engine[data.engine.domain] = [data.engine.location];
-            import_js(doc, engine, params);
-          }
-          return;
-        } catch (error) {
-          return error;
-        }
-      };
-
-      /**
-       * The main objective is read a file content and minify become one row
-       * @alias module:reaction.get_domhtml
-       * @param {...Object} args - 1 parameters
-       * @param {String} args[0] - file is file name which emebed absolute path
-       * @returns {String} - Return undefined|text
-       */
-      const get_domhtml = (...args) => {
-        let [file] = args;
-        let output;
-        if (fs.existsSync(file)) {
-          output = fs.readFileSync(file, "utf8");
-        }
-        return output;
-      };
-
-      /**
-       * The main objective is read a list of file content and minify become one row
-       * @alias module:reaction.get_filenames
-       * @param {...Object} args - 2 parameters
-       * @param {Object} args[0] - node is an object provide directory path and filter list
-       * @param {Array} args[1] - included is check the file type which accept form the list
-       * @returns {Object} - Return undefined|text
-       */
-      const get_filenames = async (...args) => {
-        const [node, included = []] = args;
-        let files = await fs
-          .readdirSync(path.join(node.path))
-          .filter((filename) => {
-            let extname = path.extname(filename);
-            if (
-              extname !== "" &&
-              !included.includes(extname) &&
-              !node.excluded.includes(filename)
-            ) {
-              return filename;
-            }
-          });
-        let docs = [];
-        if (!files) return [];
-        for (let val of files) {
-          docs.push(get_domhtml(path.join(node.path, val)));
-        }
-        return await Promise.all(docs);
-      };
-
-      /**
-       * Replace specific character from text base on object key name
-       * Keyword <-{name}>
-       * @alias module:reaction.str_replace
-       * @param {...Object} args - 2 parameters
-       * @param {String} args[0] - text is a statement in string value
-       * @param {Object} args[1] - params a sets of values for change
-       * @returns {String} - Return unchange or changed text
-       */
-      const str_replace = (...args) => {
-        let [text, params] = args;
-        let output = text;
-        for (let [key, val] of Object.entries(params)) {
-          let name = `<-{${key}}>`;
-          while (output.indexOf(name) > -1) {
-            let idx = output.indexOf(name);
-            output =
-              output.substring(0, idx) +
-              val +
-              output.substring(idx + name.length);
-          }
-        }
-        return output;
-      };
-
-      /**
-       * The main objective is combine a list of file become one html text
-       * @alias module:reaction.combine_layer
-       * @param {...Object} args - 1 parameters
-       * @param {Object} args[0] - layer is an object the list of files for merge purpose
-       * @param {Object} args[1] - elcontent is object use for write data to relevent html element
-       * @returns {Object} - Return object
-       */
-      const combine_layer = (...args) => {
-        return new Promise(async (resolve, reject) => {
-          const [layer, elcontent] = args;
-          const { JSDOM } = jsdom;
-          try {
-            let output = { code: 0, msg: "", data: null };
-            let master_dom, master_doc;
-            let [layouts, childlists] = await Promise.all([
-              get_domhtml(layer.layouts),
-              get_filenames(layer.childs, ["*.html"]),
-            ]);
-
-            if (layouts) {
-              master_dom = new JSDOM(str_replace(layouts, layer.params));
-              master_doc = master_dom.window.document;
-
-              for (let childlist of childlists) {
-                let child_doc = new JSDOM().window.document;
-                let body = child_doc.querySelector("body");
-                body.innerHTML = str_replace(childlist, layer.params);
-                let body_node = body.childNodes[0];
-                if (body_node && body_node.nodeName == "STATEMENT") {
-                  let statement = body
-                    .querySelector(body_node.nodeName)
-                    .querySelectorAll("*");
-                  let attrname = body_node.getAttribute("name");
-                  let attraction = body_node.getAttribute("action");
-                  switch (attraction) {
-                    case "overwrite":
-                      let mel = master_doc.querySelector(attrname);
-                      let cel = body_node.querySelector(attrname);
-                      let attrs = cel.getAttributeNames();
-                      for (let attr of attrs) {
-                        let val = cel.getAttribute(attr);
-                        mel.setAttribute(attr, val);
-                      }
-                      master_doc.querySelector(attrname).innerHTML =
-                        cel.innerHTML;
-                      break;
-
-                    case "append":
-                      let childNodes = master_doc.querySelector(attrname);
-                      for (const el of statement) childNodes.append(el);
-                      break;
-                  }
-                }
-              }
-
-              for (let [el, content] of Object.entries(elcontent)) {
-                master_doc.querySelector(el).innerHTML = content;
-              }
-              output.data = master_dom.serialize();
-            } else {
-              output.code = 1;
-              output.msg = "Unable to get the content of layouts! ";
-            }
-            resolve(output);
-          } catch (error) {
-            resolve({ code: -1, msg: error.message, data: null });
-          }
-        });
       };
 
       /**
@@ -336,11 +91,14 @@ module.exports = async (...args) => {
             // let iscss = handler.check_empty(options.css);
 
             if (!isredirect) {
-              res.redirect(redirect);
+              res.redirect(301, redirect);
+              resolve(rtn);
             } else if (!isjson) {
               res.status(status).json(json);
+              resolve(rtn);
             } else if (!istext) {
               res.status(status).send(text);
+              resolve(rtn);
               // } else if (!iscss) {
               //   await mergecss(.css);
             } else if (!islayer || !isview) {
@@ -350,16 +108,23 @@ module.exports = async (...args) => {
 
               if (extname == ".html") {
                 if (!islayer) {
-                  let { code, msg, data } = await combine_layer(
+                  let { code, msg, data } = await molecule.combine_layer(
                     layer,
                     elcontent
                   );
                   if (code == 0) layouts = data;
-                  else throw { code: code, msg: msg, data: data };
+                  else throw { msg: msg, data: data };
                 }
                 if (!isview) {
-                  let subdom = new JSDOM(await get_domhtml(view));
-                  view = subdom.serialize();
+                  let exchange = elcontent;
+                  if (elcontent.length == 0) exchange = undefined;
+                  let { code, msg, data } = await molecule.single_layer(
+                    view,
+                    exchange
+                  );
+
+                  if (code == 0) view = data;
+                  else throw { msg: msg, data: data };
                 }
 
                 if (!layouts) {
@@ -378,7 +143,7 @@ module.exports = async (...args) => {
                   if (found) found.innerHTML = content;
                 }
 
-                let preload = await get_domhtml(
+                let preload = await molecule.get_domhtml(
                   path.join(pathname, "browser", "preload.html")
                 );
                 document.querySelector("body").innerHTML += preload;
@@ -386,11 +151,15 @@ module.exports = async (...args) => {
                 script.type = "text/javascript";
                 script.innerHTML = `var mjs=${JSON.stringify(params.mjs)}`;
                 document.getElementsByTagName("head")[0].appendChild(script);
-                let rtnimport_css = import_css(document, css, params);
+                let rtnimport_css = molecule.import_css(document, css, params);
                 if (rtnimport_css) throw rtnimport_css;
-                let rtnimport_js = import_js(document, js, params);
+                let rtnimport_js = molecule.import_js(document, js, params);
                 if (rtnimport_js) throw rtnimport_js;
-                let rtnimport_less = import_less(document, less, params);
+                let rtnimport_less = molecule.import_less(
+                  document,
+                  less,
+                  params
+                );
                 if (rtnimport_less) throw rtnimport_less;
                 res.status(status).send(
                   await minify(dom.serialize(), {
@@ -402,7 +171,7 @@ module.exports = async (...args) => {
             } else {
               rtn.code = -1;
             }
-            return rtn;
+            resolve(rtn);
           } catch (error) {
             if (error.errno)
               resolve({
@@ -412,14 +181,23 @@ module.exports = async (...args) => {
                 stack: error.stack,
                 data: null,
               });
-            else
-              resolve({
-                code: -1,
-                errno: -1,
-                message: error.message,
-                stack: error.stack,
+            else {
+              let err = {
+                code: 506,
+                errno: 506,
+                message: "",
+                stack: "",
                 data: null,
-              });
+              };
+              if (error.msg) {
+                err.message = error.msg;
+                err.stack = error.data;
+              } else {
+                err.message = error.message;
+                err.stack = error.stack;
+              }
+              resolve(err);
+            }
           }
         });
       };
@@ -436,7 +214,7 @@ module.exports = async (...args) => {
         let [render] = args;
         let { view, options } = render;
         if (!handler.check_empty(view)) return false;
-        if (!handler.check_empty(options.layer)) return false;
+        if (!handler.check_empty(options.layer.layouts)) return false;
         if (!handler.check_empty(options.redirect)) return false;
         if (!handler.check_empty(options.json)) return false;
         if (!handler.check_empty(options.text)) return false;
@@ -470,7 +248,7 @@ module.exports = async (...args) => {
 
       /**
        * The main objective is find the register url which embed restful route params
-       * @alias module:reaction.guiapi_params_filter
+       * @alias module:reaction.guiapi_route_filter
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - api modules
        * @param {Array} args[1] - gui modules
@@ -542,14 +320,18 @@ module.exports = async (...args) => {
         try {
           let paramres = {};
           let paramerror;
+          let redirect;
 
-          for (let [, compval] of Object.entries(components)) {
-            let { api, gui } = compval;
+          for (let [compkey, compval] of Object.entries(components)) {
+            let { api, gui, defaulturl } = compval;
             if (!handler.check_empty(orireq?.params)) {
               fn = await guiapi_route_filter(api, gui, {
                 params: orireq.params,
                 originalUrl: orireq.originalUrl,
               });
+              if (baseUrl == `/${compkey}/`) {
+                redirect = defaulturl;
+              }
             } else {
               let baseUrl = orireq.originalUrl;
               let pos = orireq.originalUrl.indexOf("?");
@@ -558,8 +340,12 @@ module.exports = async (...args) => {
                 getNestedObject(api, baseUrl),
                 getNestedObject(gui, baseUrl)
               );
+
+              if (baseUrl == `/${compkey}/`) {
+                redirect = defaulturl;
+              }
             }
-            if (fn) break;
+            if (fn || redirect) break;
           }
 
           if (fn) {
@@ -581,10 +367,10 @@ module.exports = async (...args) => {
                 let response = {
                   err: {
                     error: "",
-                    render: handler.webview,
+                    render: structuredClone(handler.webview),
                   },
                   fname: fname,
-                  render: handler.webview,
+                  render: structuredClone(handler.webview),
                   ...chkparamres,
                 };
 
@@ -595,7 +381,13 @@ module.exports = async (...args) => {
                 } else if (fn.idx != idx) {
                   queuertn = await queue[fname].apply(null, [orireq, response]);
                 }
-                let { err, render, ...res } = queuertn;
+                let { err, render, stack, message, ...res } = queuertn;
+
+                if (stack && message) {
+                  if (res.code)
+                    throw { code: res.code, stack: stack, message: message };
+                  else throw { code: 500, stack: stack, message: message };
+                }
 
                 if (
                   err &&
@@ -623,110 +415,51 @@ module.exports = async (...args) => {
               orires.locals = {
                 render: handler.webview,
               };
-              let { render: err500 } = orires.locals;
-              let page, pcontent;
-
+              if (!handler.check_empty(paramerror.error))
+                throw { code: 500, message: paramerror.error };
               if (!isrender(paramerror.render))
                 orires.locals.render = paramerror.render;
-              else if (!handler.check_empty(paramerror.error)) {
-                page = `${pathname}/error/500.html`;
-                pcontent = {
-                  title: "System Notification",
-                  msg: `Catch error: ${paramerror.error}`,
-                };
-                err500["status"] = 500;
-                err500["view"] = page;
-                err500["options"]["elcontent"] = pcontent;
-
-                if (fn?.from == "api") {
-                  err500["options"]["json"] = {
-                    ...handler.dataformat2,
-                    ...{
-                      code: -1,
-                      msg: paramerror.error,
-                    },
-                  };
-                }
-
-                let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${paramerror.error}\n`;
-                logger.error(errmsg);
-              }
             } else if (paramres) {
-              if (paramres?.render) {
+              if (paramres.render) {
                 if (!isrender(paramres.render))
                   orires.locals = { render: paramres.render };
               } else orires.locals = { render: handler.webview };
             }
-          } else {
-            // Unregistered url
+          } else if (redirect) {
             orires.locals = { render: handler.webview };
-            let { render: err404 } = orires.locals;
-            err404["status"] = 404;
-            err404["view"] = `${pathname}/error/404.html`;
-            err404["options"]["elcontent"] = {
-              title: "System Notification",
-              msg: "Page not found",
-            };
-
-            let errstatment = err404["options"]["params"]["msg"];
-
-            if (orireq.method != "GET") {
-              err404["options"]["json"] = {
-                ...handler.dataformat2,
-                ...{ code: -1, msg: "API not found" },
-              };
-              errstatment = err404["options"]["json"]["msg"];
-            }
-
-            let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 404 Error:${errstatment}`;
-            logerr(errmsg);
-          }
+            orires.locals.render.options.redirect = redirect;
+          } else throw { code: 404, message: "Page not found" };
 
           let rtn = await processEnd(orires);
-          if (rtn.code !== 0) {
-            orires.locals = { render: handler.webview };
-            let { render: err500 } = orires.locals;
-            err500["status"] = 500;
-            err500["view"] = `${pathname}/error/500.html`;
-            err500["options"]["elcontent"] = {
-              title: "System Notification",
-              msg: rtn.msg,
-            };
-            if (fn?.from == "api") {
-              err500["options"]["json"] = {
-                ...handler.dataformat2,
-                ...{
-                  code: -1,
-                  msg: rtn.msg,
-                },
-              };
-            }
-
-            let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${rtn.msg}`;
-            logerr(errmsg);
-
-            await processEnd(orires);
-          }
-          orires.end();
+          if (rtn.code !== 0) throw rtn;
         } catch (error) {
           orires.locals = { render: handler.webview };
-          let { render: err500 } = orires.locals;
-          err500["status"] = 500;
-          err500["view"] = `${pathname}/error/500.html`;
-          err500["options"]["elcontent"] = {
+          let { render: err } = orires.locals;
+          err["status"] = error.code;
+          if (error.code >= 500) err["view"] = `${pathname}/error/500.html`;
+          else err["view"] = `${pathname}/error/404.html`;
+          err["options"]["elcontent"] = {
+            errorcode: error.code,
             title: "System Notification",
             msg: error.message,
           };
           if (fn?.from == "api") {
-            err500["options"]["json"] = {
+            err["options"]["json"] = {
               ...handler.dataformat2,
-              ...{ code: -1, msg: error.message },
+              ...{ code: error.code, msg: error.message },
             };
           }
-          let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" 500 Error:${error.message}`;
+          let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" ${error.code} Error:${error.message}`;
           logerr(errmsg);
 
-          await processEnd(orires);
+          let result_catch = await processEnd(orires);
+          if (result_catch.code != 0) {
+            let msg = "onrquest catch error:";
+            if (result_catch.stack) msg += result_catch.stack;
+            else msg += result_catch.message;
+            console.log(msg);
+            logerr(msg);
+          }
           orires.end();
         }
       };
@@ -740,8 +473,8 @@ module.exports = async (...args) => {
       lib["register"] = (...args) => {
         let [oncomponents] = args;
         for (let [key, val] of Object.entries(oncomponents)) {
-          let { api, gui } = val;
-          components[key] = { api: api, gui: gui };
+          let { api, gui, defaulturl } = val;
+          components[key] = { api: api, gui: gui, defaulturl: defaulturl };
         }
       };
 

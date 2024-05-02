@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.4] - 2024-05-02
+
+### Summary
+
+- Optimise webnodejs and remove repeat functions call process
+
+### Added
+
+- Move private functions `import_css`, `import_js`, `import_less`, `get_domhtml` and `str_replace` from `reaction.js` to `raction/atom.js`. Completed on 2024-05-02
+- Move private function `combine_layer` from `reaction.js` to `raction/molecule.js`. Completed on 2024-05-02
+- Add `single_layer` function to `raction/molecule.js`. Completed on 2024-05-02
+
+### Changed
+
+- Handler error catch properly in `onrequest` function at `reaction.js`. Completed on 2024-05-02
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Solve the problem of unreasonable repeated calls of `processEnd` function in `onrequest` at at `reaction.js`. Completed on 2024-05-02
+- Fix bug in `processEnd` where is missing resolve(rtn) when proceed in ` res.redirect`,` res.status(status).json()` and `res.status(status).send()` issue. Completed on 2024-05-02
+
+### Security
+
+[1.0.4]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.4
+
 ## [1.0.3] - 2024-04-29
 
 ### Summary
