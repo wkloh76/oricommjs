@@ -44,8 +44,8 @@ module.exports = async (...args) => {
             }
           }
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 
@@ -321,8 +321,8 @@ module.exports = async (...args) => {
             }
           }
           return output;
-        } catch (e) {
-          return e;
+        } catch (error) {
+          return error;
         }
       };
 

@@ -24,14 +24,14 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     try {
-      let lib = {
+      const lib = {
         /**
-         * Getter the dataformat value
+         * The dataformat value
          * @type {Object}
          * @memberof module:property.dataformat2
          * @instance
          */
-        get dataformat2() {
+        dataformat2: () => {
           return Object.assign(
             {},
             {
@@ -43,12 +43,12 @@ module.exports = async (...args) => {
         },
 
         /**
-         * Getter the restful api dataformat value
+         * Restful api dataformat value
          * @type {Object}
          * @memberof module:property.restfulapi
          * @instance
          */
-        get restfulapi() {
+        restfulapi: () => {
           return Object.assign(
             {},
             {
@@ -63,12 +63,12 @@ module.exports = async (...args) => {
         },
 
         /**
-         * Getter the electron ipc events dataformat value
+         * The electron ipc events dataformat value
          * @type {Object}
          * @memberof module:property.ipcevent
          * @instance
          */
-        get ipcevent() {
+        ipcevent: () => {
           return Object.assign(
             {},
             {
@@ -81,12 +81,12 @@ module.exports = async (...args) => {
         },
 
         /**
-         * Getter the web view render as html dataformat value
+         * The web view render as html dataformat value
          * @type {Object}
          * @memberof module:property.webview
          * @instance
          */
-        get webview() {
+        webview: () => {
           return Object.assign(
             {},
             {

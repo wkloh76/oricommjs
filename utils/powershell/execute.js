@@ -76,9 +76,10 @@ module.exports = async (...args) => {
               userid = null;
               resolve(output);
             }
-          } catch (e) {
+          } catch (error) {
             output.code = -1;
-            output.data["e"] = e;
+            output.msg = error.message;
+            output.data = error;
             resolve(output);
           }
         });
