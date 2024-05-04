@@ -18,7 +18,7 @@
  * The submodule handler - property
  * @module utils_handler_property
  */
-module.exports = async (...args) => {
+module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;

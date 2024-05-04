@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove extra async from module exports. Completed on 2024-05-04
+
 ### Fixed
 
 ### Security
