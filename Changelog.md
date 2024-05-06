@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - ~~Convert handler Getter and Setter Property to an Object modules at utils. Completed on 2024-05-03~~
+- At atmomic,Only specific share folder(src/browser) allow to access from url when the web server ready. Completed on 2024-05-06
 
 ### Deprecated
 

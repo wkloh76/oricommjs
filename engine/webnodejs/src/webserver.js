@@ -145,7 +145,32 @@ module.exports = async (...args) => {
 
           if (setting.share) {
             for (let [key, val] of Object.entries(setting.share)) {
-              app.use(key, express.static(val));
+              if (key == "/atomic") {
+                let atomic = library.utils.dir_module(
+                  setting.share[key],
+                  setting.genernalexcludefile
+                );
+                for (let atomic_items of atomic) {
+                  let units = library.utils.dir_module(
+                    sys.path.join(setting.share[key], atomic_items),
+                    setting.genernalexcludefile
+                  );
+                  for (let unit of units) {
+                    let sharepath = sys.path.join(
+                      setting.share[key],
+                      atomic_items,
+                      unit,
+                      "src",
+                      "browser"
+                    );
+                    if (sys.fs.existsSync(sharepath))
+                      app.use(
+                        sys.path.join(key, atomic_items, unit),
+                        express.static(sharepath)
+                      );
+                  }
+                }
+              } else app.use(key, express.static(val));
             }
           }
 
