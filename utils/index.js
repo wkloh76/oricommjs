@@ -23,17 +23,13 @@ module.exports = (...args) => {
     const [mpath, mname, cosetting] = args;
     const { excludefile } = cosetting.general;
     try {
-      let lib = await require("./utils")(mpath, mname);
-      let modfolders = lib.dir_module(mpath, excludefile);
-      lib = {
-        ...lib,
+      let lib = {
+        ...(await require("./utils")(mpath, mname)),
         ...(await require("./array")(mpath, mname)),
-        ...(await lib.import_cjs([mpath, modfolders, mname], lib, [
-          kernel,
-          sysmodule,
-          cosetting,
-        ])),
       };
+      lib["handler"] = await require("./handler")(mpath, mname);
+      lib["powershell"] = await require("./powershell")(mpath, mname);
+
       resolve(lib);
     } catch (error) {
       reject(error);

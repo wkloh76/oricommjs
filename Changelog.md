@@ -11,17 +11,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Create `handler.js` and move those code form hanlder folder to here. Completed on 2024-05-06
+- Create `powershell.js` and move those code form powershell folder to here. Completed on 2024-05-06
+
 ### Changed
 
-- Convert handler Getter and Setter Property to an Object modules at utils. Completed on 2024-05-03
+- ~~Convert handler Getter and Setter Property to an Object modules at utils. Completed on 2024-05-03~~
 
 ### Deprecated
 
 ### Removed
 
 - Remove extra async from module exports. Completed on 2024-05-04
+- Remove handler and powershell folder from utils. Completed on 2024-05-06
 
 ### Fixed
+
+- Resove the Getter and Seter property in utils handler issue which will overwrite value in getter variable. This is cause by object merging issue which will direct set as globally value. Completed on 2024-05-06
 
 ### Security
 

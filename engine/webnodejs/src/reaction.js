@@ -82,7 +82,7 @@ module.exports = async (...args) => {
                 text,
               },
             } = res.locals.render;
-            let rtn = handler.dataformat2();
+            let rtn = handler.dataformat;
             let isview = handler.check_empty(view);
             let islayer = handler.check_empty(layer.layouts);
             let isredirect = handler.check_empty(redirect);
@@ -367,10 +367,10 @@ module.exports = async (...args) => {
                 let response = {
                   err: {
                     error: "",
-                    render: handler.webview(),
+                    render: handler.webview,
                   },
                   fname: fname,
-                  render: handler.webview(),
+                  render: handler.webview,
                   ...chkparamres,
                 };
 
@@ -405,7 +405,7 @@ module.exports = async (...args) => {
               }
             } else {
               paramerror = {
-                render: handler.webview(),
+                render: handler,
                 error: "Unmatched the request method!",
               };
             }
@@ -413,7 +413,7 @@ module.exports = async (...args) => {
             // Error checking
             if (paramerror) {
               orires.locals = {
-                render: handler.webview(),
+                render: handler.webview,
               };
               if (!handler.check_empty(paramerror.error))
                 throw { code: 500, message: paramerror.error };
@@ -423,17 +423,17 @@ module.exports = async (...args) => {
               if (paramres.render) {
                 if (!isrender(paramres.render))
                   orires.locals = { render: paramres.render };
-              } else orires.locals = { render: handler.webview() };
+              } else orires.locals = { render: handler.webview };
             }
           } else if (redirect) {
-            orires.locals = { render: handler.webview() };
+            orires.locals = { render: handler.webview };
             orires.locals.render.options.redirect = redirect;
           } else throw { code: 404, message: "Page not found" };
 
           let rtn = await processEnd(orires);
           if (rtn.code !== 0) throw rtn;
         } catch (error) {
-          orires.locals = { render: handler.webview() };
+          orires.locals = { render: handler.webview };
           let { render: err } = orires.locals;
           err["status"] = error.code;
           if (error.code >= 500) err["view"] = `${pathname}/error/500.html`;
@@ -445,7 +445,7 @@ module.exports = async (...args) => {
           };
           if (fn?.from == "api") {
             err["options"]["json"] = {
-              ...handler.dataformat2(),
+              ...handler.dataformat,
               ...{ code: error.code, msg: error.message },
             };
           }

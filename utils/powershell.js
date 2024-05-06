@@ -15,20 +15,17 @@
  */
 "use strict";
 /**
- * The submodule of powershell
- * @module utils_powershell_execute
+ * The submodule of helper
+ * @module utils_handler
  */
-module.exports = (...args) => {
+module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [params, obj] = args;
-    const [pathname, curdir] = params;
-    const [library, sys, cosetting] = obj;
+    const [pathname, curdir] = args;
+    const util = require("util");
+    const os = require("os");
+    const cwdexec = util.promisify(require("child_process").exec);
+    const execFile = util.promisify(require("child_process").execFile);
     try {
-      const util = require("util");
-      const os = require("os");
-      const cwdexec = util.promisify(require("child_process").exec);
-      const execFile = util.promisify(require("child_process").execFile);
-
       const dataformat = {
         code: 0,
         msg: "",

@@ -15,23 +15,21 @@
  */
 "use strict";
 /**
- * The submodule handler - property
- * @module utils_handler_property
+ * The submodule of helper
+ * @module utils_handler
  */
-module.exports = (...args) => {
+module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [params, obj] = args;
-    const [pathname, curdir] = params;
-    const [library, sys, cosetting] = obj;
+    const [pathname, curdir] = args;
     try {
-      const lib = {
+      let lib = {
         /**
-         * The dataformat value
+         * Getter the dataformat value
          * @type {Object}
-         * @memberof module:property.dataformat2
+         * @memberof module:property.dataformat
          * @instance
          */
-        dataformat2: () => {
+        get dataformat() {
           return Object.assign(
             {},
             {
@@ -43,12 +41,12 @@ module.exports = (...args) => {
         },
 
         /**
-         * Restful api dataformat value
+         *  Getter the restful api dataformat value
          * @type {Object}
          * @memberof module:property.restfulapi
          * @instance
          */
-        restfulapi: () => {
+        get restfulapi() {
           return Object.assign(
             {},
             {
@@ -63,12 +61,12 @@ module.exports = (...args) => {
         },
 
         /**
-         * The electron ipc events dataformat value
+         *  Getter the electron ipc events dataformat value
          * @type {Object}
          * @memberof module:property.ipcevent
          * @instance
          */
-        ipcevent: () => {
+        get ipcevent() {
           return Object.assign(
             {},
             {
@@ -81,12 +79,12 @@ module.exports = (...args) => {
         },
 
         /**
-         * The web view render as html dataformat value
+         *  Getter the web view render as html dataformat value
          * @type {Object}
          * @memberof module:property.webview
          * @instance
          */
-        webview: () => {
+        get webview() {
           return Object.assign(
             {},
             {
@@ -130,6 +128,63 @@ module.exports = (...args) => {
             }
           );
         },
+      };
+
+      /**
+       * Pick data frontend, either post or get value
+       * @alias module:method.getprm
+       * @param {Array} args - Expresss framework request object
+       * @returns {Object} - Return  value
+       */
+      lib.getprm = function (...args) {
+        let [req] = args;
+        let output = {};
+        try {
+          let isquery = lib.check_empty(req.query);
+          let isbody = lib.check_empty(req.body);
+          let isparams = lib.check_empty(req.params);
+          if (!isquery) output = { ...output, ...req.query };
+          if (!isbody) output = { ...output, ...req.body };
+          if (!isparams) output = { ...output, ...req.params };
+          return output;
+        } catch (error) {
+          return error;
+        }
+      };
+
+      /**
+       * Checking the value is empty or not
+       * @alias module:method.check_empty
+       * @param {...Object} args - 2 parameters
+       * @param {Array} args[0] - input is a data
+       * @returns {Object} - Return  value
+       */
+      lib.check_empty = function (...args) {
+        let [input] = args;
+        let type = typeof input;
+        let output = false;
+
+        try {
+          if (type == "object") {
+            if (Array.isArray(input)) type = "array";
+          }
+
+          switch (type) {
+            case "string":
+              if (input === "") output = true;
+              break;
+            case "object":
+              if (Object.keys(input).length === 0) output = true;
+              break;
+            case "array":
+              if (input.length === 0) output = true;
+              break;
+          }
+
+          return output;
+        } catch (error) {
+          return error;
+        }
       };
       resolve(lib);
     } catch (error) {
