@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Apply trim to `get_domhtml` at `reaction/atom.js`. Completed on 2024-05-07
+
 ### Deprecated
 
 ### Removed
@@ -22,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `elcontent` from handler webview. Completed on 2024-05-07
 - Remove `mjs` from handler webview params. Completed on 2024-05-07
 - Change `preload.html` process method. Completed on 2024-05-07
+- Remove unused code from `processEnd` at `reaction.js`. Completed on 2024-05-07
 
 ### Fixed
 

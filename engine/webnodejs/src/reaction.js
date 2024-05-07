@@ -129,10 +129,6 @@ module.exports = async (...args) => {
                   dom = new JSDOM(view);
                 } else {
                   dom = new JSDOM(layouts);
-                  // let mainbody = dom.window.document.querySelector("mainbody");
-                  // mainbody.innerHTML = new JSDOM(
-                  //   await view
-                  // ).window.document.querySelector("body").innerHTML;
                 }
 
                 let document = dom.window.document;

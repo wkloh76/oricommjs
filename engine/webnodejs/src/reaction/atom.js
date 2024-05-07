@@ -144,7 +144,7 @@ module.exports = async (...args) => {
         try {
           let output;
           if (fs.existsSync(file)) {
-            output = fs.readFileSync(file, "utf8");
+            output = fs.readFileSync(file, "utf8").trim();
           }
           return output;
         } catch (error) {
