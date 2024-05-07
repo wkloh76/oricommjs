@@ -18,13 +18,9 @@
   var glib = {};
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {
-      if (mjs.external)
-        if (mjs.external?.js) await loadlib(mjs.external.js);
-
-      if (mjs.internal)
-        if (mjs.internal.js) await loadlib(mjs.internal.js);
-
-      if (mjs.initialize) await initialize(mjs.initialize);
+      if (mjs.external.length > 0) await loadlib(mjs.external);
+      if (mjs.internal.length > 0) await loadlib(mjs.internal);
+      if (Object.keys(mjs.initialize).length > 0) await initialize(mjs.initialize);
     }
   });
 
@@ -45,7 +41,7 @@
       if (param?.lists) {
         for (let item of param.lists) {
           let fn = item.split("/").pop();
-          let { default: df } = await import(`${param.url}${item}.js`);
+          let { default: df } = await import(`${param.url}${item}`);
           glib[fn] = { ...df };
         }
       }

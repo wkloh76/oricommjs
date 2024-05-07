@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.6] - 2024-05-06
+
+### Summary
+
+### Added
+
+- Add `mjs` to handler webview. Completed on 2024-05-07
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+- Remove `elcontent` from handler webview. Completed on 2024-05-07
+- Remove `mjs` from handler webview params. Completed on 2024-05-07
+- Change `preload.html` process method. Completed on 2024-05-07
+
+### Fixed
+
+-Fix elcontent key name unable find by querySelector still overwrite into innerHTML issue . Completed on 2024-05-06
+
+### Security
+
+[1.0.6]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.6
+
 ## [1.0.5] - 2024-05-03
 
 ### Summary

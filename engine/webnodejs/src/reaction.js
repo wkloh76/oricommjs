@@ -72,11 +72,11 @@ module.exports = async (...args) => {
               view,
               options: {
                 css,
-                elcontent,
                 js,
                 json,
                 layer,
                 less,
+                mjs,
                 params,
                 redirect,
                 text,
@@ -108,19 +108,17 @@ module.exports = async (...args) => {
 
               if (extname == ".html") {
                 if (!islayer) {
+                  if (!isview) layer.childs.external.push(view);
                   let { code, msg, data } = await molecule.combine_layer(
                     layer,
-                    elcontent
+                    params
                   );
                   if (code == 0) layouts = data;
                   else throw { msg: msg, data: data };
-                }
-                if (!isview) {
-                  let exchange = elcontent;
-                  if (elcontent.length == 0) exchange = undefined;
+                } else if (!isview) {
                   let { code, msg, data } = await molecule.single_layer(
                     view,
-                    exchange
+                    params
                   );
 
                   if (code == 0) view = data;
@@ -131,14 +129,14 @@ module.exports = async (...args) => {
                   dom = new JSDOM(view);
                 } else {
                   dom = new JSDOM(layouts);
-                  let mainbody = dom.window.document.querySelector("mainbody");
-                  mainbody.innerHTML = new JSDOM(
-                    await view
-                  ).window.document.querySelector("body").innerHTML;
+                  // let mainbody = dom.window.document.querySelector("mainbody");
+                  // mainbody.innerHTML = new JSDOM(
+                  //   await view
+                  // ).window.document.querySelector("body").innerHTML;
                 }
 
                 let document = dom.window.document;
-                for (let [el, content] of Object.entries(elcontent)) {
+                for (let [el, content] of Object.entries(params)) {
                   let found = document.querySelector(el);
                   if (found) found.innerHTML = content;
                 }
@@ -149,7 +147,7 @@ module.exports = async (...args) => {
                 document.querySelector("body").innerHTML += preload;
                 let script = document.createElement("script");
                 script.type = "text/javascript";
-                script.innerHTML = `var mjs=${JSON.stringify(params.mjs)}`;
+                script.innerHTML = `var mjs=${JSON.stringify(mjs)}`;
                 document.getElementsByTagName("head")[0].appendChild(script);
                 let rtnimport_css = molecule.import_css(document, css, params);
                 if (rtnimport_css) throw rtnimport_css;
@@ -438,7 +436,7 @@ module.exports = async (...args) => {
           err["status"] = error.code;
           if (error.code >= 500) err["view"] = `${pathname}/error/500.html`;
           else err["view"] = `${pathname}/error/404.html`;
-          err["options"]["elcontent"] = {
+          err["options"]["params"] = {
             errorcode: error.code,
             title: "System Notification",
             msg: error.message,

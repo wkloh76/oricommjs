@@ -61,6 +61,9 @@ module.exports = async (...args) => {
         for (let val of files) {
           docs.push(atom.get_domhtml(path.join(node.path, val)));
         }
+        for (let val of node.external) {
+          if (fs.existsSync(val)) docs.push(atom.get_domhtml(val));
+        }
         return await Promise.all(docs);
       };
 
@@ -69,12 +72,12 @@ module.exports = async (...args) => {
        * @alias module:reaction.moleculde.combine_layer
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - layer is an object the list of files for merge purpose
-       * @param {Object} args[1] - elcontent is object use for write data to relevent html element
+       * @param {Object} args[1] - params is object use for write data to relevent html element
        * @returns {Object} - Return object
        */
       lib["combine_layer"] = (...args) => {
         return new Promise(async (resolve, reject) => {
-          const [layer, elcontent] = args;
+          const [layer, params] = args;
           const { JSDOM } = jsdom;
           try {
             let output = { code: 0, msg: "", data: null };
@@ -86,13 +89,13 @@ module.exports = async (...args) => {
 
             let { message, stack } = layouts;
             if (!message && !stack) {
-              master_dom = new JSDOM(atom.str_replace(layouts, layer.params));
+              master_dom = new JSDOM(atom.str_replace(layouts, params));
               master_doc = master_dom.window.document;
 
               for (let childlist of childlists) {
                 let child_doc = new JSDOM().window.document;
                 let body = child_doc.querySelector("body");
-                body.innerHTML = atom.str_replace(childlist, layer.params);
+                body.innerHTML = atom.str_replace(childlist, params);
                 let body_node = body.childNodes[0];
                 if (body_node && body_node.nodeName == "STATEMENT") {
                   let statement = body
@@ -105,12 +108,13 @@ module.exports = async (...args) => {
                       let mel = master_doc.querySelector(attrname);
                       let cel = body_node.querySelector(attrname);
                       let attrs = cel.getAttributeNames();
-                      for (let attr of attrs) {
-                        let val = cel.getAttribute(attr);
-                        mel.setAttribute(attr, val);
+                      if (mel && cel) {
+                        for (let attr of attrs) {
+                          let val = cel.getAttribute(attr);
+                          mel.setAttribute(attr, val);
+                        }
+                        mel.innerHTML = cel.innerHTML;
                       }
-                      master_doc.querySelector(attrname).innerHTML =
-                        cel.innerHTML;
                       break;
 
                     case "append":
@@ -121,9 +125,6 @@ module.exports = async (...args) => {
                 }
               }
 
-              for (let [el, content] of Object.entries(elcontent)) {
-                master_doc.querySelector(el).innerHTML = content;
-              }
               output.data = master_dom.serialize();
             } else {
               throw {
@@ -143,22 +144,21 @@ module.exports = async (...args) => {
        * @alias module:reaction.moleculde.combine_layer
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - layer is an object the list of files for merge purpose
-       * @param {Object} args[1] - elcontent is object use for write data to relevent html element
+       * @param {Object} args[1] - params is object use for write data to relevent html element
        * @returns {Object} - Return object
        */
       lib["single_layer"] = (...args) => {
         return new Promise(async (resolve, reject) => {
-          const [layer, elcontent] = args;
+          const [layer, params] = args;
           const { JSDOM } = jsdom;
           try {
             let output = { code: 0, msg: "", data: null };
-            let master_dom, master_doc;
+            let master_dom;
             let layouts = await atom.get_domhtml(layer);
 
             let { message, stack } = layouts;
             if (!message && !stack) {
-              master_dom = new JSDOM(atom.str_replace(layouts, elcontent));
-              master_doc = master_dom.window.document;
+              master_dom = new JSDOM(atom.str_replace(layouts, params));
               output.data = master_dom.serialize();
             } else {
               throw {
