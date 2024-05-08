@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Apply trim to `get_domhtml` at `reaction/atom.js`. Completed on 2024-05-07
 - Formatter `webview` return object at `utils/handler.js`. Completed on 2024-05-08
+- Redefine `webview` less object format which will handler the original source of less.js at `utils/handler.js`. Completed on 2024-05-08
 
 ### Deprecated
 

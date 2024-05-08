@@ -102,7 +102,7 @@ module.exports = async (...args) => {
                   childs: { path: "", excluded: [], external: [] },
                 },
                 less: {
-                  engine: { domain: "", location: "" },
+                  engine: { locally: "", remotely: "", other: "" },
                   style: { locally: [], remotely: [], other: [] },
                 },
                 menu: {},
