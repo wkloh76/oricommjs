@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix `onrequest` function cannot find error folder at `webnodejs/src/reaction.js`. Completed on 2024-05-09
+
 ### Security
 
 [1.0.7]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.7
