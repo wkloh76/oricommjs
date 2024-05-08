@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `mjs` to handler webview. Completed on 2024-05-07
+- add `import_mjs` function at `reaction/atom.js` to reprocess url. Completed on 2024-05-08
+- Redesign frontend dynamic import ES Module process at `browser/preload.html`. Completed on 2024-05-08
+- Redesign initialize method at `browser/preload.html`. Completed on 2024-05-08
 
 ### Changed
 

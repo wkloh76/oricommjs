@@ -90,12 +90,12 @@ module.exports = async (...args) => {
             {
               status: 200,
               options: {
-                css: { locally: [], remotely: [], other: [] },
-                mjs: { external: [], initialize: {}, internal: [] },
+                css: { locally: [], other: [], remotely: [] },
+                mjs: { initialize: {}, locally: [], other: [], remotely: [] },
                 injectioncss: {},
                 injectionjs: {},
                 injectionless: {},
-                js: { locally: [], remotely: [], other: [] },
+                js: { locally: [], other: [], remotely: [] },
                 json: {},
                 layer: {
                   layouts: "",
@@ -103,7 +103,7 @@ module.exports = async (...args) => {
                 },
                 less: {
                   engine: { locally: "", remotely: "", other: "" },
-                  style: { locally: [], remotely: [], other: [] },
+                  style: { locally: [], other: [], remotely: [] },
                 },
                 menu: {},
                 params: { locally: "", remotely: "" },

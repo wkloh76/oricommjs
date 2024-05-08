@@ -99,6 +99,36 @@ module.exports = async (...args) => {
       };
 
       /**
+       * The main objective is concat string become complete url for ES Module
+       * @alias module:src_reaction_atom.import_mjs
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - doc is an object of jsdom window.document
+       * @param {Object} args[1] - data is an object which listing js link source
+       * @param {Object} args[2] - params is an object which use to concat data object value
+       */
+      lib["import_mjs"] = (...args) => {
+        let [data, params] = args;
+        try {
+          let output = { initialize: {}, lib: [] };
+          for (let [key, val] of Object.entries(data)) {
+            if (key == "initialize") output[key] = val;
+            else {
+              if (val.length > 0) {
+                for (let href of val) {
+                  let url = href;
+                  if (key != "other") url = params[key] + href;
+                  output["lib"].push(url);
+                }
+              }
+            }
+          }
+          return output;
+        } catch (error) {
+          return error;
+        }
+      };
+
+      /**
        * The main objective is convert less.js data in object type to jsdom format and append to parent
        * @alias module:src_reaction_atom.import_less
        * @param {...Object} args - 3 parameters

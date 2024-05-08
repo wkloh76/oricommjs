@@ -143,7 +143,9 @@ module.exports = async (...args) => {
                 document.querySelector("body").innerHTML += preload;
                 let script = document.createElement("script");
                 script.type = "text/javascript";
-                script.innerHTML = `var mjs=${JSON.stringify(mjs)}`;
+                script.innerHTML = `var mjs=${JSON.stringify(
+                  molecule.import_mjs(mjs, params)
+                )}`;
                 document.getElementsByTagName("head")[0].appendChild(script);
                 let rtnimport_css = molecule.import_css(document, css, params);
                 if (rtnimport_css) throw rtnimport_css;

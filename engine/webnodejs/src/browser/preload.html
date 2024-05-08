@@ -18,18 +18,17 @@
   var glib = {};
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {
-      if (mjs.external.length > 0) await loadlib(mjs.external);
-      if (mjs.internal.length > 0) await loadlib(mjs.internal);
+      if (mjs.lib.length > 0) await loadlib(mjs.lib);
       if (Object.keys(mjs.initialize).length > 0) await initialize(mjs.initialize);
     }
   });
 
   const initialize = async (...args) => {
     let [param] = args;
-    if (glib?.cbtoolbox) {
-      for (let [idx, val] of param.methods.entries()) {
-        let func = glib.cbtoolbox.getNestedObject(glib, val);
-        if (func) await func.apply(null, param.argv[idx]);
+    if (glib.cbtoolbox) {
+      for (let [idx, val] of Object.entries(param)) {
+        let func = glib.cbtoolbox.getNestedObject(glib, idx);
+        if (func) await func.apply(null, val);
       }
     }
     return;
@@ -38,12 +37,12 @@
   const loadlib = async (...args) => {
     try {
       let [param] = args;
-      if (param?.lists) {
-        for (let item of param.lists) {
-          let fn = item.split("/").pop();
-          let { default: df } = await import(`${param.url}${item}`);
-          glib[fn] = { ...df };
-        }
+      for (let item of param) {
+        let fn = item.split("/").pop().replace(".js", "");
+        fn = fn.replace(".", "-")
+        let { default: df, ...otherlib } = await import(item);
+        if (Object.keys(otherlib).length > 0) glib[fn] = { ...df, ...otherlib };
+        else glib[fn] = df;
       }
       return;
     } catch (error) {
