@@ -15,7 +15,34 @@
    * -------------------------------------------------------------------------
    */
   "use strict";
-  var glib = {};
+  var glib = {
+    /**
+   * The main objective is find the value base on nested keyname
+   * The detail refer to https://github.com/flexdinesh/typy
+   * @alias module:toolbox.getNestedObject
+   * @param {Array} obj - Object
+   * * @param {Array} dotSeparatedKeys - Nested keyname
+   * @returns {Object} - Return modules
+   */
+    getNestedObject: (obj, dotSeparatedKeys) => {
+      if (dotSeparatedKeys !== undefined && typeof dotSeparatedKeys !== "string")
+        return undefined;
+      if (typeof obj !== "undefined" && typeof dotSeparatedKeys === "string") {
+        // split on ".", "[", "]", "'", """ and filter out empty elements
+        const splitRegex = /[.\[\]'"]/g; // eslint-disable-line no-useless-escape
+        const pathArr = dotSeparatedKeys
+          .split(splitRegex)
+          .filter((k) => k !== "");
+
+        // eslint-disable-next-line no-param-reassign, no-confusing-arrow
+        obj = pathArr.reduce(
+          (o, key) => (o && o[key] !== "undefined" ? o[key] : undefined),
+          obj
+        );
+      }
+      return obj;
+    }
+  };
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {
       if (mjs.lib.length > 0) await loadlib(mjs.lib);
@@ -25,9 +52,10 @@
 
   const initialize = async (...args) => {
     let [param] = args;
-    if (glib.cbtoolbox) {
+    const { getNestedObject } = glib
+    if (getNestedObject) {
       for (let [idx, val] of Object.entries(param)) {
-        let func = glib.cbtoolbox.getNestedObject(glib, idx);
+        let func = getNestedObject(glib, idx);
         if (func) await func.apply(null, val);
       }
     }
@@ -49,4 +77,5 @@
       console.log(error);
     }
   };
+
 </script>
