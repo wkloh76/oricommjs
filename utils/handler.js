@@ -90,11 +90,7 @@ module.exports = async (...args) => {
             {
               status: 200,
               options: {
-                css: {
-                  locally: [],
-                  remotely: [],
-                  other: [],
-                },
+                css: { locally: [], remotely: [], other: [] },
                 mjs: { external: [], initialize: {}, internal: [] },
                 injectioncss: {},
                 injectionjs: {},
@@ -103,19 +99,11 @@ module.exports = async (...args) => {
                 json: {},
                 layer: {
                   layouts: "",
-                  childs: {
-                    path: "",
-                    excluded: [],
-                    external: [],
-                  },
+                  childs: { path: "", excluded: [], external: [] },
                 },
                 less: {
                   engine: { domain: "", location: "" },
-                  style: {
-                    locally: [],
-                    remotely: [],
-                    other: [],
-                  },
+                  style: { locally: [], remotely: [], other: [] },
                 },
                 menu: {},
                 params: { locally: "", remotely: "" },
