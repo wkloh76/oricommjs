@@ -44,8 +44,10 @@ module.exports = async (...args) => {
             if (val.length > 0) {
               for (let href of val) {
                 let gfgData = doc.createElement("link");
+                let url = href;
+                if (key != "other") url = params[key] + href;
                 let attributes = JSON.parse(
-                  `{"rel":"stylesheet","type":"text/css","href":"${params[key]}${href}"}`
+                  `{"rel":"stylesheet","type":"text/css","href":"${url}"}`
                 );
 
                 Object.keys(attributes).forEach((attr) => {
@@ -77,8 +79,10 @@ module.exports = async (...args) => {
             if (val.length > 0) {
               for (let href of val) {
                 let gfgData = doc.createElement("script");
+                let url = href;
+                if (key != "other") url = params[key] + href;
                 let attributes = JSON.parse(
-                  `{"type":"text/javascript","src":"${params[key]}${href}"}`
+                  `{"type":"text/javascript","src":"${url}"}`
                 );
 
                 Object.keys(attributes).forEach((attr) => {
@@ -110,8 +114,10 @@ module.exports = async (...args) => {
             if (val.length > 0) {
               for (let href of val) {
                 let gfgData = doc.createElement("link");
+                let url = href;
+                if (key != "other") url = params[key] + href;
                 let attributes = JSON.parse(
-                  `{"rel":"stylesheet/less","type":"text/css","href":"${params[key]}${href}"}`
+                  `{"rel":"stylesheet/less","type":"text/css","href":"${url}"}`
                 );
 
                 Object.keys(attributes).forEach((attr) => {
@@ -121,11 +127,15 @@ module.exports = async (...args) => {
               }
             }
           }
-          if (data.engine.domain !== "") {
-            let engine = {};
-            engine[data.engine.domain] = [data.engine.location];
-            import_js(doc, engine, params);
+
+          for (let [key, val] of Object.entries(data.engine)) {
+            if (val !== "") {
+              let engine = {};
+              engine[key] = [val];
+              lib.import_js(doc, engine, params);
+            }
           }
+
           return;
         } catch (error) {
           return error;

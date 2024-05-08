@@ -30,7 +30,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
--Fix elcontent key name unable find by querySelector still overwrite into innerHTML issue . Completed on 2024-05-06
+- Fix elcontent key name unable find by querySelector still overwrite into innerHTML issue . Completed on 2024-05-06
+- Fix `import_less` , `import_css` and `import_js` functions at webnodejs/src/reaction/atom.js issue which will concat additional string to the url when the object key name is "other". Completed on 2024-05-08
 
 ### Security
 
