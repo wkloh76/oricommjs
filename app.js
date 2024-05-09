@@ -123,6 +123,7 @@
           );
 
           let exlude_engine = [];
+          if (!cosetting.args.engine) cosetting.args.engine = "webnodejs";
           for (let [item, value] of Object.entries(cosetting.general.engine)) {
             if (item == cosetting.args.engine) {
               cosetting.general.engine = { name: item, type: value };
@@ -412,7 +413,11 @@
               save_rtn: false,
               params: {
                 name: "routejson",
-                data: ["/params/kernel/components", "/params/kernel", "/params/fs"],
+                data: [
+                  "/params/kernel/components",
+                  "/params/kernel",
+                  "/params/fs",
+                ],
               },
             },
             {
