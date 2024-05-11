@@ -432,7 +432,8 @@ module.exports = async (...args) => {
           orires.locals = { render: handler.webview };
           let { render: err } = orires.locals;
           err["status"] = error.code;
-          if (error.code >= 500) err["view"] = `${pathname}/browser/error/500.html`;
+          if (error.code >= 500)
+            err["view"] = `${pathname}/browser/error/500.html`;
           else err["view"] = `${pathname}/browser/error/404.html`;
           err["options"]["params"] = {
             errorcode: error.code,

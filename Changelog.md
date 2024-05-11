@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.7] - 2024-05-09
+## [1.0.7] - 2024-05-08
 
 ### Summary
 
@@ -13,10 +13,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add `getNestedObject` function to `preload.html` at `webnodejs/src/browser` folder. Completed on 2024-05-09
 - Set `webnodejs` as default engine if argument undefined at `app.js`. Completed on 2024-05-09
+- Apply multer module. Completed on 2024-05-11
+- Add `webstorage` function to `utils.js` for web client upload file to web server. Completed on 2024-05-11
 
 ### Changed
 
 - Move `webnodejs/src/error` folder into `webnodejs/src/browser` folder. Completed on 2024-05-09
+- Update `package.json` at `engine/webnodejs`. Completed on 2024-05-11
 
 ### Deprecated
 

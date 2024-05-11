@@ -22,6 +22,9 @@ module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
     const [pathname, curdir] = args;
     const { fs, path, jptr } = sysmodule;
+    const util = require("util");
+    const busboy = require("busboy");
+    const multer = require("multer");
     try {
       let lib = {};
 
@@ -489,6 +492,64 @@ module.exports = async (...args) => {
           output.data = source
             .concat(compare)
             .filter((val) => !(source.includes(val) && compare.includes(val)));
+
+          return output;
+        } catch (error) {
+          if (error.errno)
+            return {
+              code: error.errno,
+              errno: error.errno,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            };
+          else
+            return {
+              code: -1,
+              errno: -1,
+              message: error.message,
+              stack: error.stack,
+              data: error,
+            };
+        }
+      };
+
+      lib["webstorage"] = async (...args) => {
+        let [request, setting, save = false] = args;
+        let { disk, location, stream } = setting;
+        let output = {
+          code: 0,
+          msg: "",
+          data: null,
+        };
+
+        try {
+          let stack;
+          let sizeContent = request.headers["content-length"];
+          stack = multer.memoryStorage();
+
+          if (Number(sizeContent) / 1024 > stream) {
+          } else if (Number(sizeContent) / 1024 > disk || save) {
+            stack = multer.diskStorage({
+              destination: location,
+              limits: { fileSize: disk },
+              filename: function (req, file, cb) {
+                cb(null, file.originalname);
+              },
+            });
+          }
+
+          const proceed = util.promisify(multer({ storage: stack }).any());
+          await proceed(request, {});
+          // let filename = request.files[0].filename;
+          // console.log(filename);
+          if (request.files) output.data = request.files;
+          else
+            throw {
+              message: "Upload process failure!",
+              stack:
+                "Error stack: Upload process failure from utils/utils.js webstorage function",
+            };
 
           return output;
         } catch (error) {

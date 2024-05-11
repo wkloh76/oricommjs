@@ -13,9 +13,10 @@
   "dependencies": {
     "@ltd/j-toml": "1.38.0",
     "@sagold/json-pointer": "6.0.1",
+    "dayjs": "1.11.11",
     "lodash": "4.17.21",
     "log4js": "6.9.1",
-    "dayjs": "1.11.10"
+    "multer": "1.4.5-lts.1"
   },
   "devDependencies": {
     "@types/bun": "latest"
