@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.8] - 2024-05-14
+
+### Summary
+
+- Design sqlmanager engine
+
+### Added
+
+### Changed
+
+- Apply `html` instead `text` property in handler.webview.options. Completed on 2024-05-14
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Fix bug Cannot read properties of null (reading 'querySelectorAll') from `body.querySelector(body_node.nodeName).querySelectorAll("*");` issue. Apply `toLowerCase()` into `body_node.nodeName`. Completed on 2024-05-14
+
+### Security
+
+[1.0.8]: https://github.com/wkloh76/oricommjs/releases/tag/1.0.8
+
 ## [1.0.7] - 2024-05-08
 
 ### Summary

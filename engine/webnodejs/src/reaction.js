@@ -68,10 +68,9 @@ module.exports = async (...args) => {
           let [res] = args;
           try {
             let {
-              status,
-              view,
               options: {
                 css,
+                html,
                 js,
                 json,
                 layer,
@@ -79,15 +78,16 @@ module.exports = async (...args) => {
                 mjs,
                 params,
                 redirect,
-                text,
               },
+              status,
+              view,
             } = res.locals.render;
             let rtn = handler.dataformat;
             let isview = handler.check_empty(view);
             let islayer = handler.check_empty(layer.layouts);
             let isredirect = handler.check_empty(redirect);
             let isjson = handler.check_empty(json);
-            let istext = handler.check_empty(text);
+            let ishtml = handler.check_empty(html);
             // let iscss = handler.check_empty(options.css);
 
             if (!isredirect) {
@@ -96,77 +96,83 @@ module.exports = async (...args) => {
             } else if (!isjson) {
               res.status(status).json(json);
               resolve(rtn);
-            } else if (!istext) {
-              res.status(status).send(text);
-              resolve(rtn);
               // } else if (!iscss) {
               //   await mergecss(.css);
-            } else if (!islayer || !isview) {
+            } else if (!islayer || !isview || !ishtml) {
               let dom, extname, layouts;
-              if (!isview) extname = path.extname(view);
-              else if (!islayer) extname = path.extname(layer.layouts);
+              if (!ishtml) dom = new JSDOM(html);
+              else {
+                if (!isview) extname = path.extname(view);
+                else if (!islayer) extname = path.extname(layer.layouts);
+                if (extname == ".html") {
+                  if (!islayer) {
+                    if (!isview) layer.childs.external.push(view);
+                    let { code, msg, data } = await molecule.combine_layer(
+                      layer,
+                      params
+                    );
+                    if (code == 0) layouts = data;
+                    else throw { msg: msg, data: data };
+                  } else if (!isview) {
+                    let { code, msg, data } = await molecule.single_layer(
+                      view,
+                      params
+                    );
 
-              if (extname == ".html") {
-                if (!islayer) {
-                  if (!isview) layer.childs.external.push(view);
-                  let { code, msg, data } = await molecule.combine_layer(
-                    layer,
-                    params
-                  );
-                  if (code == 0) layouts = data;
-                  else throw { msg: msg, data: data };
-                } else if (!isview) {
-                  let { code, msg, data } = await molecule.single_layer(
-                    view,
-                    params
-                  );
+                    if (code == 0) view = data;
+                    else throw { msg: msg, data: data };
+                  }
 
-                  if (code == 0) view = data;
-                  else throw { msg: msg, data: data };
-                }
-
-                if (!layouts) {
-                  dom = new JSDOM(view);
+                  if (!layouts) {
+                    dom = new JSDOM(view);
+                  } else {
+                    dom = new JSDOM(layouts);
+                  }
                 } else {
-                  dom = new JSDOM(layouts);
+                  throw {
+                    message:
+                      "Cannot found any html extension file from view or options.layout property!",
+                    stack:
+                      "Cannot found any html extension file from view or options.layout property!",
+                  };
                 }
-
-                let document = dom.window.document;
-                for (let [el, content] of Object.entries(params)) {
-                  let found = document.querySelector(el);
-                  if (found) found.innerHTML = content;
-                }
-
-                let preload = await molecule.get_domhtml(
-                  path.join(pathname, "browser", "preload.html")
-                );
-                document.querySelector("body").innerHTML += preload;
-                let script = document.createElement("script");
-                script.type = "text/javascript";
-                script.innerHTML = `var mjs=${JSON.stringify(
-                  molecule.import_mjs(mjs, params)
-                )}`;
-                document.getElementsByTagName("head")[0].appendChild(script);
-                let rtnimport_css = molecule.import_css(document, css, params);
-                if (rtnimport_css) throw rtnimport_css;
-                let rtnimport_js = molecule.import_js(document, js, params);
-                if (rtnimport_js) throw rtnimport_js;
-                let rtnimport_less = molecule.import_less(
-                  document,
-                  less,
-                  params
-                );
-                if (rtnimport_less) throw rtnimport_less;
-                res.status(status).send(
-                  await minify(dom.serialize(), {
-                    collapseWhitespace: true,
-                  })
-                );
-                // res.status(status).send(dom.serialize());
               }
+              let document = dom.window.document;
+              for (let [el, content] of Object.entries(params)) {
+                let found = document.querySelector(el);
+                if (found) found.innerHTML = content;
+              }
+
+              let preload = await molecule.get_domhtml(
+                path.join(pathname, "browser", "preload.html")
+              );
+              document.querySelector("body").innerHTML += preload;
+              let script = document.createElement("script");
+              script.type = "text/javascript";
+              script.innerHTML = `var mjs=${JSON.stringify(
+                molecule.import_mjs(mjs, params)
+              )}`;
+              document.getElementsByTagName("head")[0].appendChild(script);
+              let rtnimport_css = molecule.import_css(document, css, params);
+              if (rtnimport_css) throw rtnimport_css;
+              let rtnimport_js = molecule.import_js(document, js, params);
+              if (rtnimport_js) throw rtnimport_js;
+              let rtnimport_less = molecule.import_less(document, less, params);
+              if (rtnimport_less) throw rtnimport_less;
+              res.status(status).send(
+                await minify(dom.serialize(), {
+                  collapseWhitespace: true,
+                })
+              );
             } else {
-              rtn.code = -1;
+              throw {
+                message:
+                  "Cannot found any html file name from view or options.layout property or html in string type for render!",
+                stack:
+                  "Cannot found any html file name from view or options.layout property or html in string type for render!",
+              };
             }
+
             resolve(rtn);
           } catch (error) {
             if (error.errno)
@@ -208,12 +214,14 @@ module.exports = async (...args) => {
        */
       const isrender = (...args) => {
         let [render] = args;
-        let { view, options } = render;
+        let { options, view } = render;
+        if (!handler.check_empty(options.html)) return false;
         if (!handler.check_empty(view)) return false;
         if (!handler.check_empty(options.layer.layouts)) return false;
         if (!handler.check_empty(options.redirect)) return false;
         if (!handler.check_empty(options.json)) return false;
-        if (!handler.check_empty(options.text)) return false;
+        if (!handler.check_empty(options.html)) return false;
+
         return true;
       };
 

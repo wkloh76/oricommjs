@@ -88,10 +88,9 @@ module.exports = async (...args) => {
           return Object.assign(
             {},
             {
-              status: 200,
               options: {
                 css: { locally: [], other: [], remotely: [] },
-                mjs: { initialize: {}, locally: [], other: [], remotely: [] },
+                html: "",
                 injectioncss: {},
                 injectionjs: {},
                 injectionless: {},
@@ -105,13 +104,14 @@ module.exports = async (...args) => {
                   engine: { locally: "", remotely: "", other: "" },
                   style: { locally: [], other: [], remotely: [] },
                 },
+                mjs: { initialize: {}, locally: [], other: [], remotely: [] },
                 menu: {},
                 params: { locally: "", remotely: "" },
                 redirect: "",
                 show: true,
-                text: "",
                 tray: {},
               },
+              status: 200,
               view: "",
             }
           );

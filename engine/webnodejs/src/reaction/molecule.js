@@ -99,7 +99,7 @@ module.exports = async (...args) => {
                 let body_node = body.childNodes[0];
                 if (body_node && body_node.nodeName == "STATEMENT") {
                   let statement = body
-                    .querySelector(body_node.nodeName)
+                    .querySelector(body_node.nodeName.toLowerCase())
                     .querySelectorAll("*");
                   let attrname = body_node.getAttribute("name");
                   let attraction = body_node.getAttribute("action");
