@@ -7,8 +7,7 @@
 ![Static Badge](https://img.shields.io/badge/OS_Platform-Linux_Ubuntu%7C-_)
 ![GitHub Release](https://img.shields.io/github/v/release/wkloh76/oricommjs)
 
-
-A JavaScript project framework that provides an engine to handle desktop, web, and non-GUI application development. Node JS, bun JS and Electron JS are the backbone engines of this framework. The idea behind the framework is to develop a code model that can switch engines and build desktop, web, and non-GUI applications without changing the design. Due to some module issues, the framework design still retains the CommonJS design method.
+A JavaScript project framework that provides an engine to handle desktop, web, and non-GUI application development. Node JS, bun JS and Electron JS are the backbone engines of this framework. The idea behind the framework is to develop a code model that can switch engines and build desktop, web, and non-GUI applications without changing the design. Due to some module issues, the framework design still retains the CommonJS design method. You can build your reusable modules or class and plugin into atomic folder. If you want the modules or class can be cross entire project than plugin into the enigne folder.
 
 ## Idea
 

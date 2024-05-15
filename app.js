@@ -241,12 +241,17 @@
      * @alias module:app.configlog
      * @param {...Object} args - 1 parameters
      * @param {Object} args[0] - cosetting is an object value from global variable coresetting
+     * @param {Object} args[1] - path is a module from node_modules
      * @returns {Object} - - Return value in object type
      */
     const configlog = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [cosetting] = args;
-        const { log, logpath, splitter } = cosetting;
+        const [cosetting, path] = args;
+        const {
+          log,
+          logpath,
+          args: { engine },
+        } = cosetting;
         let output = {
           code: 0,
           msg: "app.js configlog done!",
@@ -257,17 +262,17 @@
           await log4js.configure({
             appenders: {
               access: {
-                filename: `${logpath}${splitter}success.log`,
+                filename: path.join(logpath, engine, "success.log"),
                 ...log.success,
               },
               error: {
-                filename: `${logpath}${splitter}error.log`,
+                filename: path.join(logpath, "error.log"),
                 ...log.error,
               },
             },
             categories: {
-              default: { appenders: ["access"], level: "ALL" },
               access: { appenders: ["access"], level: "INFO" },
+              default: { appenders: ["access"], level: "ALL" },
               info: { appenders: ["error"], level: "ALL" },
             },
           });
@@ -588,7 +593,7 @@
     }
     let rtnmklog = await mkdirlog(coresetting.logpath, sysmodule.fs);
     if (rtnmklog.code != 0) throw rtnmklog;
-    let rtnconflog = await configlog(coresetting);
+    let rtnconflog = await configlog(coresetting, sysmodule.path);
     if (rtnconflog.code != 0) throw rtnconflog;
     else sysmodule = { ...sysmodule, ...rtnconflog.data };
 
