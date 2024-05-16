@@ -25,7 +25,6 @@ module.exports = (...args) => {
     try {
       let lib = {
         ...(await require("./utils")(mpath, mname)),
-        ...(await require("./array")(mpath, mname)),
       };
       lib["handler"] = await require("./handler")(mpath, mname);
       lib["powershell"] = await require("./powershell")(mpath, mname);

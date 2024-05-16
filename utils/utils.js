@@ -272,15 +272,143 @@ module.exports = async (...args) => {
        */
       lib["insert2obj"] = (option, value) => {
         let output = {};
-        try {
-          sysmodule.lodash.map(option, (val, id) => {
-            output[val] = value[id];
-          });
+        option.map((val, key) => {
+          output[val] = value[key];
+        });
+        return output;
+      };
 
-          return output;
-        } catch (error) {
-          return error;
+      /**
+       * Pick data from the array object as the defination from option
+       * @alias module:array.pick_arryobj
+       * @param {Array} option - Array of string which base on keyname to pickup entire key and value
+       * @param {Array} value  - Array of object
+       * @returns {Array} - Return empty array if cannot get the key from the value
+       */
+      lib["pick_arryobj"] = (...args) => {
+        let [option, value] = args;
+        let output = [];
+        for (let obj of value) {
+          let data = {};
+          option.map((val) => {
+            if (obj[val]) data[val] = obj[val];
+          });
+          output.push(data);
         }
+        return output;
+      };
+
+      /**
+       * Convert string to object, the default return data is empyt object if compare value is empty string
+       * @alias module:array.arr_objectjson
+       * @param {Array} value - Array of object
+       * @returns {Array} - Nothing change if some value not meet to requirement
+       */
+      lib["arr_objectjson"] = (...args) => {
+        let [value] = args;
+        let output = value.map((obj) => {
+          let rtnobj = {};
+          if (obj != "string") {
+            for (let [key, val] of Object.entries(obj)) {
+              let typeval = typeof val;
+              if (typeval != "string") rtnobj[key] = val;
+              else {
+                if (val == "") {
+                  rtnobj[key] = {};
+                } else if (
+                  (val.indexOf("{") > -1 &&
+                    val.indexOf("}") > -1 &&
+                    val.indexOf(":") > -1) ||
+                  (val.indexOf("[") > -1 && val.indexOf("]") > -1)
+                ) {
+                  rtnobj[key] = JSON.parse(val);
+                } else {
+                  rtnobj[key] = val;
+                }
+              }
+            }
+          }
+
+          return rtnobj;
+        });
+        return output;
+      };
+
+      /**
+       * Insert multi values to new object base on constant keys sequnce define by user
+       * @alias module:array.arr_constkey_insertobj
+       * @param {Array} option - Array of string
+       * @param {Array} value - Multi dimesiion array of any datatype value
+       * @returns {Array}
+       */
+      lib["arr_constkey_insertobj"] = (...args) => {
+        let [option, values] = args;
+        let output = {};
+        option.map((val, key) => {
+          output[val] = values[key];
+        });
+        return output;
+      };
+
+      /**
+       * Insert element to the parent object by selected array of index.
+       * @alias module:array.arr_objpick_insert
+       * @param {Array} src - Array of object from parent.
+       * @param {Array} target - Array of value for selected index of source.
+       * @param {Object} obj - Object of value for insert to parent.
+       * @returns {Array} - Nothing change if some value not meet to requirement
+       */
+      lib["arr_objpick_insert"] = (...args) => {
+        let [src, target, obj] = args;
+        let output = [];
+        src.map((val, key) => {
+          let { ...data } = val;
+          if (target.includes(key)) data = { ...data, ...obj };
+          output.push(data);
+        });
+        return output;
+      };
+
+      /**
+       * Delete element from the parent object by selected array of index base on object key name.
+       * @alias module:array.arr_objpick_delete
+       * @param {Array} src - Array of object from parent.
+       * @param {Array} target - Array of value for selected index of source.
+       * @param {Array} obj - Compare Keys of Object which is match to parent keys.
+       * @returns {Array} - Nothing change if some value not meet to requirement
+       */
+      lib["arr_objpick_delete"] = (...args) => {
+        let [src, target, obj] = args;
+        let output = [];
+        src.map((val, key) => {
+          let { ...data } = val;
+          if (target.includes(key)) {
+            obj.forEach((keys) => delete data[keys]);
+          }
+          output.push(data);
+        });
+        return output;
+      };
+
+      /**
+       * Update element value from the parent object by selected array of index base on object key name.
+       * @alias module:array.arr_objpick_delete
+       * @param {Array} src - Array of object from parent.
+       * @param {Array} target - Array of value for selected index of source.
+       * @param {Object} obj - Object of value for update to parent.
+       * @returns {Array} - Nothing change if some value not meet to requirement
+       */
+      lib["arr_objpick_update"] = (...args) => {
+        let [src, target, obj] = args;
+        let output = [];
+        src.map((val, key) => {
+          let { ...data } = val;
+          if (target.includes(key))
+            for (let [objkey, objval] of Object.entries(obj))
+              data[objkey] = objval;
+          output.push(data);
+        });
+        return output;
       };
 
       /**
@@ -291,7 +419,8 @@ module.exports = async (...args) => {
        * * @param {String} keys - Add empty space between key and next key when need delete multiple keys
        * @returns {Object} - Return object
        */
-      lib["omit"] = (object, keys) => {
+      lib["omit"] = (...args) => {
+        let [object, keys] = args;
         let rtn = object;
         keys.split(" ").map((val) => {
           const { [val]: omitted, ...rest } = rtn;
@@ -307,7 +436,7 @@ module.exports = async (...args) => {
        * @returns {Object| string } - Empty value string return empty object,
        *  the return data will same as param when the param data type not equal to string
        */
-      lib.string2json = (value) => {
+      lib["string2json"] = (value) => {
         try {
           let output = {};
           if (value != "") {

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `path` module as new args in `configlog` function at `app.js`. Completed on 2024-05-15
+- Migrate all functions from `array.js` to `utils.js `. Completed on 2024-05-16
 
 ### Changed
 
@@ -23,7 +24,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- Eliminate `lodash` module from `utils` and `app.js`. Completed on 2024-05-16
+
 ### Removed
+
+- Delete `array.js`. Completed on 2024-05-16
 
 ### Fixed
 

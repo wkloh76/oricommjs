@@ -26,7 +26,6 @@
       path: require("path"),
       fs: require("fs"),
       events: require("events"),
-      lodash: require("lodash"),
       dayjs: require("dayjs"),
       toml: require("@ltd/j-toml"),
       jptr: require("@sagold/json-pointer"),
