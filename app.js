@@ -258,7 +258,7 @@
         };
         try {
           const { default: log4js } = await import("log4js");
-          await log4js.configure({
+          let config = {
             appenders: {
               access: {
                 filename: path.join(logpath, engine, "success.log"),
@@ -274,23 +274,25 @@
               default: { appenders: ["access"], level: "ALL" },
               info: { appenders: ["error"], level: "ALL" },
             },
-          });
+          };
+          await log4js.configure(config);
           output.data = {
-            logger: log4js.getLogger("info"),
-            logelectron: log4js.getLogger("access"),
-            loghttp: log4js.connectLogger(log4js.getLogger("access"), {
-              level: log4js.levels.INFO,
-              format: (...params) => {
-                let [req, res, cb] = params;
-                cb(
-                  `:remote-addr - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent"\ndata - query: ${JSON.stringify(
-                    req.query
-                  )} body: ${JSON.stringify(req.body)} params: ${JSON.stringify(
-                    req.params
-                  )}`
-                );
-              },
-            }),
+            logger: {
+              logger: log4js.getLogger("info"),
+              logelectron: log4js.getLogger("access"),
+              loghttp: log4js.connectLogger(log4js.getLogger("access"), {
+                level: log4js.levels.INFO,
+                format: (req, res, cb) =>
+                  cb(
+                    `:remote-addr - ":method :url HTTP/:http-version" :status :content-length ":referrer" ":user-agent"\ndata - query: ${JSON.stringify(
+                      req.query
+                    )} body: ${JSON.stringify(
+                      req.body
+                    )} params: ${JSON.stringify(req.params)}`
+                  ),
+              }),
+            },
+            config: config,
           };
           resolve(output);
         } catch (error) {
@@ -594,7 +596,10 @@
     if (rtnmklog.code != 0) throw rtnmklog;
     let rtnconflog = await configlog(coresetting, sysmodule.path);
     if (rtnconflog.code != 0) throw rtnconflog;
-    else sysmodule = { ...sysmodule, ...rtnconflog.data };
+    else {
+      sysmodule = { ...sysmodule, ...rtnconflog.data.logger };
+      coresetting["log4jsconf"] = rtnconflog.data.config;
+    }
 
     let rtn = await startup(coresetting, sysmodule, kernel);
     if (rtn.code != 0) throw rtn;

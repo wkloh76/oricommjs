@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apply `html` instead `text` property in handler.webview.options. Completed on 2024-05-14
 - The `configlog` function in `app.js` will create a folder based on the engine name and save the success.log file in that folder. Completed on 2024-05-15
 - Direct get `defaulturl` from `coresetting.toml` instead read from `default.json`. Completed on 2024-05-16
+- Rewrite `configlog` fuction log4js configuration method ad `app.js`. Completed on 2024-05-16
 
 ### Deprecated
 
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix bug Cannot read properties of null (reading 'querySelectorAll') from `body.querySelector(body_node.nodeName).querySelectorAll("*");` issue. Apply `toLowerCase()` into `body_node.nodeName`. Completed on 2024-05-14
+- Bug fix from callback at loghttp which manage express.js route message. Completed on 2024-05-16
 
 ### Security
 
