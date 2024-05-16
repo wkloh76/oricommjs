@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Apply `html` instead `text` property in handler.webview.options. Completed on 2024-05-14
 - The `configlog` function in `app.js` will create a folder based on the engine name and save the success.log file in that folder. Completed on 2024-05-15
+- Direct get `defaulturl` from `coresetting.toml` instead read from `default.json`. Completed on 2024-05-16
 
 ### Deprecated
 

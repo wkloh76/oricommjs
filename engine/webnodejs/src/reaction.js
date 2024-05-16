@@ -33,7 +33,7 @@ module.exports = async (...args) => {
       const molecule = await require("./reaction/molecule")(params, obj);
 
       let lib = {};
-      let components = {};
+      let components = { defaulturl: "" };
 
       /**
        * Merge multi css file to be sinlge string and render to frontend
@@ -325,29 +325,24 @@ module.exports = async (...args) => {
           let paramres = {};
           let paramerror;
           let redirect;
-
-          for (let [compkey, compval] of Object.entries(components)) {
-            let { api, gui, defaulturl } = compval;
+          let { defaulturl, ...component } = components;
+          for (let [compkey, compval] of Object.entries(component)) {
+            let { api, gui } = compval;
+            let baseUrl = orireq.originalUrl;
             if (!handler.check_empty(orireq?.params)) {
               fn = await guiapi_route_filter(api, gui, {
                 params: orireq.params,
                 originalUrl: orireq.originalUrl,
               });
-              if (baseUrl == `/${compkey}/`) {
-                redirect = defaulturl;
-              }
+              if (baseUrl == `/${compkey}`) redirect = defaulturl;
             } else {
-              let baseUrl = orireq.originalUrl;
               let pos = orireq.originalUrl.indexOf("?");
               if (pos != -1) baseUrl = orireq.originalUrl.substring(0, pos);
               fn = await guiapi_picker(
                 getNestedObject(api, baseUrl),
                 getNestedObject(gui, baseUrl)
               );
-
-              if (baseUrl == `/${compkey}/`) {
-                redirect = defaulturl;
-              }
+              if (baseUrl == `/${compkey}`) redirect = defaulturl;
             }
             if (fn || redirect) break;
           }
@@ -479,7 +474,12 @@ module.exports = async (...args) => {
         let [oncomponents] = args;
         for (let [key, val] of Object.entries(oncomponents)) {
           let { api, gui, defaulturl } = val;
-          components[key] = { api: api, gui: gui, defaulturl: defaulturl };
+          components[key] = { api: api, gui: gui };
+          if (components.defaulturl == "") components.defaulturl = defaulturl;
+          else
+            console.log(
+              `The system rejects the new default url '${defaulturl}' because it is already assigned '${components.defaulturl}'`
+            );
         }
       };
 
