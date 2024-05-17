@@ -380,12 +380,16 @@ module.exports = async (...args) => {
                 } else if (fn.idx != idx) {
                   queuertn = await queue[fname].apply(null, [orireq, response]);
                 }
-                let { err, render, stack, message, ...res } = queuertn;
 
+                let { err, render, stack, message, ...res } = queuertn;
                 if (stack && message) {
                   if (res.code)
                     throw { code: res.code, stack: stack, message: message };
                   else throw { code: 500, stack: stack, message: message };
+                }
+                if (!res.action) {
+                  delete queuertn["action"];
+                  throw queuertn;
                 }
 
                 if (
@@ -434,22 +438,42 @@ module.exports = async (...args) => {
         } catch (error) {
           orires.locals = { render: handler.webview };
           let { render: err } = orires.locals;
-          err["status"] = error.code;
-          if (error.code >= 500)
-            err["view"] = `${pathname}/browser/error/500.html`;
-          else err["view"] = `${pathname}/browser/error/404.html`;
-          err["options"]["params"] = {
-            errorcode: error.code,
-            title: "System Notification",
-            msg: error.message,
-          };
+          let errcode, errmessage;
+
+          if (error.code) {
+            errcode = error.code;
+            errmessage = error.message;
+          } else if (error.err) {
+            errcode = 506;
+            if (error.err.error == "") errmessage = "Unexpected error!";
+            else errmessage = error.err.error;
+          } else {
+            errcode = 506;
+            errmessage = error;
+          }
           if (fn?.from == "api") {
             err["options"]["json"] = {
               ...handler.dataformat,
-              ...{ code: error.code, msg: error.message },
+              ...{ code: errcode, msg: errmessage },
+            };
+          } else {
+            err["status"] = errcode;
+            if (errcode >= 500)
+              err["view"] = `${pathname}/browser/error/500.html`;
+            else err["view"] = `${pathname}/browser/error/404.html`;
+            let msg;
+            if (typeof errmessage == "string") msg = errmessage;
+            else msg = JSON.stringify(errmessage);
+
+            err["options"]["params"] = {
+              errorcode: errcode,
+              title: "System Notification",
+              msg: msg,
             };
           }
-          let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" ${error.code} Error:${error.message}`;
+          let errmsg = `"${orireq.method} ${orireq.originalUrl} HTTP/1.1" ${errcode} Error:`;
+          if (typeof errmessage == "string") errmsg += errmessage;
+          else errmsg += JSON.stringify(errmessage);
           logerr(errmsg);
 
           let result_catch = await processEnd(orires);
