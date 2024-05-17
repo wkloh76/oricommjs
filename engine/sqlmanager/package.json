@@ -1,0 +1,7 @@
+{
+    "name": "sqlmanager",
+    "dependencies": {
+        "better-sqlite3": "10.0.0",
+        "csv-parser": "3.0.0"
+    }
+}

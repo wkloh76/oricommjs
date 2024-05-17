@@ -1,0 +1,27 @@
+[production]
+[production.sqlite3]
+
+[production.sqlite3.log]
+type = "dateFile"
+keepFileExt = true
+maxLogSize = "50M"
+numBackups = 10
+success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+[production.sqlite3.db]
+workdb = { path = "", type = "memory" }
+filedb = { path = "", type = "file" }
+
+[debug]
+[debug.sqlite3]
+
+[debug.sqlite3.log]
+type = "dateFile"
+keepFileExt = true
+maxLogSize = "50M"
+numBackups = 10
+success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+[debug.sqlite3.db]
+workdb = { path = "", type = "memory" }
+filedb = { path = "", type = "file" }
