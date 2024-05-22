@@ -151,7 +151,7 @@ module.exports = async (...args) => {
               script.type = "text/javascript";
               script.innerHTML = `var mjs=${JSON.stringify(
                 molecule.import_mjs(mjs, params)
-              )}`;
+              )};`;
               document.getElementsByTagName("head")[0].appendChild(script);
               let rtnimport_css = molecule.import_css(document, css, params);
               if (rtnimport_css) throw rtnimport_css;
@@ -379,6 +379,7 @@ module.exports = async (...args) => {
                   queuertn["action"] = queuertn.render;
                 } else if (fn.idx != idx) {
                   queuertn = await queue[fname].apply(null, [orireq, response]);
+                  queuertn["action"] = queuertn.render;
                 }
 
                 let { err, render, stack, message, ...res } = queuertn;

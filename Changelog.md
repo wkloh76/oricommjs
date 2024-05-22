@@ -37,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix bug Cannot read properties of null (reading 'querySelectorAll') from `body.querySelector(body_node.nodeName).querySelectorAll("*");` issue. Apply `toLowerCase()` into `body_node.nodeName`. Completed on 2024-05-14
 - Bug fix from callback at loghttp which manage express.js route message. Completed on 2024-05-16
+- Fixed a bug in the rules where good conditions could not be determined causing the entire route to fail. Completed on 2024-05-20
 
 ### Security
 
