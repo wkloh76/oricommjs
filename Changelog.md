@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate all functions from `array.js` to `utils.js `. Completed on 2024-05-16
 - Add more check method to prevent unexpected error cause entire system crash in `onrequest` function at `reaction.js`. Completed on 2024-05-17
 - Create SQLite3 database engine into sqlmanager and all function tested excluded `query` function. Completed on 2024-05-17
+- Active `injectionjs` object which will passing data from backend to frontend global variables in `processEnd` function at `reaction.js` . Completed on 2024-05-23
 
 ### Changed
 

@@ -71,6 +71,7 @@ module.exports = async (...args) => {
               options: {
                 css,
                 html,
+                injectionjs,
                 js,
                 json,
                 layer,
@@ -152,6 +153,10 @@ module.exports = async (...args) => {
               script.innerHTML = `var mjs=${JSON.stringify(
                 molecule.import_mjs(mjs, params)
               )};`;
+              if (Object.keys(injectionjs.variables).length > 0)
+                script.innerHTML += `var injectionjs=${JSON.stringify(
+                  injectionjs.variables
+                )}`;
               document.getElementsByTagName("head")[0].appendChild(script);
               let rtnimport_css = molecule.import_css(document, css, params);
               if (rtnimport_css) throw rtnimport_css;

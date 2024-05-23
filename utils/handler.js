@@ -92,7 +92,7 @@ module.exports = async (...args) => {
                 css: { locally: [], other: [], remotely: [] },
                 html: "",
                 injectioncss: {},
-                injectionjs: {},
+                injectionjs: { variables: {}, modules: {} },
                 injectionless: {},
                 js: { locally: [], other: [], remotely: [] },
                 json: {},
