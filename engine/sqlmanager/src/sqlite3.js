@@ -24,7 +24,6 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const sqlite3 = require("better-sqlite3");
-    const csv = require("csv-parser");
     const { fs, path, logger } = sys;
     const {
       utils: { handler, errhandler },

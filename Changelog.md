@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create SQLite3 database engine into sqlmanager and all function tested excluded `query` function. Completed on 2024-05-17
 - Active `injectionjs` object which will passing data from backend to frontend global variables in `processEnd` function at `reaction.js`. Completed on 2024-05-23
 - Apply `startup` execution process in `work` function at `app.js` for initialize some process at components. Completed on 2024-05-24
+- Release simple sqlite3 db engine into sqlmanager engine. Can be define as memory or file type. Completed on 2024-05-24
 
 ### Changed
 

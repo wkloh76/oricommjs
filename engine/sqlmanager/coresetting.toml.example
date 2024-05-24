@@ -23,5 +23,5 @@ numBackups = 10
 success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
 
 [debug.sqlite3.db]
-workdb = { path = "", type = "memory" }
-filedb = { path = "", type = "file" }
+workdb = { path = "", type = "memory", backup = "" }
+filedb = { path = "", type = "file", backup = "" }
