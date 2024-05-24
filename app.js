@@ -513,8 +513,15 @@
                     const [cosetting, comp] = args;
                     let output = { code: 0, msg: "", data: null };
                     try {
-                      if (comp.start) {
-                        let rtn = await comp.start(cosetting);
+                      let { startup, start } = comp;
+                      if (startup) {
+                        for (let module of startup) {
+                          let rtn = await module(cosetting.ongoing);
+                          if (rtn) throw rtn;
+                        }
+                      }
+                      if (start) {
+                        let rtn = await start(cosetting);
                         if (rtn) throw rtn;
                       }
                       resolve(output);
