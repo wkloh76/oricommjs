@@ -317,6 +317,50 @@ module.exports = async (...args) => {
       };
 
       /**
+       * The main purpose is to prevent users from improperly using async/await and promise
+       * methods to trigger unpredictable errors and cause the entire system to shut down.
+       * When server receive the request from client, will proceed
+       * @alias module:reaction.sanbox
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - fn is mehtod/fuction for execution
+       * @param {Array} args[1] - params is in array type which contant with request and response variable
+       * @returns {Object} - Either return object or return data from execution function
+       */
+      const sanbox = async (...args) => {
+        let [fn, params] = args;
+        let [, response] = params;
+        try {
+          response.inspector = async (...args) => {
+            let [fn, params] = args;
+            try {
+              let result = fn.apply(null, params);
+              if (result instanceof Promise) {
+                result = await result;
+                if (result instanceof ReferenceError) throw result;
+              } else if (result instanceof ReferenceError) throw result;
+              return result;
+            } catch (error) {
+              if (error.msg) response.err.error = error.msg;
+              else if (error.stack) response.err.error = error.stack;
+              else if (error.message) response.err.error = error.message;
+              return response;
+            }
+          };
+
+          let result = fn.apply(null, params);
+          if (result instanceof Promise) {
+            result = await result;
+            if (result instanceof ReferenceError) throw result;
+          } else if (result instanceof ReferenceError) throw result;
+          return result;
+        } catch (error) {
+          if (error.msg) response.err.error = error.msg;
+          else if (error.stack) response.err.error = error.stack;
+          else if (error.message) response.err.error = error.message;
+          return response;
+        }
+      };
+      /**
        * The main objective is on listen register url from http client
        * @alias module:reaction.onrequest
        * @param {...Object} args - 2 parameters
@@ -380,10 +424,12 @@ module.exports = async (...args) => {
 
                 let queuertn;
                 if (permit && fn.idx == idx) {
-                  queuertn = await queue[fname].apply(null, [orireq, response]);
+                  // queuertn = await queue[fname].apply(null, [orireq, response]);
+                  queuertn = await sanbox(queue[fname], [orireq, response]);
                   queuertn["action"] = queuertn.render;
                 } else if (fn.idx != idx) {
-                  queuertn = await queue[fname].apply(null, [orireq, response]);
+                  // queuertn = await queue[fname].apply(null, [orireq, response]);
+                  queuertn = await sanbox(queue[fname], [orireq, response]);
                   queuertn["action"] = queuertn.render;
                 }
 

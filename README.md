@@ -44,6 +44,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
   - deskeletronjs (ElectronJS)
 - Optional modules:
   - sqlmanager
+    - sqlite3
 
 ## atomic
 
