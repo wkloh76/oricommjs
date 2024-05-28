@@ -371,6 +371,12 @@ module.exports = async (...args) => {
         let [orireq, orires, next] = args;
         let fn;
         try {
+          //Resolve web page caching across all browsers
+          //https://stackoverflow.com/questions/49547/how-do-we-control-web-page-caching-across-all-browsers
+          orires.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+          orires.setHeader("Pragma", "no-cache"); // HTTP 1.0.
+          orires.setHeader("Expires", "0"); // Proxies.
+
           let paramres = {};
           let paramerror;
           let redirect;
