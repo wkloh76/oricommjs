@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix post rule process unable continue proceed cause by controller side in `reaction.js` at webnodejs engine. Completed on 2024-05-29
+
 ### Security
 
 [1.1.0]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.0

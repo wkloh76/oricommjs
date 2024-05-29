@@ -373,12 +373,16 @@ module.exports = async (...args) => {
         try {
           //Resolve web page caching across all browsers
           //https://stackoverflow.com/questions/49547/how-do-we-control-web-page-caching-across-all-browsers
-          orires.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
+          orires.setHeader(
+            "Cache-Control",
+            "no-cache, no-store, must-revalidate"
+          ); // HTTP 1.1.
           orires.setHeader("Pragma", "no-cache"); // HTTP 1.0.
           orires.setHeader("Expires", "0"); // Proxies.
 
           let paramres = {};
           let paramerror;
+          let errorstack;
           let redirect;
           let { defaulturl, ...component } = components;
           for (let [compkey, compval] of Object.entries(component)) {
@@ -415,6 +419,7 @@ module.exports = async (...args) => {
                   err: chkerr,
                   fname: chkfname,
                   render: chkrender,
+                  rule: chkrule,
                   ...chkparamres
                 } = paramres;
 
@@ -425,8 +430,11 @@ module.exports = async (...args) => {
                   },
                   fname: fname,
                   render: handler.webview,
+                  rule: { strict: false },
+
                   ...chkparamres,
                 };
+                if (chkrule) response = { ...response, rule: chkrule };
 
                 let queuertn;
                 if (permit && fn.idx == idx) {
@@ -454,14 +462,32 @@ module.exports = async (...args) => {
                   err &&
                   (!isrender(err.render) || !handler.check_empty(err.error))
                 ) {
-                  paramerror = { ...paramerror, ...err };
-                  if (!isrender(err.render) && permit == true) permit = false;
+                  if (
+                    permit &&
+                    idx >= fn.idx &&
+                    idx + 1 <= fn.controller.length
+                  ) {
+                    if (errorstack) errorstack = { ...paramerror, ...err };
+                    else errorstack = { ...{}, ...paramerror, ...err };
+                  } else {
+                    paramerror = { ...paramerror, ...err };
+                    if (!isrender(err.render) && permit == true) permit = false;
+                  }
                 }
 
                 if (render) {
                   if (!isrender(render)) paramres["render"] = render;
                 }
-                if (res) paramres = { ...paramres, ...res };
+                if (res) {
+                  paramres = { ...paramres, ...res };
+                  if (
+                    permit &&
+                    idx >= fn.idx &&
+                    idx + 1 <= fn.controller.length &&
+                    !res.rule.strict
+                  )
+                    break;
+                }
                 if (paramerror !== undefined) break;
               }
             } else {
@@ -471,6 +497,7 @@ module.exports = async (...args) => {
               };
             }
 
+            if (errorstack) paramerror = errorstack;
             // Error checking
             if (paramerror) {
               orires.locals = {
