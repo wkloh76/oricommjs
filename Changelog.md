@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Move `errlog` and `setuplog` function from `sqlite3.js` to `index.js` and those function will support any kind of database engine. Completed on 2024-05-30
+
 ### Deprecated
 
 ### Removed

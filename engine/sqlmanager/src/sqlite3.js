@@ -16,7 +16,7 @@
 "use strict";
 /**
  * A module which handle all transaction wih sqlite3 database
- * @module src_sqlite3_index
+ * @module src_sqlite3
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
@@ -35,53 +35,15 @@ module.exports = async (...args) => {
           return Object.keys(conn);
         },
       };
+      let sqlmanager;
 
-      const errlog = (err) => {
-        let message;
-        if (err.code && !message) message = "Code:" + err.code + "\r\n";
-        else message += "Message:" + err.code + "\r\n";
-        if (err.message && !message)
-          message = "Message:" + err.message + "\r\n";
-        else message += "Message:" + err.message + "\r\n";
-        if (err.stack && !message) message = "Stack:" + err.stack;
-        else message += "Message:" + err.stack;
-        logger.error(message);
-      };
-
-      const setuplog = async (...args) => {
-        const [log, db, dbname] = args;
-        const { default: log4js } = await import("log4js");
-        try {
-          let output = handler.dataformat;
-          let logpath = db.path;
-          if (db.path == "")
-            logpath = path.join(cosetting.logpath, db.engine, `${dbname}.log`);
-          cosetting.log4jsconf.appenders = {
-            ...cosetting.log4jsconf.appenders,
-            ...{
-              [dbname]: {
-                filename: logpath,
-                ...log,
-              },
-            },
-          };
-          cosetting.log4jsconf.categories = {
-            ...cosetting.log4jsconf.categories,
-            ...{
-              [dbname]: {
-                appenders: [dbname],
-                level: "ALL",
-              },
-            },
-          };
-          await log4js.configure(cosetting.log4jsconf);
-          output.data = log4js.getLogger(dbname);
-          return output;
-        } catch (error) {
-          return errhandler(error);
-        }
-      };
-
+      /**
+       * Check SQLite3 database connectivity
+       * @alias module:sqlmanager.sqlite3.isconnected
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db onnection name base on coresetting.ongoing
+       * @returns {Boolean} - Return true/false
+       */
       const isconnected = (...args) => {
         let [dbname] = args;
         let output = true;
@@ -90,6 +52,13 @@ module.exports = async (...args) => {
         return output;
       };
 
+      /**
+       * Check SQLite3 database is exist
+       * @alias module:sqlmanager.sqlite3.isschema
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
+       * @returns {Boolean} - Return true/false
+       */
       const isschema = (...args) => {
         let [dbname] = args;
         let output = false;
@@ -101,12 +70,21 @@ module.exports = async (...args) => {
             .get();
           if (query.counter > 0) output = true;
         } catch (error) {
-          errlog(error);
+          sqlmanager.errlog(error);
         } finally {
           return output;
         }
       };
 
+      /**
+       * Establish SQLite3 database connection
+       * @alias module:sqlmanager.sqlite3.connect
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - log is logger which will save sql prepare statement into log file
+       * @param {String} args[1] - db is db engine
+       * @param {String} args[2] - dbname is db onnection name base on coresetting.ongoing
+       * @returns {Object} - Return object value which content process status
+       */
       const connect = async (...args) => {
         let [log, db, dbname] = args;
         let output = handler.dataformat;
@@ -139,23 +117,24 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Configure log module for webexpress and normal log
+       * Create SQLite3 database if not exist
        * @alias module:sqlite3.create
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - cosetting is an object value from global variable coresetting
        * @param {Object} args[1] - path is a module from node_modules
-       * @returns {Object} - - Return value in object type
+       * @returns {Object} - Return value in object type
        */
       lib["create"] = async (...args) => {
-        let [setting] = args;
+        let [engine, setting] = args;
         let { db, log } = setting;
         try {
+          sqlmanager = engine;
           let output = handler.dataformat;
           let err;
           for (let [key, val] of Object.entries(db)) {
             let { ...dbconf } = val;
             dbconf["engine"] = "sqlite3";
-            let rtn = await setuplog(log, dbconf, key);
+            let rtn = await sqlmanager.setuplog(log, dbconf, key);
             let logger = rtn.data;
             if (rtn.code != 0) logger = undefined;
             rtn = await connect(logger, dbconf, key);
@@ -171,6 +150,13 @@ module.exports = async (...args) => {
         }
       };
 
+      /**
+       * Request database connection status
+       * @alias module:sqlmanager.sqlite3.status
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db onnection name base on coresetting.ongoing
+       * @returns {Object} - Return object value which content both connection and schema status
+       */
       lib["status"] = (...args) => {
         let [dbname] = args;
         let output = handler.dataformat;
@@ -180,6 +166,13 @@ module.exports = async (...args) => {
         return output;
       };
 
+      /**
+       * Close SQLite3 database connection
+       * @alias module:sqlmanager.sqlite3.close
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
+       * @returns {Boolean} - Return true/false
+       */
       lib["close"] = (...args) => {
         let [dbname] = args;
         let output = true;
@@ -192,6 +185,14 @@ module.exports = async (...args) => {
         return output;
       };
 
+      /**
+       * Imposrt SQLite3 database base on sql file format
+       * @alias module:sqlmanager.sqlite3.import
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
+       * @param {String} args[1] - file is the sql file location
+       * @returns {Object} - Return object value which content both connection and schema status
+       */
       lib["import"] = (...args) => {
         let [dbname, file] = args;
         let output = handler.dataformat;
@@ -206,12 +207,20 @@ module.exports = async (...args) => {
         } catch (error) {
           output.code = 10001;
           output.msg = "SQLite3 import failure:SQL file format wrong!";
-          errlog(error);
+          sqlmanager.errlog(error);
         } finally {
           return output;
         }
       };
 
+      /**
+       * backup SQLite3 database and save to file
+       * @alias module:sqlmanager.sqlite3.backup
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
+       * @param {String} args[1] - file is the sql file location to save
+       * @returns {Object} - Return object value which content both connection and schema status
+       */
       lib["backup"] = async (...args) => {
         let [dbname, file] = args;
         let output = handler.dataformat;
@@ -223,12 +232,21 @@ module.exports = async (...args) => {
           output.code = 10002;
           output.msg =
             "SQLite3 backup failure:File already exits or path and folder permission issue!";
-          errlog(error);
+          sqlmanager.errlog(error);
         } finally {
           return output;
         }
       };
 
+      /**
+       * SQLite3 database executionn sql statement
+       * @alias module:sqlite3.query
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db onnection name base on coresetting.ongoing
+       * @param {String} args[1] - statements sql prepare statement
+       * @param {Object} args[2] - options is decide what kind of output method
+       * @returns {Object} - Return database result in  object type
+       */
       lib["query"] = async (...args) => {
         let [
           dbname,
@@ -274,12 +292,16 @@ module.exports = async (...args) => {
           }
         } catch (error) {
           output = errhandler(error);
-          errlog(error);
+          sqlmanager.errlog(error);
         } finally {
           return output;
         }
       };
 
+      lib = {
+        ...lib,
+        connect: connect,
+      };
       resolve(lib);
     } catch (error) {
       reject(error);

@@ -22,12 +22,68 @@ module.exports = async (...args) => {
     const [library, sys, cosetting] = obj;
     const bcrypt = require("bcrypt");
     const csv = require("csv-parser");
+    const jandas = require("jandas");
+    const sqlformat = require("sql-fmt");
+    const { path, logger } = sys;
     const {
-      utils: { handler },
+      utils: { handler, errhandler },
     } = library;
     try {
       let lib = {
         sqlite3: await require("./sqlite3")(params, obj),
+      };
+
+      /**
+       * Handle exception error and compile error statement and save to error.log
+       * @alias module:sqlmanager.errlog
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - err is an object value in exception error type
+       */
+      const errlog = (...args) => {
+        let [err] = args;
+        let message;
+        if (err.code && !message) message = "Code:" + err.code + "\r\n";
+        else message += "Message:" + err.code + "\r\n";
+        if (err.message && !message)
+          message = "Message:" + err.message + "\r\n";
+        else message += "Message:" + err.message + "\r\n";
+        if (err.stack && !message) message = "Stack:" + err.stack;
+        else message += "Message:" + err.stack;
+        logger.error(message);
+      };
+
+      const setuplog = async (...args) => {
+        const [log, db, dbname] = args;
+        const { default: log4js } = await import("log4js");
+        try {
+          let output = handler.dataformat;
+          let logpath = db.path;
+          if (db.path == "")
+            logpath = path.join(cosetting.logpath, db.engine, `${dbname}.log`);
+          cosetting.log4jsconf.appenders = {
+            ...cosetting.log4jsconf.appenders,
+            ...{
+              [dbname]: {
+                filename: logpath,
+                ...log,
+              },
+            },
+          };
+          cosetting.log4jsconf.categories = {
+            ...cosetting.log4jsconf.categories,
+            ...{
+              [dbname]: {
+                appenders: [dbname],
+                level: "ALL",
+              },
+            },
+          };
+          await log4js.configure(cosetting.log4jsconf);
+          output.data = log4js.getLogger(dbname);
+          return output;
+        } catch (error) {
+          return errhandler(error);
+        }
       };
 
       lib["password"] = (...args) => {
@@ -50,6 +106,35 @@ module.exports = async (...args) => {
         }
       };
 
+      lib["sqlexecute"] = (...args) => {
+        let [db, condition, data] = args;
+        let output = handler.dataformat;
+        try {
+          let saltrounds = 10;
+
+          output.data = bcrypt.hashSync(myPlaintextPassword, saltRounds);
+          // Store hash in your password DB.
+
+          if (password && hashpassword) {
+            let rtn = bcrypt.compareSync(password, hashpassword);
+            output.data = { result: rtn, status: "compare" };
+          } else {
+            let rtn = bcrypt.hashSync(password, saltrounds);
+            output.data = { result: rtn, status: "generate" };
+          }
+        } catch (error) {
+          output = errhandler(error);
+          errlog(error);
+        } finally {
+          return output;
+        }
+      };
+
+      lib = {
+        ...lib,
+        setuplog: setuplog,
+        errlog: errlog,
+      };
       resolve(lib);
     } catch (error) {
       reject(error);
