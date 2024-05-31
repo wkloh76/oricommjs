@@ -36,6 +36,7 @@ module.exports = async (...args) => {
         },
       };
       let sqlmanager;
+      let dblog = {};
 
       /**
        * Check SQLite3 database connectivity
@@ -86,7 +87,7 @@ module.exports = async (...args) => {
        * @returns {Object} - Return object value which content process status
        */
       const connect = async (...args) => {
-        let [log, db, dbname] = args;
+        let [db, dbname] = args;
         let output = handler.dataformat;
         try {
           let options = {};
@@ -95,14 +96,14 @@ module.exports = async (...args) => {
           if (db.path == "")
             logpath = path.join(cosetting.logpath, db.engine, `${dbname}.db3`);
 
-          if (log)
+          if (dblog[dbname])
             options.verbose = (message) => {
-              log.info(message);
+              dblog[dbname].info(message);
             };
           if (db.type == "file") rtn = await new sqlite3(logpath, options);
           else rtn = await new sqlite3(":memory:", options);
           output.data = rtn;
-          if (!conn[dbname]) conn[dbname] = { db: rtn, logger: log };
+          if (!conn[dbname]) conn[dbname] = { db: rtn, logger: dblog[dbname] };
           if (!rtn)
             throw {
               message: "newschema execution failure!",
@@ -135,11 +136,11 @@ module.exports = async (...args) => {
             let { ...dbconf } = val;
             dbconf["engine"] = "sqlite3";
             let rtn = await sqlmanager.setuplog(log, dbconf, key);
-            let logger = rtn.data;
-            if (rtn.code != 0) logger = undefined;
-            rtn = await connect(logger, dbconf, key);
-            if (rtn.code !== 0)
+            if (!dblog[key]) dblog[key] = rtn.data;
+            if (rtn.code !== 0) {
+              delete dblog[key];
               err += `The ${key}.db3 database create failure!`;
+            }
           }
           if (err)
             throw { message: "Failure to create all database!", stack: err };
@@ -242,21 +243,32 @@ module.exports = async (...args) => {
        * SQLite3 database executionn sql statement
        * @alias module:sqlite3.query
        * @param {...Object} args - 1 parameters
-       * @param {String} args[0] - dbname is db onnection name base on coresetting.ongoing
-       * @param {String} args[1] - statements sql prepare statement
-       * @param {Object} args[2] - options is decide what kind of output method
+       * @param {Object} args[0] - options is decide what kind of output method
+       * @param {Object} args[0][write] - write is true the prepare statement for INSERT,UPDATE,DELETE
+       * @param {Object} args[0][type] - type different type of slqite3 class statement
+       * @param {Object} args[0][cond] - cond get the specific value from query.get and query.all
+       * @param {Object} args[0][transaction] - transaction condition:deferred,immediate,exclusive
+       * @param {Object} args[1][name] - dbname is db onnection name base on coresetting.ongoing
+       * @param {Object} args[1][statement] - statement sql prepare statement
+       * @param {Object} args[2] - sqldata is object value for insert table
+       *
        * @returns {Object} - Return database result in  object type
        */
       lib["query"] = async (...args) => {
         let [
-          dbname,
-          statements,
-          options = { write: false, type: 0, cond: "" },
+          options = {
+            write: false,
+            type: 0,
+            cond: "",
+            transaction: undefined,
+          },
+          db = { name: "", statement: "" },
+          sqldata,
         ] = args;
         let output = handler.dataformat;
         try {
-          if (conn[dbname]) {
-            let query = conn[dbname].db.prepare(statements);
+          if (conn[db.name]) {
+            let query = conn[db.name].db.prepare(db.statement);
             let rtn;
             if (!options.write) {
               switch (options.type) {
@@ -287,8 +299,16 @@ module.exports = async (...args) => {
                   rtn = await query.get();
                   break;
               }
-            } else rtn = await query.run();
-            if (rtn) output.data = rtn;
+            } else {
+              if (options.transaction) {
+                const insertMany = conn[db.name].db.transaction((data) => {
+                  for (const value of data) query.run(value);
+                });
+                insertMany[options.transaction](sqldata);
+              } else {
+                for (const value of sqldata) query.run(value);
+              }
+            }
           }
         } catch (error) {
           output = errhandler(error);

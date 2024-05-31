@@ -18,10 +18,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Move `errlog` and `setuplog` function from `sqlite3.js` to `index.js` and those function will support any kind of database engine. Completed on 2024-05-30
+- Swtich the logger object require from connect function parameter to internal module private variable which will covert entire module in `sqlite3.js`.Completed on 2024-05-31
+- Create sqlite transaction to insert table statement to prevent multi connection insert same table cause the problem at `sqlite3.js`. Completed on 2024-05-31
 
 ### Deprecated
 
 ### Removed
+
+- Remove call `connect` function from `create` in `sqlite3.js`.Completed on 2024-05-31
 
 ### Fixed
 
