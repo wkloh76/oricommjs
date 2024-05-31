@@ -25,11 +25,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Remove call `connect` function from `create` in `sqlite3.js`.Completed on 2024-05-31
+- Remove call `connect` function from `create` in `sqlite3.js`. Completed on 2024-05-31
 
 ### Fixed
 
 - Fix post rule process unable continue proceed cause by controller side in `reaction.js` at webnodejs engine. Completed on 2024-05-29
+- Bug fix at `sqlite3.js` `query` function no return data issue. Completed on 2024-05-31
 
 ### Security
 

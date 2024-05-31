@@ -299,6 +299,7 @@ module.exports = async (...args) => {
                   rtn = await query.get();
                   break;
               }
+              output.data = rtn;
             } else {
               if (options.transaction) {
                 const insertMany = conn[db.name].db.transaction((data) => {
