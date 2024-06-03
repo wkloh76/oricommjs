@@ -78,7 +78,7 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Establish SQLite3 database connection
+       * Establish SQLite3 database connection or create database if no exist
        * @alias module:sqlmanager.sqlite3.connect
        * @param {...Object} args - 1 parameters
        * @param {String} args[0] - log is logger which will save sql prepare statement into log file
@@ -118,14 +118,14 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Create SQLite3 database if not exist
-       * @alias module:sqlite3.create
+       * Create sql stamenet logger
+       * @alias module:sqlite3.createlog
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - cosetting is an object value from global variable coresetting
        * @param {Object} args[1] - path is a module from node_modules
        * @returns {Object} - Return value in object type
        */
-      lib["create"] = async (...args) => {
+      lib["createlog"] = async (...args) => {
         let [engine, setting] = args;
         let { db, log } = setting;
         try {
@@ -139,11 +139,10 @@ module.exports = async (...args) => {
             if (!dblog[key]) dblog[key] = rtn.data;
             if (rtn.code !== 0) {
               delete dblog[key];
-              err += `The ${key}.db3 database create failure!`;
+              err += `The ${key}.log sql statement log file create failure!`;
             }
           }
-          if (err)
-            throw { message: "Failure to create all database!", stack: err };
+          if (err) throw { message: "Failure to create log file!", stack: err };
 
           return output;
         } catch (error) {
@@ -174,7 +173,7 @@ module.exports = async (...args) => {
        * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
        * @returns {Boolean} - Return true/false
        */
-      lib["close"] = (...args) => {
+      lib["disconnect"] = (...args) => {
         let [dbname] = args;
         let output = true;
         if (!conn[dbname]) output = false;
