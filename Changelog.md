@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Apply setHeader to control cache in web engine which allow to control web page caching across all browsers. Completed on 2024-05-28
+- Release simple MariaDB database client engine into sqlmanager. Completed on 2024-06-04
 
 ### Changed
 

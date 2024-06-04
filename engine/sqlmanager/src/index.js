@@ -23,14 +23,15 @@ module.exports = async (...args) => {
     const bcrypt = require("bcrypt");
     const csv = require("csv-parser");
     const jandas = require("jandas");
-    const sqlformat = require("sql-fmt");
+    const sqlfmt = require("sql-fmt");
     const { path, logger } = sys;
     const {
-      utils: { handler, errhandler },
+      utils: { datatype, handler, errhandler, renameObjectKeys },
     } = library;
     try {
       let lib = {
         sqlite3: await require("./sqlite3")(params, obj),
+        mariadb: await require("./mariadb")(params, obj),
       };
 
       /**
@@ -52,6 +53,15 @@ module.exports = async (...args) => {
         logger.error(message);
       };
 
+      /**
+       * Datalogger which will allow to keep every sql query statement into the log file
+       * @alias module:sqlmanager.setuplog
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - log is an object value in log file setting parameters
+       * @param {Object} args[1] - db is an object value for database parameters
+       * @param {String} args[2] - dbname is database connection name
+       * @returns {Object} - Return logger module in object type
+       */
       const setuplog = async (...args) => {
         const [log, db, dbname] = args;
         const { default: log4js } = await import("log4js");
@@ -86,35 +96,19 @@ module.exports = async (...args) => {
         }
       };
 
+      /**
+       * Compare/create new hash passowrd
+       * @alias module:sqlmanager.password
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - password is a value to generate new hash password if second parameters is undefined
+       * @param {String} args[1] - hashpassword is a current hash value which will compare the new has password
+       * @returns {Object} - Return compare or new password value in object type
+       */
       lib["password"] = (...args) => {
         let [password, hashpassword] = args;
         let output = handler.dataformat;
         try {
           let saltrounds = 10;
-          if (password && hashpassword) {
-            let rtn = bcrypt.compareSync(password, hashpassword);
-            output.data = { result: rtn, status: "compare" };
-          } else {
-            let rtn = bcrypt.hashSync(password, saltrounds);
-            output.data = { result: rtn, status: "generate" };
-          }
-        } catch (error) {
-          output = errhandler(error);
-          errlog(error);
-        } finally {
-          return output;
-        }
-      };
-
-      lib["sqlexecute"] = (...args) => {
-        let [db, condition, data] = args;
-        let output = handler.dataformat;
-        try {
-          let saltrounds = 10;
-
-          output.data = bcrypt.hashSync(myPlaintextPassword, saltRounds);
-          // Store hash in your password DB.
-
           if (password && hashpassword) {
             let rtn = bcrypt.compareSync(password, hashpassword);
             output.data = { result: rtn, status: "compare" };
