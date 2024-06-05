@@ -175,6 +175,32 @@ module.exports = async (...args) => {
         };
 
         /**
+         * Check SQLite3 database is exist
+         * @alias module:mariadb.clsMariaDB.ischema
+         * @param {...Object} args - 1 parameters
+         * @returns {Boolean} - Return true/false
+         */
+        ischema = async (...args) => {
+          let [dbname] = args;
+          let output = false;
+          try {
+            let statement = {
+              sql:
+                "SELECT COUNT(DISTINCT `table_name`) AS counter FROM `information_schema`.`columns` WHERE `table_schema` = '" +
+                dbname +
+                "';",
+              ...this.dboption,
+            };
+            let [rows] = await this._conn.query(statement);
+            if (rows[0].counter > 0) output = true;
+          } catch (error) {
+            sqlmanager.errlog(error);
+          } finally {
+            return output;
+          }
+        };
+
+        /**
          * Mariadb general query enquiry work with db options setting and some of rules condition
          * @alias module:mariadb.clsMariaDB.query
          * @param {...Object} args - 1 parameters
@@ -220,7 +246,6 @@ module.exports = async (...args) => {
           } catch (error) {
             output = errhandler(error);
             sqlmanager.errlog(error);
-            // this.errlog(error);
           } finally {
             return output;
           }
