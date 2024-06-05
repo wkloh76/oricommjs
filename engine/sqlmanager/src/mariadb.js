@@ -26,7 +26,7 @@ module.exports = async (...args) => {
     const mariadb = require("mariadb");
     const { fs, path, logger } = sys;
     const {
-      utils: { handler, errhandler },
+      utils: { datatype, handler, errhandler },
     } = library;
     try {
       let conn = {};
@@ -48,59 +48,156 @@ module.exports = async (...args) => {
             this._conn = connection;
             this._logger = logger;
             this._fn = fn;
-            this._dboption = {
-              // timeout: 3000,
-              namedPlaceholders: false,
-              rowsAsArray: false,
-              metaAsArray: true,
-              nestTables: false,
-              dateStrings: true,
-              bigIntAsNumber: true,
-              decimalAsNumber: false,
-            };
-            this._formatter = {
-              transaction: false,
-              once: false,
-            };
           }
         }
 
+        #rules = {
+          transaction: false,
+          queryone: false,
+        };
+
+        #dboption = {
+          timeout: 30000,
+          namedPlaceholders: false,
+          rowsAsArray: false,
+          metaAsArray: false,
+          nestTables: false,
+          dateStrings: true,
+          bigIntAsNumber: true,
+          decimalAsNumber: false,
+        };
+
+        /**
+         * Proeduce the sql statement to database with transaction
+         * @alias module:mariadb.clsMariaDB.trans
+         * @param {...Object} args - 1 parameters
+         * @param {String} args[0] - statement is string data in sql statement format.
+         */
+        trans = async (...args) => {
+          let [statement] = args;
+          let output = handler.dataformat;
+          try {
+            let [rows] = await this._conn.query(statement);
+            output.data = rows;
+          } catch (error) {
+            await this._conn.rollback();
+            output = errhandler(error);
+          } finally {
+            return output;
+          }
+        };
+
+        /**
+         * Proeduce the sql statement to database without transaction
+         * @alias module:mariadb.clsMariaDB.notrans
+         * @param {...Object} args - 1 parameters
+         * @param {String} args[0] - statement is string data in sql statement format.
+         */
+        notrans = async (...args) => {
+          let [statement] = args;
+          let output = handler.dataformat;
+          try {
+            let [rows] = await this._conn.query(statement);
+            output.data = rows;
+          } catch (error) {
+            output = errhandler(error);
+          } finally {
+            return output;
+          }
+        };
+
+        /**
+         * Set a limit 1 into the sql statement and return a row of data(Only for SELECT enquiry)
+         * @alias module:mariadb.clsMariaDB.prepare_queryone
+         * @param {...Object} args - 1 parameters
+         * @param {Object} args[0] - sql is an array of value in sql statement format.
+         */
+        prepare_queryone = (...args) => {
+          let [sql] = args;
+          let output = [];
+          for (let prepare of sql) {
+            let tempsql = prepare.toUpperCase();
+            let limit = tempsql.indexOf("LIMIT");
+            if (tempsql.indexOf("SELECT") > -1 && limit == -1) {
+              let lastIndexOf = prepare.lastIndexOf(";");
+              if (lastIndexOf > -1)
+                prepare = prepare.substring(0, lastIndexOf) + " LIMIT 1;";
+              else prepare = prepare + " LIMIT 1;";
+            }
+            output.push(prepare);
+          }
+          return output;
+        };
+
+        /**
+         * Handle exception error and compile error statement and save to error.log
+         * @alias module:mariadb.clsMariaDB.errlog
+         * @param {...Object} args - 1 parameters
+         * @param {Object} args[0] - err is an object value in exception error type
+         */
+        errlog = (...args) => {
+          let [err] = args;
+          let message;
+          if (err.code && !message) message = "Code:" + err.code + "\r\n";
+          else message += "Message:" + err.code + "\r\n";
+          if (err.message && !message)
+            message = "Message:" + err.message + "\r\n";
+          else message += "Message:" + err.message + "\r\n";
+          if (err.stack && !message) message = "Stack:" + err.stack;
+          else message += "Message:" + err.stack;
+          logger.error(message);
+        };
+
+        /**
+         * Getter the dboption default value
+         * @type {Object}
+         * @memberof module:mariadb.clsMariaDB.property.dboption
+         * @instance
+         */
         get dboption() {
-          return structuredClone(this._dboption);
-        }
-        get formatter() {
-          return structuredClone(this._formatter);
+          return structuredClone(this.#dboption);
         }
 
         /**
-         * Disconnect connection
-         * @alias module:mariadb.connect
-         * @param {...Object} args - 1 parameter
-         * @param {Object} args[0] - database connection id
-         * @returns {Object} - Return
+         * Getter the rules default value
+         * @type {Object}
+         * @memberof module:mariadb.clsMariaDB.property.rules
+         * @instance
          */
-        disconnect = async () => {
-          await this._conn.end();
-          this._fn("disconnect", this._conn.threadId);
-          this._conn = null;
-        };
+        get rules() {
+          return structuredClone(this.#rules);
+        }
 
+        /**
+         * Getter the connection threadId value
+         * @type {Object}
+         * @memberof module:mariadb.clsMariaDB.property.threadId
+         * @instance
+         */
         get threadId() {
           return this._conn.threadId;
         }
 
         /**
-         * SQLite3 database executionn sql statement
-         * @alias module:sqlite3.query
+         * Disconnect connection
+         * @alias module:mariadb.clsMariaDB.disconnect
+         * @param {...Object} args - 1 parameter
+         * @returns {Null} - Return null
+         */
+        disconnect = async (...args) => {
+          await this._conn.end();
+          this._fn(this._conn.threadId);
+          this._conn = null;
+          return;
+        };
+
+        /**
+         * Mariadb general query enquiry work with db options setting and some of rules condition
+         * @alias module:mariadb.clsMariaDB.query
          * @param {...Object} args - 1 parameters
-         * @param {Object} args[0] - options is decide what kind of output method
-         * @param {Object} args[0][write] - write is true the prepare statement for INSERT,UPDATE,DELETE
-         * @param {Object} args[0][type] - type different type of slqite3 class statement
-         * @param {Object} args[0][cond] - cond get the specific value from query.get and query.all
-         * @param {Object} args[0][transaction] - transaction condition:deferred,immediate,exclusive
-         * @param {Object} args[1][name] - dbname is db onnection name base on coresetting.ongoing
-         * @param {Object} args[1][statement] - statement sql prepare statement
-         * @param {Object} args[2] - sqldata is object value for insert table
+         * @param {Object} args[0] - sql is array value which and each content in sql statement format
+         * @param {Object} args[1] - opt is an object value of mariadb module query method options and refer to dboption setting
+         * @param {Object} args[2] - cond is an object value refer to rules setting
          *
          * @returns {Object} - Return database result in  object type
          */
@@ -108,50 +205,69 @@ module.exports = async (...args) => {
           let [sql, opt, cond] = args;
           let output = handler.dataformat;
           try {
-            if (!cond) cond = structuredClone(this._formatter);
-            if (!opt) opt = structuredClone(this._dboption);
+            if (!cond) cond = this.rules;
+            if (!opt) opt = this.dboption;
 
-            if (cond.once) {
-              let tempsql = sql.toUpperCase();
-              if (tempsql.indexOf("SELECT") > -1) {
-                let lastIndexOf = sql.lastIndexOf(";");
-                if (lastIndexOf > -1)
-                  sql = sql.substring(0, lastIndexOf) + " LIMIT 1;";
+            if (datatype(sql) != "array") {
+              throw {
+                code: 10003,
+                msg: "The sql parameter is not the array data type! Reject query request.",
+              };
+            }
+            if (cond.queryone) sql = this.prepare_queryone(sql);
+            if (cond.transaction) await this._conn.beginTransaction();
+            for (let prepare of sql) {
+              let statement = { sql: prepare, ...opt };
+              this._logger.info(sql);
+              if (cond.transaction) {
+                let rtn = await this.trans(statement);
+                if (rtn.code == 0) {
+                  if (!output.data) output.data = [];
+                  output.data.push(rtn.data);
+                } else throw rtn;
+              } else {
+                let rtn = await this.notrans(statement);
+                if (rtn.code == 0) {
+                  if (!output.data) output.data = [];
+                  output.data.push(rtn.data);
+                } else throw rtn;
               }
             }
-            let statement = { sql: sql, ...opt };
-            this._logger.info(sql);
-            if (cond.transaction) {
-              await this._conn.beginTransaction();
-              let [rows, meta] = await this._conn.query(statement);
-              if (rows) {
-                await this._conn.commit();
-                output.data = rows;
-              } else await this._conn.rollback();
-            } else {
-              let [rows, meta] = await this._conn.query(statement);
-              if (rows) output.data = rows;
-            }
+            if (cond.transaction) await this._conn.commit();
           } catch (error) {
             output = errhandler(error);
-            this._logger.errlog(error);
+            this.errlog(error);
           } finally {
             return output;
           }
         };
       }
 
-      const parse = (cmd, threadId) => {
-        switch (cmd) {
-          case "disconnect":
-            if (conn[threadId]) {
-              delete conn[threadId];
-              conncount -= 1;
-            }
-            break;
+      /**
+       * Destroy the deactive connection Id in the module cache
+       * @alias module:mariadb.clsMariaDB.terminator
+       * @param {...Object} args - 1 parameter
+       *  @param {Integer} args[0] - threadId database connection Id.
+       * @returns {Null} - Return null
+       */
+      const terminator = (...args) => {
+        let [threadId] = args;
+        if (conn[threadId]) {
+          delete conn[threadId];
+          conncount -= 1;
         }
+        return;
       };
 
+      /**
+       * Register database pre-connection to the engine by on coresetting.toml defination
+       * @alias module:mariadb.connect
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - db is an object type of mariadb database connection setting
+       * @param {String} args[1] - dbname is db onnection name base on coresetting.ongoing
+       * @param {String} args[2] - compname is the components project naming
+       * @returns {Object} - Return object value which content process status
+       */
       const connect = async (...args) => {
         let [dbname, compname] = args;
         let output = handler.dataformat;
@@ -166,7 +282,7 @@ module.exports = async (...args) => {
               };
 
             conncount += 1;
-            output.data = new clsMariaDB(rtn, dblog[dbname], parse);
+            output.data = new clsMariaDB(rtn, dblog[dbname], terminator);
             if (!conn[output.data.threadId]) conn[output.data.threadId] = true;
           }
         } catch (error) {
@@ -177,12 +293,12 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Establish SQLite3 database connection or create database if no exist
-       * @alias module:sqlmanager.sqlite3.connect
+       * Register database pre-connection to the engine by on coresetting.toml defination
+       * @alias module:mariadb.register
        * @param {...Object} args - 1 parameters
-       * @param {String} args[0] - log is logger which will save sql prepare statement into log file
-       * @param {String} args[1] - db is db engine
-       * @param {String} args[2] - dbname is db onnection name base on coresetting.ongoing
+       * @param {Object} args[0] - db is an object type of mariadb database connection setting
+       * @param {String} args[1] - dbname is db onnection name base on coresetting.ongoing
+       * @param {String} args[2] - compname is the components project naming
        * @returns {Object} - Return object value which content process status
        */
       lib["register"] = async (...args) => {
@@ -190,7 +306,8 @@ module.exports = async (...args) => {
         let output = handler.dataformat;
         try {
           if (!registered[compname]) registered[compname] = {};
-          registered[compname][dbname] = db;
+          let { path: location, ...dbconf } = db;
+          registered[compname][dbname] = dbconf;
           let rtn = await connect(dbname, compname);
           if (!rtn.code == 0) {
             delete registered[compname][dbname];
@@ -204,7 +321,7 @@ module.exports = async (...args) => {
 
       /**
        * Create sql stamenet logger
-       * @alias module:sqlite3.createlog
+       * @alias module:mariadb.createlog
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - cosetting is an object value from global variable coresetting
        * @param {Object} args[1] - path is a module from node_modules
@@ -235,9 +352,17 @@ module.exports = async (...args) => {
         }
       };
 
+      /**
+       * Establish databas connection base on registered setting
+       * @alias module:mariadb.connector
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - dbname is db onnection name base on coresetting.ongoing
+       * @param {String} args[1] - compname is the components project naming
+       * @returns {Object} - Return value in object type which embed db connection module
+       */
       lib["connector"] = (...args) => {
         return new Promise(async (resolve) => {
-          let [compname, dbname] = args;
+          let [dbname, compname] = args;
           let output = handler.dataformat;
           try {
             if (!dbname)
