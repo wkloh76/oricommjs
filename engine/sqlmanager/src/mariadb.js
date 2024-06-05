@@ -60,7 +60,7 @@ module.exports = async (...args) => {
           timeout: 30000,
           namedPlaceholders: false,
           rowsAsArray: false,
-          metaAsArray: false,
+          metaAsArray: true,
           nestTables: false,
           dateStrings: true,
           bigIntAsNumber: true,
@@ -78,7 +78,8 @@ module.exports = async (...args) => {
           let output = handler.dataformat;
           try {
             let [rows] = await this._conn.query(statement);
-            output.data = rows;
+            let tempsql = statement.sql.toUpperCase();
+            if (tempsql.indexOf("SELECT") > -1) output.data = rows;
           } catch (error) {
             await this._conn.rollback();
             output = errhandler(error);
@@ -98,7 +99,8 @@ module.exports = async (...args) => {
           let output = handler.dataformat;
           try {
             let [rows] = await this._conn.query(statement);
-            output.data = rows;
+            let tempsql = statement.sql.toUpperCase();
+            if (tempsql.indexOf("SELECT") > -1) output.data = rows;
           } catch (error) {
             output = errhandler(error);
           } finally {
@@ -127,25 +129,6 @@ module.exports = async (...args) => {
             output.push(prepare);
           }
           return output;
-        };
-
-        /**
-         * Handle exception error and compile error statement and save to error.log
-         * @alias module:mariadb.clsMariaDB.errlog
-         * @param {...Object} args - 1 parameters
-         * @param {Object} args[0] - err is an object value in exception error type
-         */
-        errlog = (...args) => {
-          let [err] = args;
-          let message;
-          if (err.code && !message) message = "Code:" + err.code + "\r\n";
-          else message += "Message:" + err.code + "\r\n";
-          if (err.message && !message)
-            message = "Message:" + err.message + "\r\n";
-          else message += "Message:" + err.message + "\r\n";
-          if (err.stack && !message) message = "Stack:" + err.stack;
-          else message += "Message:" + err.stack;
-          logger.error(message);
         };
 
         /**
@@ -236,7 +219,8 @@ module.exports = async (...args) => {
             if (cond.transaction) await this._conn.commit();
           } catch (error) {
             output = errhandler(error);
-            this.errlog(error);
+            sqlmanager.errlog(error);
+            // this.errlog(error);
           } finally {
             return output;
           }
@@ -245,7 +229,7 @@ module.exports = async (...args) => {
 
       /**
        * Destroy the deactive connection Id in the module cache
-       * @alias module:mariadb.clsMariaDB.terminator
+       * @alias module:mariadb.terminator
        * @param {...Object} args - 1 parameter
        *  @param {Integer} args[0] - threadId database connection Id.
        * @returns {Null} - Return null
@@ -365,13 +349,18 @@ module.exports = async (...args) => {
           let [dbname, compname] = args;
           let output = handler.dataformat;
           try {
-            if (!dbname)
-              for (let key of Object.keys(registered[compname])) {
+            let dbarr = Object.keys(registered[compname]);
+            if (!dbarr.includes(dbname)) {
+              if (registered[compname][dbname]) {
                 if (!output.data) output.data = {};
                 let rtn = await connect(key, compname);
                 if (rtn.code == 0) output.data[key] = rtn.data;
-              }
-            else {
+              } else
+                throw {
+                  code: 10004,
+                  msg: "Unmatching database connection name compare with coresetting.ongoiong setting!",
+                };
+            } else {
               let rtn = await connect(dbname, compname);
               if (rtn.code == 0) {
                 output.data = {};

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Apply setHeader to control cache in web engine which allow to control web page caching across all browsers. Completed on 2024-05-28
 - Release simple MariaDB database client engine into sqlmanager. Completed on 2024-06-04
+- Define and standardized database query returning data format in `mariadb.js`. Completed on 2024-06-05
 
 ### Changed
 
@@ -35,6 +36,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix post rule process unable continue proceed cause by controller side in `reaction.js` at webnodejs engine. Completed on 2024-05-29
 - Bug fix at `sqlite3.js` `query` function no return data issue. Completed on 2024-05-31
+- Bug fix at `mariadb.js` `connector` function. Completed on 2024-06-05
+- Bug fix at `mariadb.js` `dboption` property default value. Completed on 2024-06-05
 
 ### Security
 
