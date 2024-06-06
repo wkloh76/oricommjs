@@ -17,14 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Release simple MariaDB database client engine into sqlmanager. Completed on 2024-06-04
 - Define and standardized database query returning data format in `mariadb.js`. Completed on 2024-06-05
 - Add `ischema` method into `clsMariaDB` at `mariadb.js` to check is empty database. Completed on 2024-06-05
+- Redesign simple `sqlite3.js` database engine suit to sqlmanager design. Complete on 2024-06-06
 
 ### Changed
 
 - Move `errlog` and `setuplog` function from `sqlite3.js` to `index.js` and those function will support any kind of database engine. Completed on 2024-05-30
-- Swtich the logger object require from connect function parameter to internal module private variable which will covert entire module in `sqlite3.js`.Completed on 2024-05-31
-- Create sqlite transaction to insert table statement to prevent multi connection insert same table cause the problem at `sqlite3.js`. Completed on 2024-05-31
-- Rename `sqlite3.js` `create` function name to `createlog`. Completed on 2024-05-31
-- Rename `close` function to `disconnect` in `sqlite3.js`. Completed on 2024-06-03
+- ~~Swtich the logger object require from connect function parameter to internal module private variable which will covert entire module in `sqlite3.js`.Completed on 2024-05-31~~
+- ~~Create sqlite transaction to insert table statement to prevent multi connection insert same table cause the problem at `sqlite3.js`. Completed on 2024-05-31~~
+- ~~Rename `sqlite3.js` `create` function name to `createlog`. Completed on 2024-05-31~~
+- ~~Rename `close` function to `disconnect` in `sqlite3.js`. Completed on 2024-06-03~~
 - Modify and standardized structure and method in `mariadb.js`. Completed on 2024-06-05
 - Alter rule strict checking in `onrequest` function at `reaction.js` and will force continue rules until the end event controller error happen. Completed on 2024-06-06
 
@@ -32,12 +33,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Remove call `connect` function from `create` in `sqlite3.js`. Completed on 2024-05-31
+- ~~Remove call `connect` function from `create` in `sqlite3.js`. Completed on 2024-05-31~~
 
 ### Fixed
 
 - Fix post rule process unable continue proceed cause by controller side in `reaction.js` at webnodejs engine. Completed on 2024-05-29
-- Bug fix at `sqlite3.js` `query` function no return data issue. Completed on 2024-05-31
+- ~~Bug fix at `sqlite3.js` `query` function no return data issue. Completed on 2024-05-31~~
 - Bug fix at `mariadb.js` `connector` function. Completed on 2024-06-05
 - Bug fix at `mariadb.js` `dboption` property default value. Completed on 2024-06-05
 
