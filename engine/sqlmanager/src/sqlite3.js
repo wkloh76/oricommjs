@@ -56,14 +56,7 @@ module.exports = async (...args) => {
         };
 
         #dboption = {
-          timeout: 30000,
-          namedPlaceholders: false,
           rowsAsArray: false,
-          metaAsArray: false,
-          nestTables: false,
-          dateStrings: true,
-          bigIntAsNumber: true,
-          decimalAsNumber: false,
         };
 
         /**
@@ -246,15 +239,9 @@ module.exports = async (...args) => {
          * SQLite3 database executionn sql statement
          * @alias module:sqlite3.clsSQLiteDB.query
          * @param {...Object} args - 1 parameters
-         * @param {Object} args[0] - options is decide what kind of output method
-         * @param {Object} args[0][write] - write is true the prepare statement for INSERT,UPDATE,DELETE
-         * @param {Object} args[0][type] - type different type of slqite3 class statement
-         * @param {Object} args[0][cond] - cond get the specific value from query.get and query.all
-         * @param {Object} args[0][transaction] - transaction condition:deferred,immediate,exclusive
-         * @param {Object} args[1][name] - dbname is db onnection name base on coresetting.ongoing
-         * @param {Object} args[1][statement] - statement sql prepare statement
-         * @param {Object} args[2] - sqldata is object value for insert table
-         *
+         * @param {Object} args[0] - sql is array value which and each content in sql statement format
+         * @param {Object} args[1] - cond is an object value refer to rules setting
+         * @param {Object} args[2] - opt is an object value of mariadb module query method options and refer to dboption setting
          * @returns {Object} - Return database result in  object type
          */
         query = async (...args) => {
@@ -266,7 +253,7 @@ module.exports = async (...args) => {
 
             if (datatype(sql) != "array") {
               throw {
-                code: 10004,
+                code: 10005,
                 msg: "The sql parameter is not the array data type! Reject query request.",
               };
             }
@@ -275,14 +262,6 @@ module.exports = async (...args) => {
               output.data = await this.trans(sql, opt);
             } else {
               output.data = await this.notrans(sql, opt);
-              // for (let prepare of sql) {
-              //   let statement = { ...prepare, ...opt };
-              //   let rtn = await this.notrans(statement);
-              //   if (rtn.code == 0) {
-              //     if (!output.data) output.data = [];
-              //     output.data.push(rtn.data);
-              //   } else throw rtn;
-              // }
             }
           } catch (error) {
             output = errhandler(error);
@@ -294,10 +273,9 @@ module.exports = async (...args) => {
 
         /**
          * Imposrt SQLite3 database base on sql file format
-         * @alias module:sqlite3.import
+         * @alias module:sqlite3.clsSQLiteDB.import
          * @param {...Object} args - 1 parameters
-         * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
-         * @param {String} args[1] - file is the sql file location
+         * @param {String} args[0] - file is the sql file location
          * @returns {Object} - Return object value which content both connection and schema status
          */
         import = (...args) => {
@@ -322,10 +300,9 @@ module.exports = async (...args) => {
 
         /**
          * backup SQLite3 database and save to file
-         * @alias module:sqlite3.backup
+         * @alias module:sqlite3.clsSQLiteDB.backup
          * @param {...Object} args - 1 parameters
-         * @param {String} args[0] - dbname is db connection name base on coresetting.ongoing
-         * @param {String} args[1] - file is the sql file location to save
+         * @param {String} args[0] - file is the sql file location to save
          * @returns {Object} - Return object value which content both connection and schema status
          */
         backup = async (...args) => {
@@ -362,7 +339,7 @@ module.exports = async (...args) => {
 
       /**
        * Establish SQLite3 database connection or create database if no exist
-       * @alias module:sqlmanager.sqlite3.connect
+       * @alias module:sqlite3.connect
        * @param {...Object} args - 1 parameters
        * @param {String} args[0] - log is logger which will save sql prepare statement into log file
        * @param {String} args[1] - db is db engine
@@ -470,7 +447,7 @@ module.exports = async (...args) => {
 
       /**
        * Establish databas connection base on registered setting
-       * @alias module:mariadb.connector
+       * @alias module:sqlite3.connector
        * @param {...Object} args - 1 parameters
        * @param {String} args[0] - dbname is db onnection name base on coresetting.ongoing
        * @param {String} args[1] - compname is the components project naming
