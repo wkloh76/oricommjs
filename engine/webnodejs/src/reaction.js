@@ -430,8 +430,7 @@ module.exports = async (...args) => {
                   },
                   fname: fname,
                   render: handler.webview,
-                  rule: { strict: false },
-
+                  rule: {},
                   ...chkparamres,
                 };
                 if (chkrule) response = { ...response, rule: chkrule };
@@ -449,9 +448,13 @@ module.exports = async (...args) => {
 
                 let { err, render, stack, message, ...res } = queuertn;
                 if (stack && message) {
-                  if (res.code)
-                    throw { code: res.code, stack: stack, message: message };
-                  else throw { code: 500, stack: stack, message: message };
+                  if (!err)
+                    err = {
+                      error: stack,
+                      render: handler.webview,
+                      ...res.data,
+                    };
+                  if (!res.action) res.action = err.render;
                 }
                 if (!res.action) {
                   delete queuertn["action"];
@@ -482,11 +485,11 @@ module.exports = async (...args) => {
                   paramres = { ...paramres, ...res };
                   if (
                     permit &&
-                    idx >= fn.idx &&
-                    idx + 1 <= fn.controller.length &&
-                    !res.rule.strict
+                    idx < fn.idx &&
+                    res.action.options.redirect != ""
                   )
                     break;
+                  if (!permit && idx > fn.idx && !fn.strict) break;
                 }
                 if (paramerror !== undefined) break;
               }

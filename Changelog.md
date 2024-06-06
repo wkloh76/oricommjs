@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `sqlite3.js` `create` function name to `createlog`. Completed on 2024-05-31
 - Rename `close` function to `disconnect` in `sqlite3.js`. Completed on 2024-06-03
 - Modify and standardized structure and method in `mariadb.js`. Completed on 2024-06-05
+- Alter rule strict checking in `onrequest` function at `reaction.js` and will force continue rules until the end event controller error happen. Completed on 2024-06-06
 
 ### Deprecated
 
