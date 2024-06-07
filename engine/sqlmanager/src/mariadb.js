@@ -74,12 +74,42 @@ module.exports = async (...args) => {
          * @param {String} args[0] - statement is string data in sql statement format.
          */
         trans = async (...args) => {
-          let [statement] = args;
+          let [statements, opt] = args;
           let output = handler.dataformat;
           try {
-            let [rows] = await this._conn.query(statement);
-            let tempsql = statement.sql.toUpperCase();
-            if (tempsql.indexOf("SELECT") > -1) output.data = rows;
+            output.data = [];
+            for (let statement of statements) {
+              let query = { sql: statement.sql, ...opt };
+              let result, rows;
+              switch (statement.type) {
+                case "INSERT":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+                case "UPDATE":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+                case "DELETE":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+                case "SELECT":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+              }
+              if (result) {
+                if (datatype(result) == "object") {
+                  let fmt = { changes: 0, lastInsertRowid: 0 };
+                  if (result.affectedRows) fmt.changes = result.affectedRows;
+                  if (result.insertId)
+                    fmt.lastInsertRowid = Number(result.insertId);
+                  output.data.push(fmt);
+                } else output.data.push(result);
+              }
+            }
+            await this._conn.commit();
           } catch (error) {
             await this._conn.rollback();
             output = errhandler(error);
@@ -95,12 +125,41 @@ module.exports = async (...args) => {
          * @param {String} args[0] - statement is string data in sql statement format.
          */
         notrans = async (...args) => {
-          let [statement] = args;
+          let [statements, opt] = args;
           let output = handler.dataformat;
           try {
-            let [rows] = await this._conn.query(statement);
-            let tempsql = statement.sql.toUpperCase();
-            if (tempsql.indexOf("SELECT") > -1) output.data = rows;
+            output.data = [];
+            for (let statement of statements) {
+              let query = { sql: statement.sql, ...opt };
+              let result, rows;
+              switch (statement.type) {
+                case "INSERT":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+                case "UPDATE":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+                case "DELETE":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+                case "SELECT":
+                  rows = await this._conn.query(query);
+                  result = rows[0];
+                  break;
+              }
+              if (result) {
+                if (datatype(result) == "object") {
+                  let fmt = { changes: 0, lastInsertRowid: 0 };
+                  if (result.affectedRows) fmt.changes = result.affectedRows;
+                  if (result.insertId)
+                    fmt.lastInsertRowid = Number(result.insertId);
+                  output.data.push(fmt);
+                } else output.data.push(result);
+              }
+            }
           } catch (error) {
             output = errhandler(error);
           } finally {
@@ -118,13 +177,14 @@ module.exports = async (...args) => {
           let [sql] = args;
           let output = [];
           for (let prepare of sql) {
-            let tempsql = prepare.toUpperCase();
+            let tempsql = prepare.sql.toUpperCase();
             let limit = tempsql.indexOf("LIMIT");
             if (tempsql.indexOf("SELECT") > -1 && limit == -1) {
-              let lastIndexOf = prepare.lastIndexOf(";");
+              let lastIndexOf = prepare.sql.lastIndexOf(";");
               if (lastIndexOf > -1)
-                prepare = prepare.substring(0, lastIndexOf) + " LIMIT 1;";
-              else prepare = prepare + " LIMIT 1;";
+                prepare.sql =
+                  prepare.sql.substring(0, lastIndexOf) + " LIMIT 1;";
+              else prepare.sql = prepare.sql + " LIMIT 1;";
             }
             output.push(prepare);
           }
@@ -205,44 +265,32 @@ module.exports = async (...args) => {
          * @alias module:mariadb.clsMariaDB.query
          * @param {...Object} args - 1 parameters
          * @param {Object} args[0] - sql is array value which and each content in sql statement format
-         * @param {Object} args[1] - opt is an object value of mariadb module query method options and refer to dboption setting
-         * @param {Object} args[2] - cond is an object value refer to rules setting
-         *
+         * @param {Object} args[1] - cond is an object value refer to rules setting
+         * @param {Object} args[2] - opt is an object value of mariadb module query method options and refer to dboption setting
          * @returns {Object} - Return database result in  object type
          */
         query = async (...args) => {
-          let [sql, opt, cond] = args;
+          let [sql, cond, opt] = args;
           let output = handler.dataformat;
           try {
             if (!cond) cond = this.rules;
             if (!opt) opt = this.dboption;
-
+            let result;
             if (datatype(sql) != "array") {
               throw {
-                code: 10003,
+                code: 10005,
                 msg: "The sql parameter is not the array data type! Reject query request.",
               };
             }
             if (cond.queryone) sql = this.prepare_queryone(sql);
             if (cond.transaction) await this._conn.beginTransaction();
-            for (let prepare of sql) {
-              let statement = { sql: prepare, ...opt };
-              this._logger.info(sql);
-              if (cond.transaction) {
-                let rtn = await this.trans(statement);
-                if (rtn.code == 0) {
-                  if (!output.data) output.data = [];
-                  output.data.push(rtn.data);
-                } else throw rtn;
-              } else {
-                let rtn = await this.notrans(statement);
-                if (rtn.code == 0) {
-                  if (!output.data) output.data = [];
-                  output.data.push(rtn.data);
-                } else throw rtn;
-              }
+            if (cond.transaction) {
+              result = await this.trans(sql, opt);
+            } else {
+              result = await this.notrans(sql, opt);
             }
-            if (cond.transaction) await this._conn.commit();
+            if (result.code == 0) output.data = [...result.data];
+            else throw result;
           } catch (error) {
             output = errhandler(error);
             sqlmanager.errlog(error);

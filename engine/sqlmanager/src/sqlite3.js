@@ -264,7 +264,7 @@ module.exports = async (...args) => {
               result = this.notrans(sql, opt);
             }
 
-            if (result.code == 0) output.data = { ...result.data };
+            if (result.code == 0) output.data = [...result.data];
             else throw result;
           } catch (error) {
             output = errhandler(error);

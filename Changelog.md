@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Summary
 
-- Design sqlmanager engine -- inprogress
+- Design sqlmanager engine -- simple done
 
 ### Added
 
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Define and standardized database query returning data format in `mariadb.js`. Completed on 2024-06-05
 - Add `ischema` method into `clsMariaDB` at `mariadb.js` to check is empty database. Completed on 2024-06-05
 - Redesign simple `sqlite3.js` database engine suit to sqlmanager design. Complete on 2024-06-06
+- Redesign `clsMariaDB` and the functions effect are `query`,`trans`,`notrans` and `prepare_queryone` suit to sqlmanager design. Complete on 2024-06-06
 
 ### Changed
 
@@ -30,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Alter rule strict checking in `onrequest` function at `reaction.js` and will force continue rules until the end event controller error happen. Completed on 2024-06-06
 - Minor change,update,remove unused code and comment in `sqlite3.js`. Completed on 2024-06-06
 - Simplify `query` function return data method in `sqlite3.js`. Completed on 2024-06-07
+- Change `query` function return data format to array of object in `sqlite3.js`. Completed on 2024-06-07
 
 ### Deprecated
 
