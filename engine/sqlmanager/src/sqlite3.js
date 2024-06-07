@@ -65,7 +65,7 @@ module.exports = async (...args) => {
          * @param {...Object} args - 1 parameters
          * @param {String} args[0] - statement is string data in sql statement format.
          */
-        trans = async (...args) => {
+        trans = (...args) => {
           let [statements, opt] = args;
           let output = handler.dataformat;
           try {
@@ -106,8 +106,8 @@ module.exports = async (...args) => {
                   output.data.push(beginTransaction());
                   break;
                 case "SELECT":
-                  beginTransaction = this._conn.transaction(async () => {
-                    return await query.all();
+                  beginTransaction = this._conn.transaction(() => {
+                    return query.all();
                   });
                   output.data.push(beginTransaction());
                   break;
@@ -126,7 +126,7 @@ module.exports = async (...args) => {
          * @param {...Object} args - 1 parameters
          * @param {String} args[0] - statement is string data in sql statement format.
          */
-        notrans = async (...args) => {
+        notrans = (...args) => {
           let [statements, opt] = args;
           let output = handler.dataformat;
           try {
@@ -144,7 +144,7 @@ module.exports = async (...args) => {
                   output.data.push(query.run());
                   break;
                 case "SELECT":
-                  output.data.push(await query.all());
+                  output.data.push(query.all());
                   break;
               }
             }
@@ -244,13 +244,13 @@ module.exports = async (...args) => {
          * @param {Object} args[2] - opt is an object value of mariadb module query method options and refer to dboption setting
          * @returns {Object} - Return database result in  object type
          */
-        query = async (...args) => {
+        query = (...args) => {
           let [sql, cond, opt] = args;
           let output = handler.dataformat;
           try {
             if (!cond) cond = this.rules;
             if (!opt) opt = this.dboption;
-
+            let result;
             if (datatype(sql) != "array") {
               throw {
                 code: 10005,
@@ -259,10 +259,13 @@ module.exports = async (...args) => {
             }
             if (cond.queryone) sql = this.prepare_queryone(sql);
             if (cond.transaction) {
-              output.data = await this.trans(sql, opt);
+              result = this.trans(sql, opt);
             } else {
-              output.data = await this.notrans(sql, opt);
+              result = this.notrans(sql, opt);
             }
+
+            if (result.code == 0) output.data = { ...result.data };
+            else throw result;
           } catch (error) {
             output = errhandler(error);
             sqlmanager.errlog(error);
