@@ -89,22 +89,28 @@ module.exports = async (...args) => {
             {},
             {
               options: {
-                css: { locally: [], other: [], remotely: [] },
+                css: { atomic: [], locally: [], other: [], remotely: [] },
                 html: "",
                 injectioncss: {},
                 injectionjs: { variables: {}, modules: {} },
                 injectionless: {},
-                js: { locally: [], other: [], remotely: [] },
+                js: { atomic: [], locally: [], other: [], remotely: [] },
                 json: {},
                 layer: {
                   layouts: "",
                   childs: { path: "", excluded: [], external: [] },
                 },
                 less: {
-                  engine: { locally: "", remotely: "", other: "" },
-                  style: { locally: [], other: [], remotely: [] },
+                  engine: { atomic: "", locally: "", remotely: "", other: "" },
+                  style: { atomic: [], locally: [], other: [], remotely: [] },
                 },
-                mjs: { initialize: {}, locally: [], other: [], remotely: [] },
+                mjs: {
+                  atomic: [],
+                  initialize: {},
+                  locally: [],
+                  other: [],
+                  remotely: [],
+                },
                 menu: {},
                 params: { locally: "", remotely: "" },
                 redirect: "",

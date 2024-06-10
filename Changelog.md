@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add new key `atomic` into `utils/handler.js` webview properties. Completed on 2024-06-10
+
 ### Changed
 
 - Code optimize in `utils.js` at utils. Completed on 2024-06-10
