@@ -437,12 +437,12 @@ module.exports = async (...args) => {
 
                 let queuertn;
                 if (permit && fn.idx == idx) {
-                  // queuertn = await queue[fname].apply(null, [orireq, response]);
-                  queuertn = await sanbox(queue[fname], [orireq, response]);
+                  queuertn = sanbox(queue[fname], [orireq, response]);
+                  if (queuertn instanceof Promise) queuertn = await queuertn;
                   queuertn["action"] = queuertn.render;
                 } else if (fn.idx != idx) {
-                  // queuertn = await queue[fname].apply(null, [orireq, response]);
-                  queuertn = await sanbox(queue[fname], [orireq, response]);
+                  queuertn = sanbox(queue[fname], [orireq, response]);
+                  if (queuertn instanceof Promise) queuertn = await queuertn;
                   queuertn["action"] = queuertn.render;
                 }
 

@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2024-06-10
+
+### Summary
+
+- Design sqlmanager engine -- simple done
+
+### Added
+
+### Changed
+
+- Code optimize in `utils.js` at utils. Completed on 2024-06-10
+- Code optimize in `reaction.js` at webnodejs engine. Completed on 2024-06-10
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[1.1.1]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.1
+
 ## [1.1.0] - 2024-05-28
 
 ### Summary

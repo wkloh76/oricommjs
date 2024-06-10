@@ -514,6 +514,7 @@ module.exports = async (...args) => {
                   funcparams = pdata;
                 }
                 queuertn = await fn.apply(null, funcparams);
+                if (queuertn instanceof Promise) queuertn = await queuertn;
                 let { code, data } = queuertn;
                 if (code == 0) {
                   if (save) {
@@ -549,7 +550,7 @@ module.exports = async (...args) => {
        * @param {Object} args[0] - error try catch errror value
        * @returns {Object} - Return value
        */
-      lib["errhandler"] = (...args) => {
+      const errhandler = (...args) => {
         let [error] = args;
         if (error.errno)
           return {
@@ -584,24 +585,10 @@ module.exports = async (...args) => {
           output.data = source.filter(function (val) {
             return compare.indexOf(val) != -1;
           });
-          return output;
         } catch (error) {
-          if (error.errno)
-            return {
-              code: error.errno,
-              errno: error.errno,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
-          else
-            return {
-              code: -1,
-              errno: -1,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
+          output = errhandler(error);
+        } finally {
+          return output;
         }
       };
 
@@ -621,28 +608,22 @@ module.exports = async (...args) => {
           output.data = source
             .concat(compare)
             .filter((val) => !(source.includes(val) && compare.includes(val)));
-
-          return output;
         } catch (error) {
-          if (error.errno)
-            return {
-              code: error.errno,
-              errno: error.errno,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
-          else
-            return {
-              code: -1,
-              errno: -1,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
+          output = errhandler(error);
+        } finally {
+          return output;
         }
       };
 
+      /**
+       * File upload from we browser and kepp in memory or disj
+       * @alias module:utils.webstorage
+       * @param {...Object} args - 2 parameters
+       * @param {Object} args[0] - request is an object which provide by http server receiving client request
+       * @param {Object} args[1] - setting is an object value from the coresetting
+       *  @param {Boolean} args[2] - save is a flag where is decide the upload file save to the disk.
+       * @returns {Object} - Return default value is no error
+       */
       lib["webstorage"] = async (...args) => {
         let [request, setting, save = false] = args;
         let { disk, location, stream } = setting;
@@ -670,8 +651,6 @@ module.exports = async (...args) => {
 
           const proceed = util.promisify(multer({ storage: stack }).any());
           await proceed(request, {});
-          // let filename = request.files[0].filename;
-          // console.log(filename);
           if (request.files) output.data = request.files;
           else
             throw {
@@ -679,27 +658,14 @@ module.exports = async (...args) => {
               stack:
                 "Error stack: Upload process failure from utils/utils.js webstorage function",
             };
-
-          return output;
         } catch (error) {
-          if (error.errno)
-            return {
-              code: error.errno,
-              errno: error.errno,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
-          else
-            return {
-              code: -1,
-              errno: -1,
-              message: error.message,
-              stack: error.stack,
-              data: error,
-            };
+          output = errhandler(error);
+        } finally {
+          return output;
         }
       };
+
+      lib["errhandler"] = errhandler;
       resolve(lib);
     } catch (error) {
       reject(error);
