@@ -7,3 +7,4 @@
 ## Database Engine Support
 
 - SQLite3
+- MariaDB

@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Code optimize in `utils.js` at utils. Completed on 2024-06-10
 - Code optimize in `reaction.js` at webnodejs engine. Completed on 2024-06-10
+- Update comment in sqlmanager engine. Completed on 2024-06-10
 
 ### Deprecated
 

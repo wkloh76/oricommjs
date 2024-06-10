@@ -15,7 +15,7 @@
  */
 "use strict";
 /**
- * A module which handle all transaction wih sqlite3 database
+ * A module which handle all transaction wih mariadb/mysql database
  * @module src_mariadb
  */
 module.exports = async (...args) => {
