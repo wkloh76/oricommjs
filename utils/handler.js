@@ -98,7 +98,7 @@ module.exports = async (...args) => {
                 json: {},
                 layer: {
                   layouts: "",
-                  childs: { path: "", excluded: [], external: [] },
+                  childs: { path: "", excluded: [], external: [], htmlstr: [] },
                 },
                 less: {
                   engine: { atomic: "", locally: "", remotely: "", other: "" },

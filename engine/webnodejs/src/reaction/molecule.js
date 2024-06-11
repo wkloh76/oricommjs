@@ -29,15 +29,44 @@ module.exports = async (...args) => {
     } = library;
 
     const jsdom = require("jsdom");
+    const htmlTags = require("html-tags");
+    const basic =
+      /\s?<!doctype html>|(<html\b[^>]*>|<body\b[^>]*>|<x-[^>]+>)+/i;
+    const full = new RegExp(
+      htmlTags.map((tag) => `<${tag}\\b[^>]*>`).join("|"),
+      "i"
+    );
 
     try {
       let lib = {};
       let atom = await require("./atom")(params, obj);
 
       /**
+       * The main objective is indentify the string in html tag format
+       * https://github.com/sindresorhus/is-html
+       * @alias module:reaction.moleculde.indentify_html
+       * @param {...Object} args - 1 parameters
+       * @param {String} args[0] - buffhtml is a string for checking valid in html tag format
+       * @returns {Object} - Return valid stting | null
+       */
+      const indentify_html = (...args) => {
+        let [buffhtml] = args;
+        let output = buffhtml;
+        try {
+          let html = buffhtml.trim().slice(0, 1000);
+          let result = basic.test(html) || full.test(html);
+          if (!result) output = null;
+        } catch (error) {
+          output = null;
+        } finally {
+          return output;
+        }
+      };
+
+      /**
        * The main objective is read a list of file content and minify become one row
        * @alias module:reaction.moleculde.get_filenames
-       * @param {...Object} args - 2 parameters
+       * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - node is an object provide directory path and filter list
        * @param {Array} args[1] - included is check the file type which accept form the list
        * @returns {Object} - Return undefined|text
@@ -63,6 +92,10 @@ module.exports = async (...args) => {
         }
         for (let val of node.external) {
           if (fs.existsSync(val)) docs.push(atom.get_domhtml(val));
+        }
+        for (let val of node.htmlstr) {
+          let htmlstr = indentify_html(val);
+          if (htmlstr) docs.push(val);
         }
         return await Promise.all(docs);
       };

@@ -21,6 +21,7 @@
     "@types/bun": "latest"
   },
   "workspaces": [
-    "engine/*"
+    "engine/*",
+    "atomic/atom/*"
   ]
 }

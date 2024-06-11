@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Add new key `atomic` into `utils/handler.js` webview properties. Completed on 2024-06-10
 - Simple design smfetch atom module which allow frontend and backend call web api. Completed on 2024-06-11
+- Add new key `htmlstr` into `utils/handler.js` webview properties layer->childs. Completed on 2024-06-11
+- Add `indentify_html` function into `webnodejs/src/reaction/molecule.js` for check the string is in html tag. Completed on 2024-06-11
 
 ### Changed
 
