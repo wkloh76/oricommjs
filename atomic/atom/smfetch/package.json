@@ -1,0 +1,6 @@
+{
+    "name": "smfetch",
+    "dependencies": {
+        "got": "14.4.1"
+    }
+}

@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add new key `atomic` into `utils/handler.js` webview properties. Completed on 2024-06-10
+- Simple design smfetch atom module which allow frontend and backend call web api. Completed on 2024-06-11
 
 ### Changed
 
