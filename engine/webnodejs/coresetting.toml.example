@@ -12,6 +12,8 @@ httpOnly = true
 resave = false
 saveUninitialized = false
 cookie = { secure = false, maxAge = 1800000 }
+store = { path = "", expired = { clear = true, intervalMs = 900000 } } #ms = 15min
+savestore = true
 
 [webbackend.helmet]
 contentSecurityPolicy = { directives = { "script-src" = [

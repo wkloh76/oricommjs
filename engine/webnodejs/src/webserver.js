@@ -21,14 +21,16 @@
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
     const [params, obj] = args;
-    // const [pathname, curdir] = params;
+    const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const express = require("express");
+    const sqlite3 = require("better-sqlite3");
     const router = express.Router();
     const bodyParser = require("body-parser");
     const flash = require("connect-flash");
     const cookieParser = require("cookie-parser");
     const expsession = require("express-session");
+    const SqliteStore = require("better-sqlite3-session-store")(expsession);
     try {
       let lib = {};
       let app = require("express")();
@@ -84,12 +86,14 @@ module.exports = async (...args) => {
        * @alias module:webserver.establish
        */
       const establish = (...args) => {
+        let [setting] = args;
+
         try {
-          let [setting] = args;
           let {
             webnodejs: { parser, session, helmet },
             general,
           } = setting;
+          let { savestore, store, ...setsession } = session;
 
           //set up our express application
           app.use(require("cors")());
@@ -105,8 +109,17 @@ module.exports = async (...args) => {
           // parse an HTML body into a string
           app.use(bodyParser.text(parser.text));
 
-          app.use(expsession(session));
-          app.use(cookieParser(session.secret));
+          if (savestore) {
+            let dbfile;
+            if (store.path == "") dbfile = "./sessions.db3";
+            else dbfile = sys.path.join(store.path, "./sessions.db3");
+            delete store.path;
+            store.client = new sqlite3(dbfile, { verbose: console.log });
+            setsession.store = new SqliteStore(store);
+          }
+
+          app.use(expsession(setsession));
+          app.use(cookieParser(setsession.secret));
 
           app.use(flash()); // use connect-flash for flash messages stored in session
 

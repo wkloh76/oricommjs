@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Simple design smfetch atom module which allow frontend and backend call web api. Completed on 2024-06-11
 - Add new key `htmlstr` into `utils/handler.js` webview properties layer->childs. Completed on 2024-06-11
 - Add `indentify_html` function into `webnodejs/src/reaction/molecule.js` for check the string is in html tag. Completed on 2024-06-11
+- Add store session option either in memory or save into sqlite database file at `webnodejs/src/webserver.js`. Completed on 2024-06-12
 
 ### Changed
 
