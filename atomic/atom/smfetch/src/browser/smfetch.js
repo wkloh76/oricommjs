@@ -58,10 +58,8 @@ export default await (async () => {
         let rtn = urlidentify(param.url);
         if (rtn.code !== 0) throw rtn;
         if (!async) resolve(await atom[rtn.data.method](param));
-        else atom[rtn.data.method](param);
-        resolve();
+        else resolve(atom[rtn.data.method](param));
       } catch (error) {
-        console.log(error);
         resolve(error);
       }
     });

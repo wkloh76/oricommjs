@@ -31,6 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix bug from `request` return empty data when the call method not in promise at `smfetch` atom. Completed on 2024-06-14
+
 ### Security
 
 [1.1.1]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.1
