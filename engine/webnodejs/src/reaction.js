@@ -100,12 +100,19 @@ module.exports = async (...args) => {
               // } else if (!iscss) {
               //   await mergecss(.css);
             } else if (!islayer || !isview || !ishtml) {
-              let dom, extname, layouts;
+              let dom, isvalid, layouts;
               if (!ishtml) dom = new JSDOM(html);
               else {
-                if (!isview) extname = path.extname(view);
-                else if (!islayer) extname = path.extname(layer.layouts);
-                if (extname == ".html") {
+                // if (!isview) isvalid = path.extname(view);
+                // else if (!islayer) isvalid = path.extname(layer.layouts);
+                if (!isview) {
+                  if (path.extname(view) == ".html") isvalid = true;
+                  else isvalid = molecule.indentify_html(view);
+                } else if (!islayer) {
+                  if (path.extname(layer.layouts) == ".html") isvalid = true;
+                  else isvalid = molecule.indentify_html(layer.layouts);
+                }
+                if (isvalid) {
                   if (!islayer) {
                     if (!isview) layer.childs.external.push(view);
                     let { code, msg, data } = await molecule.combine_layer(

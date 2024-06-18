@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `indentify_html` function into `webnodejs/src/reaction/molecule.js` for check the string is in html tag. Completed on 2024-06-11
 - Add store session option either in memory or save into sqlite database file at `webnodejs/src/webserver.js`. Completed on 2024-06-12
 
+- Apply `indentify_html` to `webnodejs/src/reaction.js` to checking layouts and view content is html string. Completed on 2024-06-18
+
 ### Changed
 
 - Code optimize in `utils.js` at utils. Completed on 2024-06-10
@@ -32,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix bug from `request` return empty data when the call method not in promise at `smfetch` atom. Completed on 2024-06-14
+- Add check available keys before proceed in `get_filenames` function at `webnodejs/src/reaction/molecule.js`. Completed on 2024-06-18
 
 ### Security
 

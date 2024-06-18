@@ -90,12 +90,18 @@ module.exports = async (...args) => {
         for (let val of files) {
           docs.push(atom.get_domhtml(path.join(node.path, val)));
         }
-        for (let val of node.external) {
-          if (fs.existsSync(val)) docs.push(atom.get_domhtml(val));
+        if (node.external) {
+          for (let val of node.external) {
+            let htmlstr = indentify_html(val);
+            if (htmlstr) docs.push(val);
+            else if (fs.existsSync(val)) docs.push(atom.get_domhtml(val));
+          }
         }
-        for (let val of node.htmlstr) {
-          let htmlstr = indentify_html(val);
-          if (htmlstr) docs.push(val);
+        if (node.htmlstr) {
+          for (let val of node.htmlstr) {
+            let htmlstr = indentify_html(val);
+            if (htmlstr) docs.push(val);
+          }
         }
         return await Promise.all(docs);
       };
@@ -115,8 +121,12 @@ module.exports = async (...args) => {
           try {
             let output = { code: 0, msg: "", data: null };
             let master_dom, master_doc;
+            let conv;
+
+            if (indentify_html(layer.layouts)) conv = layer.layouts;
+            else conv = atom.get_domhtml(layer.layouts);
             let [layouts, childlists] = await Promise.all([
-              atom.get_domhtml(layer.layouts),
+              conv,
               get_filenames(layer.childs, ["*.html"]),
             ]);
 
@@ -187,7 +197,8 @@ module.exports = async (...args) => {
           try {
             let output = { code: 0, msg: "", data: null };
             let master_dom;
-            let layouts = await atom.get_domhtml(layer);
+            let layouts = indentify_html(layer);
+            if (!layouts) layouts = await atom.get_domhtml(layer);
 
             let { message, stack } = layouts;
             if (!message && !stack) {
@@ -206,7 +217,7 @@ module.exports = async (...args) => {
         });
       };
 
-      lib = { ...lib, ...atom };
+      lib = { ...lib, ...atom, indentify_html: indentify_html };
       resolve(lib);
     } catch (error) {
       reject(error);
