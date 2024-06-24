@@ -18,8 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add new key `htmlstr` into `utils/handler.js` webview properties layer->childs. Completed on 2024-06-11
 - Add `indentify_html` function into `webnodejs/src/reaction/molecule.js` for check the string is in html tag. Completed on 2024-06-11
 - Add store session option either in memory or save into sqlite database file at `webnodejs/src/webserver.js`. Completed on 2024-06-12
-
 - Apply `indentify_html` to `webnodejs/src/reaction.js` to checking layouts and view content is html string. Completed on 2024-06-18
+- Add `ini` and `js-yaml` module into sysmodule global variable. Complete on 2024-06-24
 
 ### Changed
 

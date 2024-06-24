@@ -23,12 +23,14 @@
     let argv = [];
 
     global.sysmodule = {
-      path: require("path"),
-      fs: require("fs"),
-      events: require("events"),
       dayjs: require("dayjs"),
-      toml: require("@ltd/j-toml"),
+      events: require("events"),
+      fs: require("fs"),
+      ini: require("ini"),
       jptr: require("@sagold/json-pointer"),
+      path: require("path"),
+      toml: require("@ltd/j-toml"),
+      jsyaml: require("js-yaml"),
     };
 
     global.kernel = {
