@@ -9,8 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Summary
 
-- Design sqlmanager engine -- simple done
-
 ### Added
 
 - Add new key `atomic` into `utils/handler.js` webview properties. Completed on 2024-06-10
@@ -20,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add store session option either in memory or save into sqlite database file at `webnodejs/src/webserver.js`. Completed on 2024-06-12
 - Apply `indentify_html` to `webnodejs/src/reaction.js` to checking layouts and view content is html string. Completed on 2024-06-18
 - Add `ini` and `js-yaml` module into sysmodule global variable. Complete on 2024-06-24
+- Create `sqltemplate.js` at sqlmanager engine which use for generate sql query statemenet with simple format. Complete on 2024-06-26
 
 ### Changed
 

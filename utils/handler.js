@@ -122,6 +122,48 @@ module.exports = async (...args) => {
             }
           );
         },
+
+        get sqlgeneric() {
+          return Object.assign(
+            {},
+            {
+              DB: "SQLITE",
+              TABLE: [],
+              INSERT: [{}],
+              SELECT: [{}],
+              UPDATE: [{}],
+              WHERE: { AND: {}, OR: {}, BETWEEN: {}, LIKE: {} },
+            }
+          );
+        },
+        get sqlitejson() {
+          return Object.assign(
+            {},
+            {
+              TABLE: [],
+              WHERE: {
+                EACH: { FIELD: [], VALUES: [] },
+                TREE: { FIELD: [], VALUES: [] },
+                TYPE: { FIELD: [], VALUES: [] },
+                VALID: { FIELD: [], VALUES: [] },
+              },
+              ODER_BY: { FIELD: [], VALUES: [] },
+              GROUP_BY: { FIELD: [], VALUES: [] },
+              SELECT: {
+                EXTRACT: { FIELD: [], VALUES: [], OUTPUT: [] },
+                TREE: { FIELD: [], VALUES: [] },
+                TYPE: { FIELD: [], VALUES: [] },
+                VALID: { FIELD: [], VALUES: [] },
+              },
+              UPDATE: {
+                SET: { FIELD: [], VALUES: [] },
+                INSERT: { FIELD: [], VALUES: [] },
+                REPLACE: { FIELD: [], VALUES: [] },
+                REMOVE: { FIELD: [], VALUES: [] },
+              },
+            }
+          );
+        },
       };
 
       /**

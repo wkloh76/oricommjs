@@ -35,6 +35,8 @@ module.exports = async (...args) => {
       let lib = {
         sqlite3: await require("./sqlite3")(params, obj),
         mariadb: await require("./mariadb")(params, obj),
+        sqlfmt: sqlfmt,
+        sqltemplate: await require("./sqltemplate")(params, obj),
       };
 
       /**
