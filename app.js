@@ -30,7 +30,7 @@
       jptr: require("@sagold/json-pointer"),
       path: require("path"),
       toml: require("@ltd/j-toml"),
-      jsyaml: require("js-yaml"),
+      yaml: require("yaml"),
     };
 
     global.kernel = {

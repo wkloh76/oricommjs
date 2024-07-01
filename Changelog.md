@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Apply `yaml` as global module to instead `js-yaml` module. Completed on 2024-07-01
+
 ### Deprecated
 
 ### Removed
