@@ -6,30 +6,7 @@
 
 ## Startup
 
-1. Apply code below to oricommjs_components coresetting.toml 
-
-```
-[webnodejs]
-[webnodejs.bodyParser]
-json = { limit = "1mb" }
-urlencoded = { limit = "1mb", extended = true, parameterLimit = 2000 }
-raw = { limit = "10mb" }
-text = { limit = "1mb" }
-
-[webnodejs.session]
-secret = "testing"
-path = "/index"
-httpOnly = true
-resave = false
-saveUninitialized = false
-cookie = { secure = false, maxAge = 1800000 }
-
-[webnodejs.helmet]
-contentSecurityPolicy = { directives = { "script-src" = [
-  "'self'",
-  "example.com",
-] } }
-```
+1. Apend coresetting.toml.example code to oricommjs_components coresetting.toml
 
 ## Handle package.json dependencies and devdependencies
 
