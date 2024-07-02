@@ -94,11 +94,19 @@ module.exports = async (...args) => {
                     }
                     fields = `${sqlfmt.set(fields)}`;
 
-                    if (fields.lastIndexOf(",") > -1)
-                      fields = fields.substring(0, fields.lastIndexOf(","));
+                    if (fields.lastIndexOf(",") > -1) {
+                      let lastindex = fields.lastIndexOf(",");
+                      let len = fields.length;
+                      if (lastindex + 1 == len)
+                        fields = fields.substring(0, fields.lastIndexOf(","));
+                    }
 
-                    if (tables.lastIndexOf(",") > -1)
-                      tables = tables.substring(0, tables.lastIndexOf(","));
+                    if (tables.lastIndexOf(",") > -1) {
+                      let lastindex = tables.lastIndexOf(",");
+                      let len = tables.length;
+                      if (lastindex + 1 == len)
+                        tables = tables.substring(0, tables.lastIndexOf(","));
+                    }
                     tables += ` SET ${fields} `;
                     console.log(tables);
                   }

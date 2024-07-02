@@ -25,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Bug fix sqlite engine cannot save log and db to specific folder. Completed on 2024-07-02
 - Bug fix mariadb engine register failure not throw error. Completed on 2024-07-02
+- Bug fix in `slqtemplate.js` which unable create second key value during generate sql update statement . Completed on 2024-07-02
 
 ### Security
 
