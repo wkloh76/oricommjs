@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Bug fix sqlite engine cannot save log and db to specific folder . Completed on 2024-07-02
+
 ### Security
 
 [1.1.2]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.2

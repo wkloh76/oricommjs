@@ -75,6 +75,8 @@ module.exports = async (...args) => {
           let logpath = db.path;
           if (db.path == "")
             logpath = path.join(cosetting.logpath, db.engine, `${dbname}.log`);
+          else
+            logpath = path.join(db.path, db.engine, `${dbname}.log`);
           cosetting.log4jsconf.appenders = {
             ...cosetting.log4jsconf.appenders,
             ...{

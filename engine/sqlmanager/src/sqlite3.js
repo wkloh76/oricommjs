@@ -364,6 +364,7 @@ module.exports = async (...args) => {
                 db.engine,
                 `${dbname}.db3`
               );
+            else logpath = path.join(db.path, db.engine, `${dbname}.db3`);
 
             if (dblog[dbname])
               options.verbose = (message) => {
