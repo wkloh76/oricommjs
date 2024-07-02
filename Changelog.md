@@ -23,7 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Bug fix sqlite engine cannot save log and db to specific folder . Completed on 2024-07-02
+- Bug fix sqlite engine cannot save log and db to specific folder. Completed on 2024-07-02
+- Bug fix mariadb engine register failure not throw error. Completed on 2024-07-02
 
 ### Security
 

@@ -368,6 +368,7 @@ module.exports = async (...args) => {
           let rtn = await connect(dbname, compname);
           if (!rtn.code == 0) {
             delete registered[compname][dbname];
+            throw rtn;
           } else rtn.data.disconnect();
         } catch (error) {
           output = errhandler(error);
