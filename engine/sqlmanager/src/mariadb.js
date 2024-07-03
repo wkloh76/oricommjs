@@ -282,6 +282,13 @@ module.exports = async (...args) => {
                 msg: "The sql parameter is not the array data type! Reject query request.",
               };
             }
+            for (let suspect of sql) {
+              if (datatype(suspect.sql) !== "string")
+                throw {
+                  code: 10006,
+                  msg: "The sql statement is not the string type! Reject query request.",
+                };
+            }
             if (cond.queryone) sql = this.prepare_queryone(sql);
             if (cond.transaction) await this._conn.beginTransaction();
             if (cond.transaction) {
