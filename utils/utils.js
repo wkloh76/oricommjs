@@ -34,7 +34,7 @@ module.exports = async (...args) => {
        * @param {string| number| boolean| Object| Array} value - Determine the data type of the parameter
        * @returns {string}
        */
-      lib["datatype"] = (value) => {
+      const datatype = (value) => {
         try {
           let output = typeof value;
           if (output == "string") {
@@ -242,7 +242,7 @@ module.exports = async (...args) => {
        * @param {...object} objects - Objects to merge
        * @returns {object} New object with merged key/values
        */
-      lib["mergeDeep"] = (...objects) => {
+      const mergeDeep = (...objects) => {
         const isObject = (obj) => obj && typeof obj === "object";
 
         return objects.reduce((prev, obj) => {
@@ -616,7 +616,7 @@ module.exports = async (...args) => {
       };
 
       /**
-       * File upload from we browser and kepp in memory or disj
+       * File upload from we browser and kepp in memory or disk
        * @alias module:utils.webstorage
        * @param {...Object} args - 2 parameters
        * @param {Object} args[0] - request is an object which provide by http server receiving client request
@@ -665,7 +665,54 @@ module.exports = async (...args) => {
         }
       };
 
+      /**
+       * Merge or concat base object or array data type
+       * @alias module:utils.concatobj
+       * @param {...Object} args - 2 parameters
+       * @param {Object||Array} args[0] - type is an object or array type which for referenc to check continue argument data type
+       * @param {Object|Array} args[1] - param1 is an object or array type which ready for merge or concat.
+       *  @param {Boolean|Array} args[2] - param2 is an object or array type which ready for merge or concat.
+       * @returns {Object} - Return as Object|Array|undefined
+       */
+      lib["concatobj"] = (...args) => {
+        const [type, param1, param2] = args;
+        let output;
+        let data1, data2;
+        try {
+          let mergedata = (type, arg1, arg2) => {
+            let output;
+            switch (type) {
+              case "array":
+                output = arg1.concat(arg2);
+                break;
+              case "object":
+                output = mergeDeep(arg1, arg2);
+                break;
+            }
+            return output;
+          };
+
+          let reftype = datatype(type);
+          let refdata1 = datatype(param1);
+          let refdata2 = datatype(param2);
+
+          data1 = param1;
+          data2 = param2;
+          if (refdata1 == "undefined") data1 = type;
+          if (refdata2 == "undefined") data2 = type;
+
+          output = mergedata(reftype, data1, data2);
+        } catch (error) {
+          output = errhandler(error);
+        } finally {
+          return output;
+        }
+      };
+
       lib["errhandler"] = errhandler;
+      lib["datatype"] = datatype;
+      lib["mergeDeep"] = mergeDeep;
+
       resolve(lib);
     } catch (error) {
       reject(error);
