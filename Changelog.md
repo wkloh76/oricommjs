@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix bug from `request` return empty data when the call method not in promise at `smfetch` atom. Completed on 2024-06-14
 - Add check available keys before proceed in `get_filenames` function at `webnodejs/src/reaction/molecule.js`. Completed on 2024-06-18
+  -Resolve the bug in smfetch `urlidentify` and `request` method where is the url which define whithout embed protocal and host cause fetchapi error when call the GET method. Completed on 2024-07-08
 
 ### Security
 

@@ -35,7 +35,10 @@ export default await (async () => {
       if (compname.indexOf("desktop_") > -1)
         output.data = { method: "deskfetch", url: url };
       else if (compname.indexOf("web_") > -1)
-        output.data = { method: "webfetch", url: url };
+        output.data = {
+          method: "webfetch",
+          url: `${window.location.origin}${url}`,
+        };
       else {
         output.code = -10;
         output.msg = error.stack;
@@ -57,6 +60,7 @@ export default await (async () => {
         let { async = true } = param;
         let rtn = urlidentify(param.url);
         if (rtn.code !== 0) throw rtn;
+        param.url = rtn.data.url;
         if (!async) resolve(await atom[rtn.data.method](param));
         else resolve(atom[rtn.data.method](param));
       } catch (error) {
