@@ -48,13 +48,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apply `indentify_html` to `webnodejs/src/reaction.js` to checking layouts and view content is html string. Completed on 2024-06-18
 - Add `ini` and `js-yaml` module into sysmodule global variable. Complete on 2024-06-24
 - Create `sqltemplate.js` at sqlmanager engine which use for generate sql query statemenet with simple format. Complete on 2024-06-26
+- Create `pick_arrayobj2list` method at `utils.js` which will pick ick data from the array object as the defination from picker and convert data to list of object. Completed on 2024-07-10
 
 ### Changed
 
 - Code optimize in `utils.js` at utils. Completed on 2024-06-10
 - Code optimize in `reaction.js` at webnodejs engine. Completed on 2024-06-10
 - Update comment in sqlmanager engine. Completed on 2024-06-10
-- Rename `pick_arryobj` method to `pick_arryofobj` at `utils.js` and do the checking to prevent pickup undefined key of value. Completed on 2024-07-10
+- Rename `pick_arryobj` method to `pick_arrayofobj` at `utils.js` and do the checking to prevent pickup undefined key of value. Completed on 2024-07-10
 
 ### Deprecated
 

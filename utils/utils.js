@@ -279,14 +279,14 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Pick data from the array object as the defination from option
-       * @alias module:array.pick_arryofobj
+       * Pick data from the array object as the defination from picker
+       * @alias module:array.pick_arrayofobj
        * @param {...Object} args - 1 parameters
        * @param {Array} args[0] -arrobj is an array of object data type
        * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
        * @returns {Array} - Return empty array if cannot get the key from the value
        */
-      lib["pick_arryofobj"] = (...args) => {
+      lib["pick_arrayofobj"] = (...args) => {
         let [arrobj, picker] = args;
         let output = [];
         for (let obj of arrobj) {
@@ -296,6 +296,29 @@ module.exports = async (...args) => {
             if (reserve) data = { ...data, ...{ [val]: reserve } };
           });
           output.push(data);
+        }
+        return output;
+      };
+
+      /**
+       * Pick data from the array object as the defination from picker and convert data to list of object
+       * @alias module:array.pick_arrayobj2list
+       * @param {...Object} args - 1 parameters
+       * @param {Array} args[0] -arrobj is an array of object data type
+       * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
+       * @returns {Object} - Return empty object if cannot get the key from the value
+       */
+      lib["pick_arrayobj2list"] = (...args) => {
+        let [arrobj, picker] = args;
+        let output = {};
+        for (let obj of arrobj) {
+          picker.map((val) => {
+            const { [val]: reserve, ...rest } = obj;
+            if (reserve) {
+              if (!output[val]) output[val] = [];
+              output[val].push(reserve);
+            }
+          });
         }
         return output;
       };
@@ -610,6 +633,43 @@ module.exports = async (...args) => {
           output.data = source
             .concat(compare)
             .filter((val) => !(source.includes(val) && compare.includes(val)));
+        } catch (error) {
+          output = errhandler(error);
+        } finally {
+          return output;
+        }
+      };
+
+      /**
+       * Compare 2 array values and return values differently with index
+       * @alias module:utils.arr_diffidx
+       * @param {...Object} args - 2 parameters
+       * @param {Array} args[0] - source the data to to compare
+       * @param {Array} args[1] - compare base on the array list.
+       * @returns {Array} - Return the different value in array type with index
+       */
+      lib["arr_diffidx"] = (...args) => {
+        const [source, compare] = args;
+        let output = { code: 0, msg: "", data: null };
+        try {
+          output.data = [];
+          let diff = source
+            .concat(compare)
+            .filter((val) => !(source.includes(val) && compare.includes(val)));
+          if (diff.length > 0) {
+            diff.forEach((value) => {
+              let result;
+              let pos_source = source.findIndex((element) => element == value);
+              let pos_compare = compare.findIndex(
+                (element) => element == value
+              );
+              if (pos_source > -1)
+                result = { from: "source", index: pos_source, value: value };
+              else if (pos_compare > -1)
+                result = { from: "compare", index: pos_compare, value: value };
+              if (result) output.data.push(result);
+            });
+          }
         } catch (error) {
           output = errhandler(error);
         } finally {
