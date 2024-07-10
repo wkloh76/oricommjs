@@ -280,18 +280,20 @@ module.exports = async (...args) => {
 
       /**
        * Pick data from the array object as the defination from option
-       * @alias module:array.pick_arryobj
-       * @param {Array} option - Array of string which base on keyname to pickup entire key and value
-       * @param {Array} value  - Array of object
+       * @alias module:array.pick_arryofobj
+       * @param {...Object} args - 1 parameters
+       * @param {Array} args[0] -arrobj is an array of object data type
+       * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
        * @returns {Array} - Return empty array if cannot get the key from the value
        */
-      lib["pick_arryobj"] = (...args) => {
-        let [option, value] = args;
+      lib["pick_arryofobj"] = (...args) => {
+        let [arrobj, picker] = args;
         let output = [];
-        for (let obj of value) {
+        for (let obj of arrobj) {
           let data = {};
-          option.map((val) => {
-            if (obj[val]) data[val] = obj[val];
+          picker.map((val) => {
+            const { [val]: reserve, ...rest } = obj;
+            if (reserve) data = { ...data, ...{ [val]: reserve } };
           });
           output.push(data);
         }
@@ -580,8 +582,8 @@ module.exports = async (...args) => {
        */
       lib["arr_selected"] = (...args) => {
         const [source, compare] = args;
+        let output = { code: 0, msg: "", data: null };
         try {
-          let output = { code: 0, msg: "", data: null };
           output.data = source.filter(function (val) {
             return compare.indexOf(val) != -1;
           });
@@ -603,8 +605,8 @@ module.exports = async (...args) => {
        */
       lib["arr_diff"] = (...args) => {
         const [source, compare] = args;
+        let output = { code: 0, msg: "", data: null };
         try {
-          let output = { code: 0, msg: "", data: null };
           output.data = source
             .concat(compare)
             .filter((val) => !(source.includes(val) && compare.includes(val)));
@@ -671,7 +673,7 @@ module.exports = async (...args) => {
        * @param {...Object} args - 2 parameters
        * @param {Object||Array} args[0] - type is an object or array type which for referenc to check continue argument data type
        * @param {Object|Array} args[1] - param1 is an object or array type which ready for merge or concat.
-       *  @param {Boolean|Array} args[2] - param2 is an object or array type which ready for merge or concat.
+       * @param {Boolean|Array} args[2] - param2 is an object or array type which ready for merge or concat.
        * @returns {Object} - Return as Object|Array|undefined
        */
       lib["concatobj"] = (...args) => {

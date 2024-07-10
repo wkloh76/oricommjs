@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code optimize in `utils.js` at utils. Completed on 2024-06-10
 - Code optimize in `reaction.js` at webnodejs engine. Completed on 2024-06-10
 - Update comment in sqlmanager engine. Completed on 2024-06-10
+- Rename `pick_arryobj` method to `pick_arryofobj` at `utils.js` and do the checking to prevent pickup undefined key of value. Completed on 2024-07-10
 
 ### Deprecated
 
@@ -63,7 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix bug from `request` return empty data when the call method not in promise at `smfetch` atom. Completed on 2024-06-14
 - Add check available keys before proceed in `get_filenames` function at `webnodejs/src/reaction/molecule.js`. Completed on 2024-06-18
-  -Resolve the bug in smfetch `urlidentify` and `request` method where is the url which define whithout embed protocal and host cause fetchapi error when call the GET method. Completed on 2024-07-08
+- Resolve the bug in smfetch `urlidentify` and `request` method where is the url which define whithout embed protocal and host cause fetchapi error when call the GET method. Completed on 2024-07-08
+- Bug fix in `arr_selected` and `arr_diff` at `utils.js` where is define the output variable inside the try catch and the finally return the output as undefined cause the error occur. Completed on 2024-07-10
 
 ### Security
 
