@@ -30,7 +30,6 @@ export default await (async () => {
       new URL(url);
       output.data = { method: "webfetch", url: url };
     } catch (error) {
-      console.log(error);
       let compname = url.split("/").slice(0, 2).join("");
       if (compname.indexOf("desktop_") > -1)
         output.data = { method: "deskfetch", url: url };

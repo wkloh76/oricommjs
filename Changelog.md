@@ -61,6 +61,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove unused console.log from `atom/smfetch/src/browser/smfetch.js`. Completed on 2024-07-11
+
 ### Fixed
 
 - Fix bug from `request` return empty data when the call method not in promise at `smfetch` atom. Completed on 2024-06-14
