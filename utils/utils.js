@@ -94,12 +94,14 @@ module.exports = async (...args) => {
             for (let val of arr_modname) {
               let modpath = join(pathname, val);
               if (fs.readdirSync(modpath).length > 0) {
-                let module = require(join(modpath), "utf8")(
-                  [modpath, val, curdir],
-                  optional
-                );
-                arr_name.push(val);
-                arr_process.push(module);
+                if (fs.existsSync(join(modpath, "index.js"))) {
+                  let module = require(join(modpath), "utf8")(
+                    [modpath, val, curdir],
+                    optional
+                  );
+                  arr_name.push(val);
+                  arr_process.push(module);
+                }
               }
             }
             let arrrtn = await Promise.all(arr_process);
@@ -134,12 +136,14 @@ module.exports = async (...args) => {
             for (let val of arr_modname) {
               let modpath = join(pathname, val);
               if (fs.readdirSync(modpath).length > 0) {
-                let module = require(join(modpath), "utf8")(
-                  [modpath, val, curdir],
-                  optional
-                );
-                arr_name.push(val);
-                arr_process.push(module);
+                if (fs.existsSync(join(modpath, "index.js"))) {
+                  let module = require(join(modpath), "utf8")(
+                    [modpath, val, curdir],
+                    optional
+                  );
+                  arr_name.push(val);
+                  arr_process.push(module);
+                }
               }
             }
             let arrrtn = await Promise.all(arr_process);
