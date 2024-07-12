@@ -50,6 +50,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Create `sqltemplate.js` at sqlmanager engine which use for generate sql query statemenet with simple format. Complete on 2024-06-26
 - Create `pick_arrayobj2list` method at `utils.js` which will pick ick data from the array object as the defination from picker and convert data to list of object. Completed on 2024-07-10
 - Add checking `index.js` file exist during loading module in `import_cjs` and `import_mjs` function at `utils.js`. Completed on 2024-07-12
+- Create `arr_diffidx` method at `utils.js` which will Compare 2 array values and return values differently with index and value. Completed on 2024-07-12
 
 ### Changed
 

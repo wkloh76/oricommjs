@@ -645,18 +645,24 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Compare 2 array values and return values differently with index
+       * Compare 2 array values and return values differently with index and value
        * @alias module:utils.arr_diffidx
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - source the data to to compare
        * @param {Array} args[1] - compare base on the array list.
+       * @param {Array} args[2] - format is result data format,2 is object and 1 is array of object.
        * @returns {Array} - Return the different value in array type with index
        */
       lib["arr_diffidx"] = (...args) => {
-        const [source, compare] = args;
+        const [source, compare, format = 1] = args;
         let output = { code: 0, msg: "", data: null };
         try {
-          output.data = [];
+          if (format == 2)
+            output.data = {
+              source: { index: [], value: [] },
+              compare: { index: [], value: [] },
+            };
+          else output.data = [];
           let diff = source
             .concat(compare)
             .filter((val) => !(source.includes(val) && compare.includes(val)));
@@ -667,11 +673,24 @@ module.exports = async (...args) => {
               let pos_compare = compare.findIndex(
                 (element) => element == value
               );
-              if (pos_source > -1)
-                result = { from: "source", index: pos_source, value: value };
-              else if (pos_compare > -1)
-                result = { from: "compare", index: pos_compare, value: value };
-              if (result) output.data.push(result);
+              if (pos_source > -1) {
+                if (format == 2) {
+                  output.data.source.index.push(pos_source);
+                  output.data.source.value.push(value);
+                } else
+                  result = { from: "source", index: pos_source, value: value };
+              } else if (pos_compare > -1) {
+                if (format == 2) {
+                  output.data.compare.index.push(pos_compare);
+                  output.data.compare.value.push(value);
+                } else
+                  result = {
+                    from: "compare",
+                    index: pos_compare,
+                    value: value,
+                  };
+              }
+              if (result && format != 2) output.data.push(result);
             });
           }
         } catch (error) {
