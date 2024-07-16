@@ -151,8 +151,8 @@ module.exports = async (...args) => {
        * @returns {Object} - Return null | error object
        */
       lib["start"] = (...args) => {
+        let [setting, onrequest] = args;
         try {
-          let [setting, onrequest] = args;
           let rtnestablish = establish(setting);
           if (rtnestablish) throw rtnestablish;
 

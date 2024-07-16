@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Code optimize in `reaction.js` at webnodejs engine. Completed on 2024-06-10
 - Update comment in sqlmanager engine. Completed on 2024-06-10
 - Rename `pick_arryobj` method to `pick_arrayofobj` at `utils.js` and do the checking to prevent pickup undefined key of value. Completed on 2024-07-10
+- Relocate the `let [setting, onrequest] = args;` variable defination before try catch in `start` method at `webserver.js`. Completed on 2024-07-16
 
 ### Deprecated
 
