@@ -445,7 +445,7 @@ module.exports = async (...args) => {
        * The detail refer to https://stackoverflow.com/questions/43011742/how-to-omit-specific-properties-from-an-object-in-javascript
        * @alias module:utils.omit
        * @param {Object} object - Source data
-       * * @param {String} keys - Add empty space between key and next key when need delete multiple keys
+       * @param {String} keys - Add empty space between key and next key when need delete multiple keys
        * @returns {Object} - Return object
        */
       lib["omit"] = (...args) => {
@@ -455,6 +455,21 @@ module.exports = async (...args) => {
           const { [val]: omitted, ...rest } = rtn;
           rtn = rest;
         });
+        return rtn;
+      };
+
+      /**
+       * The main objective is pick keys and values pair by keys name
+       * The detail refer to https://stackoverflow.com/questions/17781472/how-to-get-a-subset-of-a-javascript-objects-properties
+       * @alias module:utils.objpick
+       * @param {Object} object - Source data
+       * @param {String} keys - Add empty space between key and next key when need delete multiple keys
+       * @returns {Object} - Return object
+       */
+      lib["objpick"] = (...args) => {
+        let [object, keys] = args;
+        let rtn = {};
+        keys.split(" ").map((key) => (rtn[key] = object[key]));
         return rtn;
       };
 
