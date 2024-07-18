@@ -610,6 +610,7 @@
       coresetting["log4jsconf"] = rtnconflog.data.config;
     }
 
+    // coresetting.engine[0]="/opt/share/dev/development/framework/node_modules/"
     let rtn = await startup(coresetting, sysmodule, kernel);
     if (rtn.code != 0) throw rtn;
     console.log(

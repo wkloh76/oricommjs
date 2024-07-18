@@ -297,7 +297,8 @@ module.exports = async (...args) => {
           let data = {};
           picker.map((val) => {
             const { [val]: reserve, ...rest } = obj;
-            if (reserve) data = { ...data, ...{ [val]: reserve } };
+            if (reserve !== undefined && reserve != null)
+              data = { ...data, ...{ [val]: reserve } };
           });
           output.push(data);
         }
@@ -318,7 +319,7 @@ module.exports = async (...args) => {
         for (let obj of arrobj) {
           picker.map((val) => {
             const { [val]: reserve, ...rest } = obj;
-            if (reserve) {
+            if (reserve !== undefined && reserve != null) {
               if (!output[val]) output[val] = [];
               output[val].push(reserve);
             }
