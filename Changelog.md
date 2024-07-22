@@ -52,6 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add checking `index.js` file exist during loading module in `import_cjs` and `import_mjs` function at `utils.js`. Completed on 2024-07-12
 - Create `arr_diffidx` method at `utils.js` which will Compare 2 array values and return values differently with index and value. Completed on 2024-07-12
 - Create `objpick` method at `utils.js` which will pick selected keys and values from the object. Completed on 2024-07-17
+- Add `share` key(array) into the `global.coresetting` object at `app.js`. Completed on 2024-07-22
+- Add decode more more layer of value to support multi components file sharing in webnodejs engine. Completed on 2024-07-22
 
 ### Changed
 
@@ -60,6 +62,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update comment in sqlmanager engine. Completed on 2024-06-10
 - Rename `pick_arryobj` method to `pick_arrayofobj` at `utils.js` and do the checking to prevent pickup undefined key of value. Completed on 2024-07-10
 - Relocate the `let [setting, onrequest] = args;` variable defination before try catch in `start` method at `webserver.js`. Completed on 2024-07-16
+- Improve check data type in `pick_arrayofobj` and `pick_arrayobj2list` method at `utils.js`. Completed on 2024-07-18
 
 ### Deprecated
 

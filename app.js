@@ -46,6 +46,7 @@
       splitter: "/",
       platform: process.platform,
       homedir: require("os").homedir(),
+      share: [],
     };
 
     sysmodule.events.EventEmitter.defaultMaxListeners = 50;
@@ -610,7 +611,6 @@
       coresetting["log4jsconf"] = rtnconflog.data.config;
     }
 
-    // coresetting.engine[0]="/opt/share/dev/development/framework/node_modules/"
     let rtn = await startup(coresetting, sysmodule, kernel);
     if (rtn.code != 0) throw rtn;
     console.log(

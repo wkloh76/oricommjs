@@ -157,33 +157,35 @@ module.exports = async (...args) => {
           if (rtnestablish) throw rtnestablish;
 
           if (setting.share) {
-            for (let [key, val] of Object.entries(setting.share)) {
-              if (key == "/atomic") {
-                let atomic = library.utils.dir_module(
-                  setting.share[key],
-                  setting.genernalexcludefile
-                );
-                for (let atomic_items of atomic) {
-                  let units = library.utils.dir_module(
-                    sys.path.join(setting.share[key], atomic_items),
+            for (let share of setting.share) {
+              for (let [key, val] of Object.entries(share)) {
+                if (key == "/atomic") {
+                  let atomic = library.utils.dir_module(
+                    share[key],
                     setting.genernalexcludefile
                   );
-                  for (let unit of units) {
-                    let sharepath = sys.path.join(
-                      setting.share[key],
-                      atomic_items,
-                      unit,
-                      "src",
-                      "browser"
+                  for (let atomic_items of atomic) {
+                    let units = library.utils.dir_module(
+                      sys.path.join(share[key], atomic_items),
+                      setting.genernalexcludefile
                     );
-                    if (sys.fs.existsSync(sharepath))
-                      app.use(
-                        sys.path.join(key, atomic_items, unit),
-                        express.static(sharepath)
+                    for (let unit of units) {
+                      let sharepath = sys.path.join(
+                        share[key],
+                        atomic_items,
+                        unit,
+                        "src",
+                        "browser"
                       );
+                      if (sys.fs.existsSync(sharepath))
+                        app.use(
+                          sys.path.join(key, atomic_items, unit),
+                          express.static(sharepath)
+                        );
+                    }
                   }
-                }
-              } else app.use(key, express.static(val));
+                } else app.use(key, express.static(val));
+              }
             }
           }
 
