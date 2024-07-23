@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.3] - 2024-07-23
+
+### Summary
+
+- Design deskelectronjs engine
+
+### Added
+
+- Add advance feature to mariadb trans method which support both function and string in sql statement. Completed on 2024-07-23
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[1.1.3]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.3
+
 ## [1.1.2] - 2024-07-01
 
 ### Summary

@@ -79,7 +79,12 @@ module.exports = async (...args) => {
           try {
             output.data = [];
             for (let statement of statements) {
-              let query = { sql: statement.sql, ...opt };
+              let sqlstatement;
+              if (statement.sql instanceof Function) {
+                let data = output.data[output.data.length - 1];
+                sqlstatement = await statement.sql(data);
+              } else sqlstatement = statement.sql;
+              let query = { sql: sqlstatement, ...opt };
               let result, rows;
               switch (statement.type) {
                 case "INSERT":
@@ -283,7 +288,8 @@ module.exports = async (...args) => {
               };
             }
             for (let suspect of sql) {
-              if (datatype(suspect.sql) !== "string")
+              let isfn = suspect.sql instanceof Function;
+              if (datatype(suspect.sql) !== "string" && !isfn)
                 throw {
                   code: 10006,
                   msg: "The sql statement is not the string type! Reject query request.",
