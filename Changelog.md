@@ -63,6 +63,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename `pick_arryobj` method to `pick_arrayofobj` at `utils.js` and do the checking to prevent pickup undefined key of value. Completed on 2024-07-10
 - Relocate the `let [setting, onrequest] = args;` variable defination before try catch in `start` method at `webserver.js`. Completed on 2024-07-16
 - Improve check data type in `pick_arrayofobj` and `pick_arrayobj2list` method at `utils.js`. Completed on 2024-07-18
+- Rename `deskfectch` to `deskfetch` function at `smfetch/src/browser/atom.js`. Completed on 2024-07-23
 
 ### Deprecated
 

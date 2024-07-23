@@ -238,7 +238,7 @@ export default await (() => {
      * @param {...Object} args - 1 parameters
      * @param {Object} args[0] - param for call api server base on electron ContentBridge format
      */
-    const deskfectch = async (...args) => {
+    const deskfetch = async (...args) => {
       try {
         let [param] = args;
         let data = {};
@@ -261,7 +261,7 @@ export default await (() => {
       }
     };
     
-    let lib = { webfetch: webfetch, deskfectch: deskfectch };
+    let lib = { webfetch: webfetch, deskfetch: deskfetch };
     return lib;
   } catch (error) {
     console.log(error);
