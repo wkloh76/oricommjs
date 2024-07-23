@@ -1,0 +1,33 @@
+[deskelectronjs]
+
+[deskelectronjs.updater]
+silent = true
+cyclecheck = 3600
+delay = 5
+systemd = "user"
+
+[deskelectronjs.window]
+title = ""
+icon = "link.png"
+toolbar = true
+frame = true
+width = 1280
+height = 720
+fullscreen = false
+resizetomonitor = false
+resizemonitorwidth = 50
+resizemonitorheight = 100
+resizable = true
+min_width = 800
+min_height = 640
+max_width = 1366
+max_height = 2160
+openDevTools = true
+position = "center"
+autoHideMenuBar = false
+useContentSize = true
+nodeIntegration = false
+contextIsolation = true
+webSecurity = true
+enableRemoteModule = false
+show = false
