@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add advance feature to mariadb trans method which support both function and string in sql statement. Completed on 2024-07-23
+- Add auto detect default ongoing in deskelectronjs engine either from commnad line arguments or components project desktop.toml file. Completed on 2024-07-24
 
 ### Changed
 

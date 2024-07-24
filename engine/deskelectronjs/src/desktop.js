@@ -34,7 +34,7 @@ module.exports = async (...args) => {
       protocol,
       screen,
     } = require("electron");
-    const { minify } = require("html-minifier-terser");
+    // const { minify } = require("html-minifier-terser");
     const url = require("url");
     const {
       utils: { datatype },
@@ -46,72 +46,27 @@ module.exports = async (...args) => {
       let reglist = {};
       let reaction;
 
-      let status = "init";
+      // let status = "init";
       let registry = { el: "deskelectron", winshare: {} };
       let myemitter = new events.EventEmitter();
 
-      class clsResponse {
-        constructor(channel, fn) {
-          this.channel = channel;
-          this.fn = fn;
-        }
+      // class clsResponse {
+      //   constructor(channel, fn) {
+      //     this.channel = channel;
+      //     this.fn = fn;
+      //   }
 
-        #response = {
-          locals: {},
-          status: function (...args) {
-            return this;
-          },
-          end: function (...args) {},
-
-          json: function (url) {
-            return;
-          },
-          redirect: function (url) {
-            return;
-          },
-          send: function (url) {
-            myemitter.emit("init", "data", url);
-            switch (status) {
-              case "init":
-                status = "window";
-                break;
-
-              case "window":
-                break;
-            }
-
-            return this;
-          },
-          setHeader: function (...args) {
-            return;
-          },
-          text: function (...args) {
-            return;
-          },
-        };
-      }
-
-      // let clientparams = {
-      //   request: {
-      //     body: {},
-      //     query: {},
-      //     params: {},
-      //     originalUrl: "",
-      //   },
-      //   response: {
+      //   #response = {
       //     locals: {},
-      //     setHeader: function (...args) {
-      //       return;
-      //     },
       //     status: function (...args) {
       //       return this;
       //     },
-      //     redirect: function (url) {
-      //       console.log(url);
+      //     end: function (...args) {},
+
+      //     json: function (url) {
       //       return;
       //     },
-      //     json: function (url) {
-      //       console.log(url);
+      //     redirect: function (url) {
       //       return;
       //     },
       //     send: function (url) {
@@ -127,9 +82,14 @@ module.exports = async (...args) => {
 
       //       return this;
       //     },
-      //     end: function (...args) {},
-      //   },
-      // };
+      //     setHeader: function (...args) {
+      //       return;
+      //     },
+      //     text: function (...args) {
+      //       return;
+      //     },
+      //   };
+      // }
 
       const register = (...args) => {
         let [config, fn] = args;
