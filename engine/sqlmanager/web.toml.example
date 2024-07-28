@@ -1,0 +1,53 @@
+[production]
+[production.sqlite3]
+
+[production.sqlite3.log]
+type = "dateFile"
+keepFileExt = true
+maxLogSize = "50M"
+numBackups = 10
+success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+[production.sqlite3.db]
+workdb = { path = "", type = "memory" }
+filedb = { path = "", type = "file" }
+
+[production.mariadb]
+
+[production.mariadb.log]
+type = "dateFile"
+keepFileExt = true
+maxLogSize = "50M"
+numBackups = 10
+success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+
+[production.mariadb.db]
+workdb = { path = "", port = 3306, host = "127.0.0.1", user = "root", password = "root", database = "mysql", waitForConnections = true, connectionLimit = 10, queueLimit = 0 }
+
+[debug]
+[debug.sqlite3]
+
+[debug.sqlite3.log]
+type = "dateFile"
+keepFileExt = true
+maxLogSize = "50M"
+numBackups = 10
+success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+[debug.sqlite3.db]
+workdb = { path = "", type = "memory", backup = "" }
+filedb = { path = "", type = "file", backup = "" }
+
+[debug.mariadb]
+
+[debug.mariadb.log]
+type = "dateFile"
+keepFileExt = true
+maxLogSize = "50M"
+numBackups = 10
+success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+
+
+[debug.mariadb.db]
+workdb = { path = "", port = 3306, host = "127.0.0.1", user = "root", password = "root", database = "mysql", waitForConnections = true, connectionLimit = 10, queueLimit = 0 }
