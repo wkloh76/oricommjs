@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add filter method and on allow `web_` prfix name can continue in `webnodejs/src/index.js`. Completed on 2024-07-30
+- Redesign public share(atmoic and share) method in `webnodejs/src/webserver.js` to avoid multi produce with same contents. Completed on 2024-07-30
+- Add specify http route request in both `webnodejs/src/webserver.js` and `webnodejs/src/reaction.js` for less.js static file. Completed on 2024-07-30
+
 ### Changed
 
 - Rename webnodejs `coresetting.toml.example` to `web.toml.example`. Completed on 2024-07-26

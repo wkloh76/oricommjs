@@ -34,10 +34,23 @@ module.exports = async (...args) => {
         }
       };
 
-      lib["start"] = (...args) => {
+      lib["start"] = async (...args) => {
+        let [setting] = args;
         try {
-          let [setting] = args;
-          let rtn = webserver.start(setting, reaction["onrequest"]);
+          let ongoing = {};
+
+          let ongoing_names = Object.keys(setting.ongoing);
+          ongoing_names.map((value, idx) => {
+            if (value.indexOf(`${setting.general.engine.type}_`) == -1)
+              ongoing_names.splice(idx, 1);
+          });
+          if (ongoing_names.length > 0) {
+            for (let name of ongoing_names) {
+              ongoing[name] = setting.share[name];
+            }
+          }
+
+          let rtn = await webserver.start(setting, reaction);
           if (rtn) throw rtn;
           return;
         } catch (error) {

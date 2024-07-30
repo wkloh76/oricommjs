@@ -23,6 +23,11 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
+    const {
+      fs: { existsSync },
+      path: { join },
+    } = sys;
+    const { datatype, dir_module } = library.utils;
     const express = require("express");
     const sqlite3 = require("better-sqlite3");
     const router = express.Router();
@@ -57,8 +62,9 @@ module.exports = async (...args) => {
 
       /**
        * Event listener for HTTP server "error" event.
-       * @alias module:webapp.onError
-       * @param {Object} error - As an object with throw by http service.
+       * @alias module:webserver.onError
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - error is an object with throw by http service.
        */
       const onError = (...args) => {
         let [error] = args;
@@ -82,14 +88,17 @@ module.exports = async (...args) => {
       };
 
       /**
-       * Express server establish
+       * Web server establish and session log
        * @alias module:webserver.establish
+       * @param {...Object} args - 2 parameters
+       * @param {Object} args[0] - setting is coresetting object value
+       * @returns {Object} - Return null | error object
        */
       const establish = (...args) => {
         let [setting] = args;
-
         try {
           let {
+            logpath,
             webnodejs: { parser, session, helmet },
             general,
           } = setting;
@@ -111,8 +120,8 @@ module.exports = async (...args) => {
 
           if (savestore) {
             let dbfile;
-            if (store.path == "") dbfile = "./sessions.db3";
-            else dbfile = sys.path.join(store.path, "./sessions.db3");
+            if (store.path == "") dbfile = join(logpath, "./sessions.db3");
+            else dbfile = join(store.path, "./sessions.db3");
             delete store.path;
             store.client = new sqlite3(dbfile, { verbose: console.log });
             setsession.store = new SqliteStore(store);
@@ -136,60 +145,82 @@ module.exports = async (...args) => {
               message: `address already in use :::${general.portlistener}`,
               stack: `The port number ${general.portlistener} occupied by other service!`,
             };
-          else return;
+          return;
         } catch (error) {
           return error;
         }
       };
 
       /**
-       * Configure log module for webexpress and normal log
+       * Loading atomic public share modules for frontend use
+       * @alias module:webserver.load_atomic
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - share is an object
+       * @param {Array} args[1] - excludefile content a list of data for ignore purpose
+       * @param {Object} args[2] - obj is an object of module which content app module
+       * @returns {Object} - Return null | error object
+       */
+      const load_atomic = (...args) => {
+        let [share, excludefile, obj] = args;
+        let { static: expstatic } = express;
+        let atomic = dir_module(share, excludefile);
+        for (let atomic_items of atomic) {
+          let units = dir_module(join(share, atomic_items), excludefile);
+          for (let unit of units) {
+            let sharepath = join(share, atomic_items, unit, "src", "browser");
+            if (existsSync(sharepath))
+              obj.app.use(
+                join("/atomic", atomic_items, unit),
+                expstatic(sharepath)
+              );
+          }
+        }
+      };
+
+      /**
+       * Allocate public static files share
+       * @alias module:webserver.load_pubshare
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - share is an object
+       * @param {String} args[1] - enginetype is value which content the engine type
+       * @param {Object} args[2] - obj is an object of module which content reaction and app modules
+       * @returns {Object} - Return null | error object
+       */
+      const load_pubshare = (...args) => {
+        let [share, enginetype, obj] = args;
+        for (let [pubkey, pubval] of Object.entries(share)) {
+          if (pubkey.indexOf(`${enginetype}_`) > -1) {
+            for (let [key, val] of Object.entries(pubval)) {
+              if (datatype(val) == "object")
+                obj.app.use(key, obj.reaction[val.fn]);
+              else obj.app.use(key, express.static(val));
+            }
+          }
+        }
+      };
+      /**
+       * Loading atomic, public static files share and establish web server service
        * @alias module:webserver.start
        * @param {...Object} args - 2 parameters
        * @param {Object} args[0] - setting is coresetting object value
-       * @param {Object} args[1] - onrequest is a function for responding when http client request
+       * @param {Object} args[1] - reaction is an module for responding when http client request
        * @returns {Object} - Return null | error object
        */
-      lib["start"] = (...args) => {
-        let [setting, onrequest] = args;
+      lib["start"] = async (...args) => {
+        let [setting, reaction] = args;
         try {
           let rtnestablish = establish(setting);
           if (rtnestablish) throw rtnestablish;
-
-          if (setting.share) {
-            for (let share of setting.share) {
-              for (let [key, val] of Object.entries(share)) {
-                if (key == "/atomic") {
-                  let atomic = library.utils.dir_module(
-                    share[key],
-                    setting.genernalexcludefile
-                  );
-                  for (let atomic_items of atomic) {
-                    let units = library.utils.dir_module(
-                      sys.path.join(share[key], atomic_items),
-                      setting.genernalexcludefile
-                    );
-                    for (let unit of units) {
-                      let sharepath = sys.path.join(
-                        share[key],
-                        atomic_items,
-                        unit,
-                        "src",
-                        "browser"
-                      );
-                      if (sys.fs.existsSync(sharepath))
-                        app.use(
-                          sys.path.join(key, atomic_items, unit),
-                          express.static(sharepath)
-                        );
-                    }
-                  }
-                } else app.use(key, express.static(val));
-              }
-            }
-          }
-
-          app.use(router.use(onrequest));
+          await Promise.all([
+            load_atomic(setting.share.atomic, setting.genernalexcludefile, {
+              app,
+            }),
+            load_pubshare(setting.share.public, setting.general.engine.type, {
+              reaction,
+              app,
+            }),
+          ]);
+          app.use(router.use(reaction["onrequest"]));
           return;
         } catch (error) {
           return error;
