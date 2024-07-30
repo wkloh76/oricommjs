@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove unused code from `start` method in `webnodejs/src/index.js`. Completed on 2024-07-30
+
 ### Fixed
 
 ### Security
