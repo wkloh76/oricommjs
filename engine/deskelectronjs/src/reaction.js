@@ -23,9 +23,9 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const { fs, path, logger } = sys;
     const { minify } = require("html-minifier-terser");
     const jsdom = require("jsdom");
+    const { fs, path, logger } = sys;
     const {
       utils: { handler, getNestedObject },
     } = library;
@@ -54,6 +54,25 @@ module.exports = async (...args) => {
         res.writeHead(200, { "Content-Type": "text/css" });
         res.status(200).write(`${css}`);
         res.end();
+      };
+
+      /**
+       * Cast the variables to master less.js file
+       * @alias module:reaction.castless
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - res the object for render to frontend
+       * @param {Object} args[1] - head content which will merge to the less file
+       * @param {Object} args[1] - file is less file name
+       */
+      const castless = async (...args) => {
+        let [res, head, file] = args;
+        let css = head;
+        css = css.concat(" ", fs.readFileSync(file, "utf8"));
+        css = await minify(css, {
+          collapseWhitespace: true,
+        });
+        res.writeHead(200, { "Content-Type": "text/less" });
+        res.status(200).write(`${css}`);
       };
 
       /**
@@ -583,6 +602,27 @@ module.exports = async (...args) => {
         }
       };
 
+      lib["onless"] = async (...args) => {
+        let [orireq, orires] = args;
+        let fn;
+        try {
+          let { defaulturl, ...component } = components;
+          for (let [, compval] of Object.entries(component)) {
+            let { less } = compval;
+            let baseUrl = orireq.baseUrl;
+            fn = getNestedObject(less, baseUrl);
+            if (fn) {
+              let file = path.join(fn.path, orireq.url);
+              if (fs.existsSync(file)) await castless(orires, fn.config, file);
+              break;
+            }
+          }
+        } catch (error) {
+        } finally {
+          orires.end();
+        }
+      };
+
       /**
        * The main objective is register api,gui modules into the cache memory
        * @alias module:reaction.register
@@ -592,8 +632,8 @@ module.exports = async (...args) => {
       lib["register"] = (...args) => {
         let [oncomponents] = args;
         for (let [key, val] of Object.entries(oncomponents)) {
-          let { api, gui, defaulturl } = val;
-          components[key] = { api: api, gui: gui };
+          let { api, gui, defaulturl, less } = val;
+          components[key] = { api: api, gui: gui, less: less };
           if (components.defaulturl == "") components.defaulturl = defaulturl;
           else
             console.log(

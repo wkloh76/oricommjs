@@ -5,6 +5,8 @@ silent = true
 cyclecheck = 3600
 delay = 5
 systemd = "user"
+auth =""
+#auth = "Basic dnNybmRzeXN0ZW06c3lzdGVtYWRtaW4="
 
 [deskelectronjs.window]
 title = ""

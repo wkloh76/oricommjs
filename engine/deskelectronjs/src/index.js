@@ -39,23 +39,10 @@ module.exports = async (...args) => {
         }
       };
 
-      lib["start"] = (...args) => {
+      lib["start"] = async (...args) => {
+        let [setting] = args;
         try {
-          let [setting] = args;
-          let worksetting = structuredClone(setting);
-          if (setting.args.project && setting.args.project != "")
-            worksetting.ongoing = setting.ongoing[setting.args.project];
-          else {
-            let ongoing_names = Object.keys(worksetting.ongoing);
-            ongoing_names.map((value, idx) => {
-              if (value.indexOf(`${worksetting.general.engine.type}_`) == -1)
-                ongoing_names.splice(idx, 1);
-            });
-            if (ongoing_names.length > 0)
-              worksetting.ongoing = setting.ongoing[ongoing_names[0]];
-          }
-
-          let rtn = desktop.start(worksetting, reaction);
+          let rtn = await desktop.start(setting, { reaction, autoupdate });
           if (rtn) throw rtn;
           return;
         } catch (error) {

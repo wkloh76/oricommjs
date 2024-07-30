@@ -24,7 +24,12 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const { events, fs, path, logger } = sys;
+    const {
+      events,
+      fs: { existsSync, readFileSync },
+      path: { join },
+      logger,
+    } = sys;
     const {
       app,
       BrowserWindow,
@@ -34,10 +39,10 @@ module.exports = async (...args) => {
       protocol,
       screen,
     } = require("electron");
-    // const { minify } = require("html-minifier-terser");
+    const { minify } = require("html-minifier-terser");
     const url = require("url");
     const {
-      utils: { datatype },
+      utils: { datatype, dir_module },
     } = library;
 
     try {
@@ -46,50 +51,8 @@ module.exports = async (...args) => {
       let reglist = {};
       let reaction;
 
-      // let status = "init";
       let registry = { el: "deskelectron", winshare: {} };
       let myemitter = new events.EventEmitter();
-
-      // class clsResponse {
-      //   constructor(channel, fn) {
-      //     this.channel = channel;
-      //     this.fn = fn;
-      //   }
-
-      //   #response = {
-      //     locals: {},
-      //     status: function (...args) {
-      //       return this;
-      //     },
-      //     end: function (...args) {},
-
-      //     json: function (url) {
-      //       return;
-      //     },
-      //     redirect: function (url) {
-      //       return;
-      //     },
-      //     send: function (url) {
-      //       myemitter.emit("init", "data", url);
-      //       switch (status) {
-      //         case "init":
-      //           status = "window";
-      //           break;
-
-      //         case "window":
-      //           break;
-      //       }
-
-      //       return this;
-      //     },
-      //     setHeader: function (...args) {
-      //       return;
-      //     },
-      //     text: function (...args) {
-      //       return;
-      //     },
-      //   };
-      // }
 
       const register = (...args) => {
         let [config, fn] = args;
@@ -234,6 +197,54 @@ module.exports = async (...args) => {
       };
 
       /**
+       * Loading atomic public share modules for frontend use
+       * @alias module:webserver.load_atomic
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - share is an object
+       * @param {Array} args[1] - excludefile content a list of data for ignore purpose
+       * @param {Object} args[2] - obj is an object of module which content app module
+       * @returns {Object} - Return null | error object
+       */
+      const load_atomic = (...args) => {
+        let [share, excludefile, obj] = args;
+        let atomic = dir_module(share, excludefile);
+        for (let atomic_items of atomic) {
+          let units = dir_module(join(share, atomic_items), excludefile);
+          for (let unit of units) {
+            let sharepath = join(share, atomic_items, unit, "src", "browser");
+            if (existsSync(sharepath))
+              obj[units] = {
+                checkpoint: join(atomic_items, unit),
+                filepath: sharepath,
+              };
+          }
+        }
+      };
+
+      /**
+       * Allocate public static files share
+       * @alias module:webserver.load_pubshare
+       * @param {...Object} args - 3 parameters
+       * @param {Object} args[0] - share is an object
+       * @param {String} args[1] - enginetype is value which content the engine type
+       * @param {Object} args[2] - obj is an object of module which content reaction and app modules
+       * @returns {Object} - Return null | error object
+       */
+      const load_pubshare = (...args) => {
+        let [share, enginetype, obj] = args;
+        for (let [pubkey, pubval] of Object.entries(share)) {
+          if (pubkey.indexOf(`${enginetype}_`) > -1) {
+            for (let [key, val] of Object.entries(pubval)) {
+              obj[key] = val;
+              //   if (datatype(val) == "object")
+              //     obj.app.use(key, obj.reaction[val.fn]);
+              //   else obj.app.use(key, express.static(val));
+            }
+          }
+        }
+      };
+
+      /**
        * Establish new browser window
        * @alias module:desktop.establish
        * @param {...Object} args - 1 parameters
@@ -259,17 +270,23 @@ module.exports = async (...args) => {
               let { host, pathname } = new URL(request.url);
               if (pathname !== "/") {
                 let joinstr = "";
+                let apicontent = "";
+                let fp = "";
                 let filePath = request.url.slice(`${registry.el}://`.length);
                 filePath = filePath.slice(host.length);
-                let fp = "";
+
                 for (let [key, val] of Object.entries(registry.winshare)) {
                   if (pathname.indexOf(key) > -1) {
                     if (datatype(val) == "object") {
                       fp = val.filepath;
-                      joinstr = filePath
-                        .split(cosetting.splitter)
-                        .slice(-1)
-                        .pop();
+                      if (val.content) {
+                        apicontent = val.content;
+                        joinstr = filePath.replace(`/${val.checkpoint}/`, "");
+                      } else
+                        joinstr = filePath
+                          .split(setting.splitter)
+                          .slice(-1)
+                          .pop();
                     } else {
                       fp = val;
                       joinstr = filePath.slice(key.length);
@@ -278,14 +295,24 @@ module.exports = async (...args) => {
                   }
                 }
 
-                let api = url.pathToFileURL(path.join(fp, joinstr)).toString();
-                if (fs.existsSync(path.join(fp, joinstr)))
-                  return await net.fetch(api);
+                let api = url.pathToFileURL(join(fp, joinstr)).toString();
+                if (existsSync(join(fp, joinstr))) {
+                  if (apicontent !== "") {
+                    let less = await net.fetch(api);
+                    apicontent += await less.text();
+                    apicontent = await minify(apicontent, {
+                      collapseWhitespace: true,
+                    });
+                    return new Response(apicontent);
+                  } else return await net.fetch(api);
+                }
               } else {
                 // console.log("other origin---", request.url);
                 // return;
               }
-            } catch (error) {}
+            } catch (error) {
+              console.log(error);
+            }
           };
 
           protocol.handle(`${registry.el}`, resource);
@@ -306,7 +333,7 @@ module.exports = async (...args) => {
               enableRemoteModule: winopt.enableRemoteModule,
               nodeIntegrationInWorker: true,
               webSecurity: winopt.webSecurity,
-              preload: path.join(pathname, "browser", "./init.js"),
+              preload: join(pathname, "browser", "./init.js"),
             },
           });
 
@@ -346,7 +373,7 @@ module.exports = async (...args) => {
               // protocol.unhandle(winopt.el)
               break;
             default:
-              win.loadFile(path.join(pathname, "browser", "./main.html"));
+              win.loadFile(join(pathname, "browser", "./main.html"));
           }
 
           win.on("close", async (e) => {
@@ -424,44 +451,37 @@ module.exports = async (...args) => {
       lib["start"] = (...args) => {
         return new Promise(async (resolve) => {
           let [setting, obj] = args;
-          let { deskelectronjs, ongoing, share } = setting;
-          reaction = obj;
+          let { deskelectronjs } = setting;
+          let { reaction: reactionjs, autoupdate } = obj;
+          reaction = reactionjs;
           try {
-            let { winshare } = registry;
-            if (setting.share) {
-              for (let share of setting.share) {
-                for (let [key, val] of Object.entries(share)) {
-                  if (key == "/atomic") {
-                    let atomic = library.utils.dir_module(
-                      share[key],
-                      setting.genernalexcludefile
-                    );
-                    for (let atomic_items of atomic) {
-                      let units = library.utils.dir_module(
-                        path.join(share[key], atomic_items),
-                        setting.genernalexcludefile
-                      );
-                      for (let unit of units) {
-                        let sharepath = path.join(
-                          share[key],
-                          atomic_items,
-                          unit,
-                          "src",
-                          "browser"
-                        );
-                        if (sys.fs.existsSync(sharepath)) {
-                          // winshare[units] = sharepath;
-                          winshare[units] = {
-                            checkpoint: path.join(atomic_items, unit),
-                            filepath: sharepath,
-                          };
-                        }
-                      }
-                    }
-                  } else winshare[key] = val;
-                }
+            let ongoing;
+            if (setting.args.project && setting.args.project != "")
+              ongoing = setting.ongoing[setting.args.project];
+            else {
+              let ongoing_names = Object.keys(setting.ongoing);
+              ongoing_names.map((value, idx) => {
+                if (value.indexOf(`${setting.general.engine.type}_`) == -1)
+                  ongoing_names.splice(idx, 1);
+              });
+              if (ongoing_names.length > 0) {
+                let [dname] = ongoing_names;
+                ongoing = structuredClone(setting.ongoing[dname]);
               }
             }
+
+            await Promise.all([
+              load_atomic(
+                setting.share.atomic,
+                setting.genernalexcludefile,
+                registry.winshare
+              ),
+              load_pubshare(
+                setting.share.public,
+                setting.general.engine.type,
+                registry.winshare
+              ),
+            ]);
 
             register({ event: "on", channel: "deskfetch" }, onfetch);
             register({ event: "handle", channel: "deskfetchsync" }, onfetch);
@@ -482,6 +502,7 @@ module.exports = async (...args) => {
               }
             });
 
+            await autoupdate.init(setting);
             await onfetch(null, {
               method: "GET",
               originalUrl: ongoing.defaulturl,
@@ -494,6 +515,31 @@ module.exports = async (...args) => {
             resolve(error);
           }
         });
+      };
+
+      /**
+       * Destroy browser window
+       * @alias module:window.destroy
+       * @param {...Object} args - 1 parameters
+       * @param {Array} args[0] - win integer - the window id
+       * @returns
+       */
+      lib["destroy"] = (...args) => {
+        let [win] = args;
+        let idx = winlist.indexOf(win);
+        if (idx > -1) winlist.splice(idx, 1);
+      };
+
+      /**
+       * Transfer data from backend to frontend
+       * @alias module:window.intercom
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - Tab index of window browser
+       * @param {Object} args[1] - Data preparation,cable by any type
+       */
+      lib["intercom"] = async (...args) => {
+        let [tabindex = 0, param] = args;
+        winlist[tabindex].webContents.send("broadcast", param);
       };
 
       resolve(lib);

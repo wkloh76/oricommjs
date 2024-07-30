@@ -1,0 +1,66 @@
+appId: com.vs2rd.pdia
+productName: Production Device Interface Application
+copyright: Copyright © 2023 ${author}
+directories:
+  buildResources: ./build
+  output: ./dist
+files:
+  - "app.js"
+  - "atomic/**/*"
+  - "components/**/*"
+  - "core/**/*"
+  - "**/node_modules/**/*"
+  - "coresetting.toml"
+  - "!{dev-app-update.yml,Changelog.md,README.md}"
+asar: true
+compression: maximum
+# asarUnpack:
+#   - resources/**
+# afterSign: build/notarize.js
+# win:
+#   executableName: Post Tools
+#   icon: resources/icon.ico
+#   publisherName: tiven
+#   verifyUpdateCodeSignature: false
+#   target:
+#     - nsis
+#     - squirrel
+# nsis:
+#   oneClick: false
+#   artifactName: ${name}-${version}-setup.${ext}
+#   shortcutName: ${productName}
+#   uninstallDisplayName: ${productName}
+#   createDesktopShortcut: always
+#   perMachine: true
+#   allowToChangeInstallationDirectory: true
+#   guid: 2cf313e9-0f05-xxxx-1006-e278272e9b2a
+# squirrelWindows:
+#   loadingGif: resources/loading.gif
+#   iconUrl: https://tiven.cn/static/img/net-stats.ico
+# mac:
+#   category: public.app-category.developer-tools
+#   entitlementsInherit: build/entitlements.mac.plist
+#   extendInfo:
+#     - NSCameraUsageDescription: Application requests access to the device's camera.
+#     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
+#     - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
+#     - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+# dmg:
+#   artifactName: ${name}-${version}.${ext}
+linux:
+  target:
+    # - AppImage
+    # - snap
+    - target: deb
+      arch:
+        - x64
+        # - armv7l
+  maintainer: wkloh
+  category: Utility
+
+appImage:
+  artifactName: ${name}-${version}.${ext}
+npmRebuild: false
+publish:
+  provider: generic
+  url: http://localhost:8787/build/

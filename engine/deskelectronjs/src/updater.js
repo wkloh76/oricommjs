@@ -23,16 +23,12 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const { fs, path, toml } = sys;
-    const {
-      utils: { datatype },
-    } = library;
+    const { fs, path, yaml } = sys;
     const { app } = require("electron");
     const logger = require("electron-log");
     const util = require("util");
     const os = require("os");
     const { default: got } = await import("got");
-    const YAML = require("yaml");
     const stream = require("stream");
     const crypto = require("crypto");
     const ini = require("ini");
@@ -41,8 +37,6 @@ module.exports = async (...args) => {
       let { createWriteStream } = fs;
       let pipeline = util.promisify(stream.pipeline);
       let cwdexec = util.promisify(require("child_process").exec);
-
-      let { splitter } = coresetting;
 
       let addHeader = { headers: {} };
       let sudo, tout, appupdater, packagetype, softwarepack;
@@ -74,19 +68,22 @@ module.exports = async (...args) => {
         return err;
       };
 
-      const restartservice = async () => {
+      const restartservice = async (...args) => {
+        let [packagejson] = args;
         try {
-          let { name } = coresetting.packagejson;
+          let { name } = packagejson;
           let restart = `systemctl --user restart ${name}.service`;
           await cwdexec(restart);
         } catch (error) {
           logger.error(["restart service error!", error.message]);
         }
       };
-      const newservice = async () => {
+      const newservice = async (...args) => {
+        let [setting, updater] = args;
+        let { packagejson, splitter, args: arg } = setting;
         try {
-          let { name, productName } = coresetting.packagejson;
-          let { systemd } = coresetting.desktop.updater;
+          let { name, productName } = packagejson;
+          let { systemd } = updater;
           let servicepath = path.join(splitter, "etc", "systemd", systemd);
           if (!fs.existsSync(path.join(servicepath, `${name}.service`))) {
             let servicetemp = ini.parse(
@@ -96,7 +93,7 @@ module.exports = async (...args) => {
               )
             );
             servicetemp.Unit.Description = productName;
-            let ExecStart = `${name} --mode=${kernel.mode}`;
+            let ExecStart = `${name} --mode=${arg.mode} --engine=${arg.engine}`;
             servicetemp.Service.ExecStart = ExecStart;
             let service = ini
               .stringify(servicetemp)
@@ -228,7 +225,8 @@ module.exports = async (...args) => {
         return rtn;
       };
 
-      const get_latestversion = async () => {
+      const get_latestversion = async (...args) => {
+        let [splitter] = args;
         let output = { code: 0, msg: "", data: null };
         try {
           let abortController = new AbortController();
@@ -243,7 +241,7 @@ module.exports = async (...args) => {
             abortController.abort();
           }, 10000);
 
-          output.data = YAML.parse(await got(options).text());
+          output.data = yaml.parse(await got(options).text());
           return output;
         } catch (error) {
           logger.error(["Check latest version error!", error.message]);
@@ -251,13 +249,15 @@ module.exports = async (...args) => {
         }
       };
 
-      const check_update = async () => {
+      const check_update = async (...args) => {
+        let [setting, updater] = args;
+        let { packagejson, splitter } = setting;
         try {
-          let { name, productName, version } = coresetting.packagejson;
+          let { name, productName, version } = packagejson;
           let arch = `${get_arch()}.${packagetype}`;
 
           logger.info("Checked for updates");
-          let rtn = await get_latestversion();
+          let rtn = await get_latestversion(splitter);
 
           if (rtn.code == 0) {
             let [dname, dver, darch] = rtn.data.path.split("_");
@@ -278,8 +278,8 @@ module.exports = async (...args) => {
                 let csum = await checksum("sha512", softwarepack);
                 if (csum && csum == rtn.data.sha512) {
                   await install();
-                  await newservice();
-                  await restartservice();
+                  await newservice(setting, updater);
+                  await restartservice(packagejson);
                   app.exit(0);
                 }
               } else logger.error("Download failure!", fdownload.msg);
@@ -296,9 +296,10 @@ module.exports = async (...args) => {
         }
       };
 
-      const whoami = async () => {
+      const whoami = async (...args) => {
+        let [general] = args;
         try {
-          let { sudopwd } = coresetting.general;
+          let { sudopwd } = general;
           let output = "";
           let { stdout } = await cwdexec("echo $(whoami)");
           if (stdout.trim() != "root") output = `echo ${sudopwd} | sudo -S `;
@@ -307,64 +308,66 @@ module.exports = async (...args) => {
         } catch (e) {}
       };
 
-      lib.init = async () => {
-        let { cyclecheck, delay, silent } = coresetting.desktop.updater;
-        let { name } = coresetting.packagejson;
+      lib.init = async (...args) => {
+        let [setting] = args;
+        let {
+          deskelectronjs: {
+            updater: { auth, cyclecheck, delay, silent, systemd },
+            updater,
+          },
+          general,
+          packagejson: { name },
+          packagejson,
+          splitter,
+        } = setting;
 
         //print log to logger
         logger.transports.file.maxSize = 1002430; // 10M
         logger.transports.file.format =
           "[{y}-{m}-{d} {h}:{i}:{s}.{ms}] [{level}]{scope} {text}";
 
-        logger.transports.file.resolvePath = () =>
+        logger.transports.file.resolvePathFn = () =>
           path.join(app.getPath("appData"), "logs", "eupdater.log");
 
-        sudo = await whoami();
-        let authpath = path.join(kernel.dir, `.${splitter}auth.toml`);
-        if (fs.existsSync(authpath)) {
-          let { auth } = toml.parse(fs.readFileSync(authpath), {
-            bigint: false,
-          });
-          if (auth !== undefined && auth != "") {
-            addHeader.headers["Authorization"] = auth;
-          }
+        sudo = await whoami(general);
+        if (auth !== undefined && auth != "") {
+          addHeader.headers["Authorization"] = auth;
         }
 
         let appupdatepath = path.join(
-          kernel.dir.substring(0, kernel.dir.lastIndexOf("resources")),
+          library.dir.substring(0, library.dir.lastIndexOf("resources")),
           "resources",
           "app-update.yml"
         );
 
         let packagetypepath = path.join(
-          kernel.dir.substring(0, kernel.dir.lastIndexOf("resources")),
+          library.dir.substring(0, library.dir.lastIndexOf("resources")),
           "resources",
           "package-type"
         );
 
         if (fs.existsSync(appupdatepath))
-          appupdater = YAML.parse(fs.readFileSync(appupdatepath, "utf8"));
+          appupdater = yaml.parse(fs.readFileSync(appupdatepath, "utf8"));
         if (fs.existsSync(packagetypepath))
-          packagetype = YAML.parse(fs.readFileSync(packagetypepath, "utf8"));
+          packagetype = yaml.parse(fs.readFileSync(packagetypepath, "utf8"));
 
         // If no service then create
         if (appupdater && packagetype) {
-          let { systemd } = coresetting.desktop.updater;
           let servicepath = path.join(splitter, "etc", "systemd", systemd);
           if (!fs.existsSync(path.join(servicepath, `${name}.service`))) {
-            await newservice();
-            await restartservice();
+            await newservice(setting, updater);
+            await restartservice(packagejson);
             app.exit(0);
           }
         }
 
         tout = setTimeout(async () => {
           if (appupdater !== undefined && packagetype !== undefined) {
-            await check_update();
+            await check_update(setting, updater);
             clearTimeout(tout);
             tout = setTimeout(async () => {
               clearTimeout(tout);
-              await check_update();
+              await check_update(setting, updater);
             }, cyclecheck * 1000);
           }
         }, delay * 1000);
