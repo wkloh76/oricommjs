@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rename webnodejs `coresetting.toml.example` to `web.toml.example`. Completed on 2024-07-26
 - Rename deskelectronjs `coresetting.toml.example` to `desktop.toml.example`. Completed on 2024-07-26
 - Update package.json.example dependencies modules. Completed on 2024-07-26
+- Change the global.coresetting.share to object type in `app.js`. Completed on 2024-07-30
+- Chnage the error log file save mehtod into the error folder. Completed on 2024-07-30
 
 ### Deprecated
 

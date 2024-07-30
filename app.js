@@ -46,7 +46,7 @@
       splitter: "/",
       platform: process.platform,
       homedir: require("os").homedir(),
-      share: [],
+      share: { public: {}, atomic: {} },
     };
 
     sysmodule.events.EventEmitter.defaultMaxListeners = 50;
@@ -268,7 +268,7 @@
                 ...log.success,
               },
               error: {
-                filename: path.join(logpath, "error.log"),
+                filename: path.join(logpath, "error", "error.log"),
                 ...log.error,
               },
             },
