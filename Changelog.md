@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add specify http route request in both `webnodejs/src/webserver.js` and `deskelectronjs/src/reaction.js` for less.js static file. Completed on 2024-07-30
 - Implement auto updater service to `deskelectronjs`. Completed on 2024-07-30
 - Add `intercomm.js` to `utils` which will create a single events transaction to handler backend data passing. Completed on 2024-07-31
+- Implement BroadcastChannel to passing data from deskelectronjs preload `init.js` to frontend js. The BroadcastChannel can passing data arround js to js without html elemeent support. Completed on 2024-07-31
 
 ### Changed
 

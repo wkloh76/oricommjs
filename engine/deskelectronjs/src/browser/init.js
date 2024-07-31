@@ -60,10 +60,9 @@
   ipcRenderer.on("resfetchapi", decodeapi);
   ipcRenderer.on("broadcast", (...args) => {
     let [event, param] = args;
-    const emit = new CustomEvent("intercom", {
-      detail: param,
-    });
-    document.dispatchEvent(emit);
+    const bc = new BroadcastChannel("intercom");
+    bc.postMessage(param);
+    bc.close();
   });
 
   contextBridge.exposeInMainWorld("electron", () => {

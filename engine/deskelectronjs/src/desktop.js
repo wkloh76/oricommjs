@@ -25,11 +25,14 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const {
+      utils: { datatype, dir_module, intercomm },
+    } = library;
+    const {
       events,
-      fs: { existsSync, readFileSync },
+      fs: { existsSync },
       path: { join },
-      logger,
     } = sys;
+
     const {
       app,
       BrowserWindow,
@@ -41,18 +44,13 @@ module.exports = async (...args) => {
     } = require("electron");
     const { minify } = require("html-minifier-terser");
     const url = require("url");
-    const {
-      utils: { datatype, dir_module },
-    } = library;
 
     try {
       let lib = {};
       let winlist = [];
       let reglist = {};
       let reaction;
-
       let registry = { el: "deskelectron", winshare: {} };
-      let myemitter = new events.EventEmitter();
 
       const register = (...args) => {
         let [config, fn] = args;
@@ -126,7 +124,7 @@ module.exports = async (...args) => {
             };
 
             function window(url) {
-              myemitter.emit("init", "data", url);
+              intercomm.fire("deskinit", ["data", url]);
               return;
             }
 
@@ -236,9 +234,6 @@ module.exports = async (...args) => {
           if (pubkey.indexOf(`${enginetype}_`) > -1) {
             for (let [key, val] of Object.entries(pubval)) {
               obj[key] = val;
-              //   if (datatype(val) == "object")
-              //     obj.app.use(key, obj.reaction[val.fn]);
-              //   else obj.app.use(key, express.static(val));
             }
           }
         }
@@ -255,7 +250,6 @@ module.exports = async (...args) => {
         let [setting] = args;
         let {
           deskelectronjs: { window: winopt },
-          general,
         } = setting;
         try {
           let monwidth = "";
@@ -370,7 +364,6 @@ module.exports = async (...args) => {
               win.loadURL(htmlstring, {
                 baseURLForDataURL: `${registry.el}://resource/`,
               });
-              // protocol.unhandle(winopt.el)
               break;
             default:
               win.loadFile(join(pathname, "browser", "./main.html"));
@@ -390,7 +383,7 @@ module.exports = async (...args) => {
           });
 
           win.on("closed", () => {
-            lib.destroy(win.id - 1);
+            dismantle(win.id - 1);
           });
 
           win.on("error", (error) => {
@@ -441,8 +434,21 @@ module.exports = async (...args) => {
       };
 
       /**
+       * Dismantle selected window
+       * @alias module:desktop.dismantle
+       * @param {...Object} args - 1 parameters
+       * @param {Array} args[0] - win integer - the window id
+       * @returns
+       */
+      const dismantle = (...args) => {
+        let [win] = args;
+        let idx = winlist.indexOf(win);
+        if (idx > -1) winlist.splice(idx, 1);
+      };
+
+      /**
        * Configure log module for webexpress and normal log
-       * @alias module:webserver.start
+       * @alias module:desktop.start
        * @param {...Object} args - 2 parameters
        * @param {Object} args[0] - setting is coresetting object value
        * @param {Object} args[1] - onrequest is a function for responding when http client request
@@ -486,7 +492,7 @@ module.exports = async (...args) => {
             register({ event: "on", channel: "deskfetch" }, onfetch);
             register({ event: "handle", channel: "deskfetchsync" }, onfetch);
 
-            myemitter.once("init", async (render, data) => {
+            intercomm.register("deskinit", "once", async (render, data) => {
               try {
                 deskelectronjs.window.render = render;
                 deskelectronjs.window.html = data;
@@ -502,6 +508,11 @@ module.exports = async (...args) => {
               }
             });
 
+            intercomm.register("desktopcast", "always", async (...args) => {
+              let [param, tabindex = 0] = args;
+              winlist[tabindex].webContents.send("broadcast", param);
+            });
+
             await autoupdate.init(setting);
             await onfetch(null, {
               method: "GET",
@@ -515,31 +526,6 @@ module.exports = async (...args) => {
             resolve(error);
           }
         });
-      };
-
-      /**
-       * Destroy browser window
-       * @alias module:window.destroy
-       * @param {...Object} args - 1 parameters
-       * @param {Array} args[0] - win integer - the window id
-       * @returns
-       */
-      lib["destroy"] = (...args) => {
-        let [win] = args;
-        let idx = winlist.indexOf(win);
-        if (idx > -1) winlist.splice(idx, 1);
-      };
-
-      /**
-       * Transfer data from backend to frontend
-       * @alias module:window.intercom
-       * @param {...Object} args - 1 parameters
-       * @param {Object} args[0] - Tab index of window browser
-       * @param {Object} args[1] - Data preparation,cable by any type
-       */
-      lib["intercom"] = async (...args) => {
-        let [tabindex = 0, param] = args;
-        winlist[tabindex].webContents.send("broadcast", param);
       };
 
       resolve(lib);
