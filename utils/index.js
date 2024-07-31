@@ -21,13 +21,13 @@
 module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
     const [mpath, mname, cosetting] = args;
-    const { excludefile } = cosetting.general;
     try {
       let lib = {
         ...(await require("./utils")(mpath, mname)),
       };
       lib["handler"] = await require("./handler")(mpath, mname);
       lib["powershell"] = await require("./powershell")(mpath, mname);
+      lib["intercomm"] = await require("./intercomm")(mpath, mname);
 
       resolve(lib);
     } catch (error) {

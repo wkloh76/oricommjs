@@ -15,7 +15,7 @@
  */
 "use strict";
 /**
- * The submodule of helper
+ * The submodule of utils
  * @module utils_handler
  */
 module.exports = async (...args) => {
