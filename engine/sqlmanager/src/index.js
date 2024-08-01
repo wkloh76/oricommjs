@@ -116,10 +116,11 @@ module.exports = async (...args) => {
         try {
           let saltrounds = 10;
           if (password && hashpassword) {
+            let hashpwd= structuredClone(hashpassword)
             // For old encrypt format in minor with y replace to b
-            if (hashpassword.indexOf("$2y") == 0)
-              hashpassword = hashpassword.replace(/^\$2y/, "$2b");
-            let rtn = bcrypt.compareSync(password, hashpassword);
+            if (hashpwd.indexOf("$2y") == 0)
+              hashpwd = hashpwd.replace(/^\$2y/, "$2b");
+            let rtn = bcrypt.compareSync(password, hashpwd);
             output.data = { result: rtn, status: "compare" };
           } else {
             let rtn = bcrypt.hashSync(password, saltrounds);
