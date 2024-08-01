@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Apply structureClone to `password` method at `sqlmanager` engine to predict parameter change during process. Completed on 2024-08-01
+- Re-structure smfetch browser files handler method. Completed on 2024-08-01
 
 ### Deprecated
 

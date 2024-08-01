@@ -19,7 +19,7 @@
  * @module smfetch
  */
 export default await (async () => {
-  let { default: atom } = await import(`./atom.js`);
+  let { default: atom } = await import(`./smfetch/atom.js`);
 
   let lib = {};
 
