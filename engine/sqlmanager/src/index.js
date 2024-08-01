@@ -75,8 +75,7 @@ module.exports = async (...args) => {
           let logpath = db.path;
           if (db.path == "")
             logpath = path.join(cosetting.logpath, db.engine, `${dbname}.log`);
-          else
-            logpath = path.join(db.path, db.engine, `${dbname}.log`);
+          else logpath = path.join(db.path, db.engine, `${dbname}.log`);
           cosetting.log4jsconf.appenders = {
             ...cosetting.log4jsconf.appenders,
             ...{
@@ -117,6 +116,9 @@ module.exports = async (...args) => {
         try {
           let saltrounds = 10;
           if (password && hashpassword) {
+            // For old encrypt format in minor with y replace to b
+            if (hashpassword.indexOf("$2y") == 0)
+              hashpassword = hashpassword.replace(/^\$2y/, "$2b");
             let rtn = bcrypt.compareSync(password, hashpassword);
             output.data = { result: rtn, status: "compare" };
           } else {

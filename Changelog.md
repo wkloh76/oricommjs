@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.5] - 2024-08-01
+
+### Summary
+
+### Added
+
+- Apply "y"(old system) to compare hash password in `password` method at `sqlmanager` engine. Completed on 2024-08-01
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[1.1.5]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.5
+
 ## [1.1.4] - 2024-07-26
 
 ### Summary
