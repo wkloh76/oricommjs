@@ -276,11 +276,19 @@ module.exports = async (...args) => {
                       if (val.content) {
                         apicontent = val.content;
                         joinstr = filePath.replace(`/${val.checkpoint}/`, "");
-                      } else
+                      } else{                        
                         joinstr = filePath
                           .split(setting.splitter)
                           .slice(-1)
                           .pop();
+                          if(joinstr!=`${key}.js`) {
+                            joinstr = filePath
+                            .split(setting.splitter)
+                            .slice(-2).join(setting.splitter)
+                            
+                            
+                          }
+                        }
                     } else {
                       fp = val;
                       joinstr = filePath.slice(key.length);

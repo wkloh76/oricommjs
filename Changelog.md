@@ -24,6 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix deskelectronjs unrecognized sub folders of content in atmom/browser. Completed on 2024-08-05
+
 ### Security
 
 [1.1.5]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.5
