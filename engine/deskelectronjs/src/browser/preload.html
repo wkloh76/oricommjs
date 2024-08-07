@@ -80,7 +80,7 @@
         let data = {};
 
         picker.map((val) => {
-          let dtype = datatype(val);
+          let dtype = glib.datatype(val);
 
           if (dtype == "string") {
             let { [val]: reserve, ...rest } = obj;
