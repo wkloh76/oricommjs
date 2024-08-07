@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Apply "y"(old system) to compare hash password in `password` method at `sqlmanager` engine. Completed on 2024-08-01
+- Add advance feature to `pick_arrayofobj` function into `utils`. Completed on 2024-08-07
 
 ### Changed
 

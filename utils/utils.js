@@ -284,23 +284,42 @@ module.exports = async (...args) => {
 
       /**
        * Pick data from the array object as the defination from picker
-       * @alias module:array.pick_arrayofobj
+       * @alias module:utils.pick_arrayofobj
        * @param {...Object} args - 1 parameters
        * @param {Array} args[0] -arrobj is an array of object data type
        * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
+       * @param {Array} args[2] -rename is an array of string which base on position value renaming the output keyname
        * @returns {Array} - Return empty array if cannot get the key from the value
        */
       lib["pick_arrayofobj"] = (...args) => {
-        let [arrobj, picker] = args;
+        let [arrobj, picker, rename] = args;
         let output = [];
-        for (let obj of arrobj) {
+        for (let [idx, obj] of Object.entries(arrobj)) {
           let data = {};
+
           picker.map((val) => {
-            const { [val]: reserve, ...rest } = obj;
-            if (reserve !== undefined && reserve != null)
-              data = { ...data, ...{ [val]: reserve } };
+            let dtype = datatype(val);
+
+            if (dtype == "string") {
+              let { [val]: reserve, ...rest } = obj;
+              if (reserve !== undefined && reserve != null)
+                data = { ...data, ...{ [val]: reserve } };
+              output.push(data);
+            } else if (dtype == "object") {
+              let [keyname] = Object.keys(val);
+              let { [keyname]: reserve, ...rest } = obj;
+
+              if (rename) {
+                let key = rename[idx];
+                data = { ...data, ...{ [key]: reserve } };
+              } else {
+                data = { ...data, ...reserve };
+              }
+
+              if (output.length == 0) output.push({ [keyname]: data });
+              else output[0][keyname] = { ...output[0][keyname], ...data };
+            }
           });
-          output.push(data);
         }
         return output;
       };
