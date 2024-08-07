@@ -16,74 +16,144 @@
    */
   "use strict";
   var glib = {
-      /**
-       * The main objective is find the value base on nested keyname
-       * The detail refer to https://github.com/flexdinesh/typy
-       * @alias module:toolbox.getNestedObject
-       * @param {Array} obj - Object
-       * * @param {Array} dotSeparatedKeys - Nested keyname
-       * @returns {Object} - Return modules
-       */
-      getNestedObject: (obj, dotSeparatedKeys) => {
-          if (dotSeparatedKeys !== undefined && typeof dotSeparatedKeys !== "string") return undefined;
-          if (typeof obj !== "undefined" && typeof dotSeparatedKeys === "string") {
-              // split on ".", "[", "]", "'", """ and filter out empty elements
-              const splitRegex = /[.\[\]'"]/g; // eslint-disable-line no-useless-escape
-              const pathArr = dotSeparatedKeys.split(splitRegex).filter((k) => k !== "");
+    /**
+     * The main objective is find the value base on nested keyname
+     * The detail refer to https://github.com/flexdinesh/typy
+     * @alias module:toolbox.getNestedObject
+     * @param {Array} obj - Object
+     * * @param {Array} dotSeparatedKeys - Nested keyname
+     * @returns {Object} - Return modules
+     */
+    getNestedObject: (obj, dotSeparatedKeys) => {
+      if (
+        dotSeparatedKeys !== undefined &&
+        typeof dotSeparatedKeys !== "string"
+      )
+        return undefined;
+      if (typeof obj !== "undefined" && typeof dotSeparatedKeys === "string") {
+        // split on ".", "[", "]", "'", """ and filter out empty elements
+        const splitRegex = /[.\[\]'"]/g; // eslint-disable-line no-useless-escape
+        const pathArr = dotSeparatedKeys
+          .split(splitRegex)
+          .filter((k) => k !== "");
 
-              // eslint-disable-next-line no-param-reassign, no-confusing-arrow
-              obj = pathArr.reduce((o, key) => (o && o[key] !== "undefined" ? o[key] : undefined), obj);
+        // eslint-disable-next-line no-param-reassign, no-confusing-arrow
+        obj = pathArr.reduce(
+          (o, key) => (o && o[key] !== "undefined" ? o[key] : undefined),
+          obj
+        );
+      }
+      return obj;
+    },
+
+    datatype: (value) => {
+      try {
+        let output = typeof value;
+        if (output == "string") {
+          if (!isNaN(value)) output = "number";
+        } else if (output == "object") {
+          if (Array.isArray(value)) {
+            output = "array";
+          } else if (Object.keys(value).length > 0) {
+            output = "object";
           }
-          return obj;
-      },
+        }
+        return output;
+      } catch (error) {
+        return error;
+      }
+    },
+
+    /**
+     * Pick data from the array object as the defination from picker
+     * @alias module:deskelectronjs.pick_arrayofobj
+     * @param {...Object} args - 1 parameters
+     * @param {Array} args[0] -arrobj is an array of object data type
+     * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
+     * @param {Array} args[2] -rename is an array of string which base on position value renaming the output keyname
+     * @returns {Array} - Return empty array if cannot get the key from the value
+     */
+    pick_arrayofobj: (...args) => {
+      let [arrobj, picker, rename] = args;
+      let output = [];
+      for (let [idx, obj] of Object.entries(arrobj)) {
+        let data = {};
+
+        picker.map((val) => {
+          let dtype = datatype(val);
+
+          if (dtype == "string") {
+            let { [val]: reserve, ...rest } = obj;
+            if (reserve !== undefined && reserve != null)
+              data = { ...data, ...{ [val]: reserve } };
+            output.push(data);
+          } else if (dtype == "object") {
+            let [keyname] = Object.keys(val);
+            let { [keyname]: reserve, ...rest } = obj;
+
+            if (rename) {
+              let key = rename[idx];
+              data = { ...data, ...{ [key]: reserve } };
+            } else {
+              data = { ...data, ...reserve };
+            }
+
+            if (output.length == 0) output.push({ [keyname]: data });
+            else output[0][keyname] = { ...output[0][keyname], ...data };
+          }
+        });
+      }
+      return output;
+    },
   };
   window.addEventListener("DOMContentLoaded", async () => {
-      if (mjs) {
-          if (mjs.lib.length > 0) await loadlib(mjs.lib);
-          if (Object.keys(mjs.initialize).length > 0) await initialize(mjs.initialize);
-      }
+    if (mjs) {
+      if (mjs.lib.length > 0) await loadlib(mjs.lib);
+      if (Object.keys(mjs.initialize).length > 0)
+        await initialize(mjs.initialize);
+    }
   });
 
   const sanbox = async (...args) => {
-      let [fn, name, params] = args;
-      try {
-          let result = fn.apply(null, params);
-          if (result instanceof Promise) {
-              result = await result;
-              if (result instanceof ReferenceError) throw result;
-          } else if (result instanceof ReferenceError) throw result;
-      } catch (error) {
-          console.log("Error:", name, "---", error.toString());
-      } finally {
-          return;
-      }
+    let [fn, name, params] = args;
+    try {
+      let result = fn.apply(null, params);
+      if (result instanceof Promise) {
+        result = await result;
+        if (result instanceof ReferenceError) throw result;
+      } else if (result instanceof ReferenceError) throw result;
+    } catch (error) {
+      console.log("Error:", name, "---", error.toString());
+    } finally {
+      return;
+    }
   };
 
   const initialize = async (...args) => {
-      let [param] = args;
-      const {getNestedObject} = glib;
-      if (getNestedObject) {
-          for (let [idx, val] of Object.entries(param)) {
-              let func = getNestedObject(glib, idx);
-              if (func) await sanbox(func, idx, val);
-          }
+    let [param] = args;
+    const { getNestedObject } = glib;
+    if (getNestedObject) {
+      for (let [idx, val] of Object.entries(param)) {
+        let func = getNestedObject(glib, idx);
+        if (func) await sanbox(func, idx, val);
       }
-      return;
+    }
+    return;
   };
 
   const loadlib = async (...args) => {
-      try {
-          let [param] = args;
-          for (let item of param) {
-              let fn = item.split("/").pop().replace(".js", "");
-              fn = fn.replace(".", "-");
-              let {default: df, ...otherlib} = await import(item);
-              if (Object.keys(otherlib).length > 0) glib[fn] = {...df, ...otherlib};
-              else glib[fn] = df;
-          }
-          return;
-      } catch (error) {
-          console.log(error);
+    try {
+      let [param] = args;
+      for (let item of param) {
+        let fn = item.split("/").pop().replace(".js", "");
+        fn = fn.replace(".", "-");
+        let { default: df, ...otherlib } = await import(item);
+        if (Object.keys(otherlib).length > 0) glib[fn] = { ...df, ...otherlib };
+        else glib[fn] = df;
       }
+      return;
+    } catch (error) {
+      console.log(error);
+    }
   };
 </script>

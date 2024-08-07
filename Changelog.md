@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Apply "y"(old system) to compare hash password in `password` method at `sqlmanager` engine. Completed on 2024-08-01
 - Add advance feature to `pick_arrayofobj` function into `utils`. Completed on 2024-08-07
+- Add `datatype` and `pick_arrayofobj` function to `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-07
 
 ### Changed
 
