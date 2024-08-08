@@ -441,7 +441,7 @@ module.exports = async (...args) => {
 
       /**
        * Update element value from the parent object by selected array of index base on object key name.
-       * @alias module:array.arr_objpick_delete
+       * @alias module:array.arr_objpick_update
        * @param {Array} src - Array of object from parent.
        * @param {Array} target - Array of value for selected index of source.
        * @param {Object} obj - Object of value for update to parent.

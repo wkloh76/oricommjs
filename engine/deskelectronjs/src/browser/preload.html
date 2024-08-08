@@ -17,14 +17,7 @@
   "use strict";
 
   var glib = {};
-  /**
-   * The main objective is find the value base on nested keyname
-   * The detail refer to https://github.com/flexdinesh/typy
-   * @alias module:deskelectronjs.getNestedObject
-   * @param {Array} obj - Object
-   * * @param {Array} dotSeparatedKeys - Nested keyname
-   * @returns {Object} - Return modules
-   */
+
   const getNestedObject = (obj, dotSeparatedKeys) => {
     if (dotSeparatedKeys !== undefined && typeof dotSeparatedKeys !== "string")
       return undefined;
@@ -62,15 +55,6 @@
     }
   };
 
-  /**
-   * Pick data from the array object as the defination from picker
-   * @alias module:deskelectronjs.pick_arrayofobj
-   * @param {...Object} args - 1 parameters
-   * @param {Array} args[0] -arrobj is an array of object data type
-   * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
-   * @param {Array} args[2] -rename is an array of string which base on position value renaming the output keyname
-   * @returns {Array} - Return empty array if cannot get the key from the value
-   */
   const pick_arrayofobj = (...args) => {
     let [arrobj, picker, rename] = args;
     let output = [];
@@ -104,6 +88,131 @@
     return output;
   };
 
+  const pick_arrayobj2list = (...args) => {
+    let [arrobj, picker] = args;
+    let output = {};
+    for (let obj of arrobj) {
+      picker.map((val) => {
+        const { [val]: reserve, ...rest } = obj;
+        if (reserve !== undefined && reserve != null) {
+          if (!output[val]) output[val] = [];
+          output[val].push(reserve);
+        }
+      });
+    }
+    return output;
+  };
+
+  const omit = (...args) => {
+    let [object, keys] = args;
+    let rtn = object;
+    keys.split(" ").map((val) => {
+      const { [val]: omitted, ...rest } = rtn;
+      rtn = rest;
+    });
+    return rtn;
+  };
+
+  const objpick = (...args) => {
+    let [object, keys] = args;
+    let rtn = {};
+    keys.split(" ").map((key) => (rtn[key] = object[key]));
+    return rtn;
+  };
+
+  const arr_selected = (...args) => {
+    const [source, compare] = args;
+    let output = { code: 0, msg: "", data: null };
+    try {
+      output.data = source.filter(function (val) {
+        return compare.indexOf(val) != -1;
+      });
+    } catch (error) {
+      output = errhandler(error);
+    } finally {
+      return output;
+    }
+  };
+
+  const arr_diffidx = (...args) => {
+    const [source, compare, format = 1] = args;
+    let output = { code: 0, msg: "", data: null };
+    try {
+      if (format == 2)
+        output.data = {
+          source: { index: [], value: [] },
+          compare: { index: [], value: [] },
+        };
+      else output.data = [];
+      let diff = source
+        .concat(compare)
+        .filter((val) => !(source.includes(val) && compare.includes(val)));
+      if (diff.length > 0) {
+        diff.forEach((value) => {
+          let result;
+          let pos_source = source.findIndex((element) => element == value);
+          let pos_compare = compare.findIndex((element) => element == value);
+          if (pos_source > -1) {
+            if (format == 2) {
+              output.data.source.index.push(pos_source);
+              output.data.source.value.push(value);
+            } else result = { from: "source", index: pos_source, value: value };
+          } else if (pos_compare > -1) {
+            if (format == 2) {
+              output.data.compare.index.push(pos_compare);
+              output.data.compare.value.push(value);
+            } else
+              result = {
+                from: "compare",
+                index: pos_compare,
+                value: value,
+              };
+          }
+          if (result && format != 2) output.data.push(result);
+        });
+      }
+    } catch (error) {
+      output = errhandler(error);
+    } finally {
+      return output;
+    }
+  };
+
+  const concatobj = (...args) => {
+    const [type, param1, param2] = args;
+    let output;
+    let data1, data2;
+    try {
+      let mergedata = (type, arg1, arg2) => {
+        let output;
+        switch (type) {
+          case "array":
+            output = arg1.concat(arg2);
+            break;
+          case "object":
+            output = mergeDeep(arg1, arg2);
+            break;
+        }
+        return output;
+      };
+
+      let reftype = datatype(type);
+      let refdata1 = datatype(param1);
+      let refdata2 = datatype(param2);
+
+      data1 = param1;
+      data2 = param2;
+      if (refdata1 == "undefined") data1 = type;
+      if (refdata2 == "undefined") data2 = type;
+
+      output = mergedata(reftype, data1, data2);
+    } catch (error) {
+      output = errhandler(error);
+    } finally {
+      return output;
+    }
+  };
+
   const sanbox = async (...args) => {
     let [fn, name, params] = args;
     try {
@@ -119,15 +228,30 @@
     }
   };
 
+  glib = {
+    utils: {
+      sanbox: sanbox,
+      getNestedObject: getNestedObject,
+      datatype: datatype,
+      pick_arrayofobj: pick_arrayofobj,
+      pick_arrayobj2list: pick_arrayobj2list,
+      omit: omit,
+      objpick: objpick,
+      arr_selected: arr_selected,
+      arr_diffidx: arr_diffidx,
+      concatobj: concatobj,
+    },
+  };
+
+  /**------------------ Private function--------------------------------------------*/
   const initialize = async (...args) => {
     let [param] = args;
-    const { getNestedObject } = glib;
-    if (getNestedObject) {
-      for (let [idx, val] of Object.entries(param)) {
-        let func = getNestedObject(glib, idx);
-        if (func) await sanbox(func, idx, val);
-      }
+
+    for (let [idx, val] of Object.entries(param)) {
+      let func = getNestedObject(glib, idx);
+      if (func) await sanbox(func, idx, val);
     }
+
     return;
   };
 
@@ -147,11 +271,6 @@
     }
   };
 
-  glib = {
-    getNestedObject: getNestedObject,
-    datatype: datatype,
-    pick_arrayofobj: pick_arrayofobj,
-  };
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {
       if (mjs.lib.length > 0) await loadlib(mjs.lib);

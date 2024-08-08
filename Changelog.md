@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apply "y"(old system) to compare hash password in `password` method at `sqlmanager` engine. Completed on 2024-08-01
 - Add advance feature to `pick_arrayofobj` function into `utils`. Completed on 2024-08-07
 - Add `datatype` and `pick_arrayofobj` function to `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-07
+- Implement `pick_arrayobj2list,omit,objpick,arr_selected,arr_diffidx,concatobj` backend utils function to both `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-08
 
 ### Changed
 
@@ -28,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix deskelectronjs unrecognized sub folders of content in atmom/browser. Completed on 2024-08-05
 - Fix `preload.html` from deskelectronjs and webnodejs. Completed on 2024-08-07
+
 ### Security
 
 [1.1.5]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.5
