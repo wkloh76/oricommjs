@@ -102,7 +102,7 @@ module.exports = async (...args) => {
             webnodejs: { parser, session, helmet },
             general,
           } = setting;
-          let { savestore, store, ...setsession } = session;
+          let { savestore, store, verbose, ...setsession } = session;
 
           //set up our express application
           app.use(require("cors")());
@@ -123,7 +123,12 @@ module.exports = async (...args) => {
             if (store.path == "") dbfile = join(logpath, "./sessions.db3");
             else dbfile = join(store.path, "./sessions.db3");
             delete store.path;
-            store.client = new sqlite3(dbfile, { verbose: console.log });
+            if (verbose)
+              store.client = new sqlite3(dbfile, { verbose: console.log });
+            else {
+              store.client = new sqlite3(dbfile);
+              console.log("Session db run silently!")
+            }
             setsession.store = new SqliteStore(store);
           }
 

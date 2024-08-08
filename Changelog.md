@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add advance feature to `pick_arrayofobj` function into `utils`. Completed on 2024-08-07
 - Add `datatype` and `pick_arrayofobj` function to `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-07
 - Implement `pick_arrayobj2list,omit,objpick,arr_selected,arr_diffidx,concatobj` backend utils function to both `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-08
+- Add `rolling` and `verbose` setting to web.toml.example in webnodejs engine which handle session expired extended and session db able run as silently. Completed on 2024-08-08
 
 ### Changed
 
