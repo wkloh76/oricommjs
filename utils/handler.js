@@ -26,7 +26,7 @@ module.exports = async (...args) => {
         /**
          * Getter the dataformat value
          * @type {Object}
-         * @memberof module:property.dataformat
+         * @memberof module:handler.dataformat
          * @instance
          */
         get dataformat() {
@@ -43,7 +43,7 @@ module.exports = async (...args) => {
         /**
          *  Getter the restful api dataformat value
          * @type {Object}
-         * @memberof module:property.restfulapi
+         * @memberof module:handler.restfulapi
          * @instance
          */
         get restfulapi() {
@@ -63,7 +63,7 @@ module.exports = async (...args) => {
         /**
          *  Getter the electron ipc events dataformat value
          * @type {Object}
-         * @memberof module:property.ipcevent
+         * @memberof module:handler.ipcevent
          * @instance
          */
         get ipcevent() {
@@ -81,7 +81,7 @@ module.exports = async (...args) => {
         /**
          *  Getter the web view render as html dataformat value
          * @type {Object}
-         * @memberof module:property.webview
+         * @memberof module:handler.webview
          * @instance
          */
         get webview() {
@@ -168,7 +168,7 @@ module.exports = async (...args) => {
 
       /**
        * Pick data frontend, either post or get value
-       * @alias module:method.getprm
+       * @alias module:handler.getprm
        * @param {Array} args - Expresss framework request object
        * @returns {Object} - Return  value
        */
@@ -190,7 +190,7 @@ module.exports = async (...args) => {
 
       /**
        * Checking the value is empty or not
-       * @alias module:method.check_empty
+       * @alias module:handler.check_empty
        * @param {...Object} args - 2 parameters
        * @param {Array} args[0] - input is a data
        * @returns {Object} - Return  value

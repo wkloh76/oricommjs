@@ -16,7 +16,7 @@
 "use strict";
 /**
  * The submodule of utils
- * @module utils_handler
+ * @module utils_powershell
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
@@ -43,7 +43,7 @@ module.exports = async (...args) => {
         /**
          * Getter the user id
          * @type {String}
-         * @memberof module:exec
+         * @memberof module:powershell.getuid
          * @instance
          */
         get getuid() {
@@ -53,7 +53,7 @@ module.exports = async (...args) => {
 
       /**
        * Check current user in linux os.
-       * @alias module:exec.getuid
+       * @alias module:powershell.initial
        * @returns {Object } - Return current user.
        */
       lib["initial"] = () => {
@@ -84,7 +84,7 @@ module.exports = async (...args) => {
 
       /**
        * Execute linux command line with non privilege.
-       * @alias module:exec.shell
+       * @alias module:powershell.shell
        * @param {String} cmd - Accept multi command line with non privilege.
        * @param {String} dir - Set to a specific working directory for a specific command line.
        * @returns {Object } - Return value which is return from the linux terminal.
@@ -120,7 +120,7 @@ module.exports = async (...args) => {
 
       /**
        * Executes an external application linux command line with non privilege.
-       * @alias module:exec.shellfile
+       * @alias module:powershell.shellfile
        * @param {String} cmd - Accept single command line execute file with non privilege.
        * @param {String} args - Arguments.
        * * @param {String} opt - Set to a specific working directory for a specific command line.
@@ -158,7 +158,7 @@ module.exports = async (...args) => {
 
       /**
        * Execute linux command line with privilege.
-       * @alias module:exec.sudoshell
+       * @alias module:powershell.sudoshell
        * @param {String} pwd - Linux user password.
        * @param {String} cmd - Accept multi command line with privilege.
        * @param {String} dir - Set to a specific working directory for a specific command line.
