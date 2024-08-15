@@ -61,19 +61,38 @@ module.exports = async (...args) => {
         },
 
         /**
-         *  Getter the electron ipc events dataformat value
+         *  Getter serialize dataformat value
          * @type {Object}
-         * @memberof module:handler.ipcevent
+         * @memberof module:handler.fmtseries
          * @instance
          */
-        get ipcevent() {
+        get fmtseries() {
           return Object.assign(
             {},
             {
-              hanlde: {},
-              on: {},
-              once: {},
-              handleOnce: {},
+              argv: {},
+              func: {},
+              param: {},
+              error: {},
+              temp: {},
+              pool: {},
+            }
+          );
+        },
+
+        get wfwseries() {
+          return Object.assign(
+            {},
+            {
+              workflow: {
+                name: "",
+                func: "",
+                param: [],
+                pull: [],
+                push: [],
+                error: [],
+                pool: [],
+              },
             }
           );
         },

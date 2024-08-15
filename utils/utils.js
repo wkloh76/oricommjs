@@ -533,13 +533,8 @@ module.exports = async (...args) => {
       lib["serialize"] = async (...args) => {
         return new Promise(async (resolve, reject) => {
           const [obj, proc, next] = args;
-          const { getNestedObject, updateObject, errhandler, mergeDeep } =
-            obj.utils;
-          let output = {
-            code: 0,
-            msg: "",
-            data: null,
-          };
+          const { getNestedObject, handler, errhandler } = obj.utils;
+          let output = handler.dataformat;
           try {
             const pre_funcparam = (...args) => {
               let [obj, params] = args;
@@ -577,7 +572,7 @@ module.exports = async (...args) => {
                   funcname = pname;
                   funcparams = pdata;
                 }
-                queuertn = await fn.apply(null, funcparams);
+                queuertn = fn.apply(null, funcparams);
                 if (queuertn instanceof Promise) queuertn = await queuertn;
                 let { code, data } = queuertn;
                 if (code == 0) {

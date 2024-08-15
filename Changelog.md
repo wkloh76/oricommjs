@@ -16,16 +16,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `datatype` and `pick_arrayofobj` function to `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-07
 - Implement `pick_arrayobj2list,omit,objpick,arr_selected,arr_diffidx,concatobj` backend utils function to both `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-08
 - Add `rolling` and `verbose` setting to web.toml.example in webnodejs engine which handle session expired extended and session db able run as silently. Completed on 2024-08-08
+- Add handler.fmtseries property in handler at utils for serialize function. Completed on 2024-08-14
+- Add handler.wfwseries property in handler at utils for serialize function. Completed on 2024-08-15
 
 ### Changed
 
 - Apply structureClone to `password` method at `sqlmanager` engine to predict parameter change during process. Completed on 2024-08-01
 - Re-structure smfetch browser files handler method. Completed on 2024-08-01
 - Update doc comments in handler,powershell at utils. Completed on 2024-08-14
+- Optimize serialize function at utils. Completed on 2024-08-15
+- Optimize startup function at app.js. Completed on 2024-08-15
 
 ### Deprecated
 
 ### Removed
+
+- Delete handler.ipcevent property in handler at utils. Completed on 2024-08-14
 
 ### Fixed
 

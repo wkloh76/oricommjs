@@ -329,13 +329,15 @@
      */
     const startup = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [cosetting, sys, core] = args;
-        const { errhandler, import_cjs, serialize } = core.utils;
-        let output = {
-          code: 0,
-          msg: "app.js configlog done!",
-          data: null,
-        };
+        const [params, obj] = args;
+        const [core, sys, cosetting] = obj;
+        const {
+          errhandler,
+          handler: { dataformat, fmtseries },
+          import_cjs,
+          serialize,
+        } = core.utils;
+        let output = dataformat;
         try {
           let cond = [
             {
@@ -589,7 +591,7 @@
             }
           );
           if (rtn.code != 0) throw rtn;
-          else resolve(output);
+          resolve(output);
         } catch (error) {
           resolve(errhandler(error));
         }
@@ -611,7 +613,7 @@
       coresetting["log4jsconf"] = rtnconflog.data.config;
     }
 
-    let rtn = await startup(coresetting, sysmodule, kernel);
+    let rtn = await startup(null, [kernel, sysmodule, coresetting]);
     if (rtn.code != 0) throw rtn;
     console.log(
       `done app (${sysmodule.dayjs().format("DD-MM-YYYY HH:mm:ss")})`
