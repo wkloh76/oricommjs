@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `rolling` and `verbose` setting to web.toml.example in webnodejs engine which handle session expired extended and session db able run as silently. Completed on 2024-08-08
 - Add handler.fmtseries property in handler at utils for serialize function. Completed on 2024-08-14
 - Add handler.wfwseries property in handler at utils for serialize function. Completed on 2024-08-15
+- Add sanbox function to utils. Completed on 2024-08-15
 
 ### Changed
 
@@ -26,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update doc comments in handler,powershell at utils. Completed on 2024-08-14
 - Optimize serialize function at utils. Completed on 2024-08-15
 - Optimize startup function at app.js. Completed on 2024-08-15
+- Restructure utils export method. Completed on 2024-08-15
 
 ### Deprecated
 

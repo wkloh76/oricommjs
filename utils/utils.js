@@ -26,8 +26,6 @@ module.exports = async (...args) => {
     const busboy = require("busboy");
     const multer = require("multer");
     try {
-      let lib = {};
-
       /**
        * Get the data type
        * @alias module:utils.datatype
@@ -63,7 +61,7 @@ module.exports = async (...args) => {
        * @param {String} dotSeparatedKeys - Nested keyname
        * @returns {Object} - Return modules | undefined
        */
-      lib["dir_module"] = (...args) => {
+      const dir_module = (...args) => {
         const [pathname, excluded = []] = args;
         return fs.readdirSync(path.join(pathname)).filter((filename) => {
           if (path.extname(filename) == "" && !excluded.includes(filename)) {
@@ -81,7 +79,7 @@ module.exports = async (...args) => {
        * @param {Object} args[1] - obj a set of object with kernel.utils
        * @returns {Object} - Return modules | undefined
        */
-      lib["import_cjs"] = (...args) => {
+      const import_cjs = (...args) => {
         return new Promise(async (resolve, reject) => {
           const [list, obj, optional] = args;
           const [pathname, arr_modname, curdir] = list;
@@ -123,7 +121,7 @@ module.exports = async (...args) => {
        * @param {Object} args[1] - obj a set of object with kernel.utils
        * @returns {Object} - Return modules | undefined
        */
-      lib["import_mjs"] = async (...args) => {
+      const import_mjs = async (...args) => {
         return new Promise(async (resolve, reject) => {
           const [list, obj, optional] = args;
           const [pathname, arr_modname, curdir] = list;
@@ -166,7 +164,7 @@ module.exports = async (...args) => {
        * @param {String} dotSeparatedKeys - Nested keyname
        * @returns {Object} - Return modules | undefined
        */
-      lib["getNestedObject"] = (obj, dotSeparatedKeys) => {
+      const getNestedObject = (obj, dotSeparatedKeys) => {
         if (
           dotSeparatedKeys !== undefined &&
           typeof dotSeparatedKeys !== "string"
@@ -199,7 +197,7 @@ module.exports = async (...args) => {
        * @param {Object} obj - Object
        * @returns {Object} - Return modules | undefined
        */
-      lib["updateObject"] = (key, newValue, obj) => {
+      const updateObject = (key, newValue, obj) => {
         let newObj = Object.assign({}, obj); // Make new object
         const updateKey = (key, newValue, obj) => {
           if (typeof obj !== "object") return; // Basecase
@@ -221,7 +219,7 @@ module.exports = async (...args) => {
        * @param {Object} node  - Data source.
        * @returns {Object} - Return modules | undefined
        */
-      lib["renameObjectKeys"] = (node, keysMaps) => {
+      const renameObjectKeys = (node, keysMaps) => {
         const renameKeys = (node, keysMaps) => {
           if (typeof node !== "object" && !Array.isArray(node)) return node;
           if (Array.isArray(node))
@@ -274,7 +272,7 @@ module.exports = async (...args) => {
        * @param {Array} value  - Array of value for the key that must be sequence as the option.
        * @returns {Object} - Object that has been assigned to the key and value.
        */
-      lib["insert2obj"] = (option, value) => {
+      const insert2obj = (option, value) => {
         let output = {};
         option.map((val, key) => {
           output[val] = value[key];
@@ -291,7 +289,7 @@ module.exports = async (...args) => {
        * @param {Array} args[2] -rename is an array of string which base on position value renaming the output keyname
        * @returns {Array} - Return empty array if cannot get the key from the value
        */
-      lib["pick_arrayofobj"] = (...args) => {
+      const pick_arrayofobj = (...args) => {
         let [arrobj, picker, rename] = args;
         let output = [];
         for (let [idx, obj] of Object.entries(arrobj)) {
@@ -332,7 +330,7 @@ module.exports = async (...args) => {
        * @param {Array} args[1] -picker is an array of string which base on keyname to pickup entire key and value
        * @returns {Object} - Return empty object if cannot get the key from the value
        */
-      lib["pick_arrayobj2list"] = (...args) => {
+      const pick_arrayobj2list = (...args) => {
         let [arrobj, picker] = args;
         let output = {};
         for (let obj of arrobj) {
@@ -353,7 +351,7 @@ module.exports = async (...args) => {
        * @param {Array} value - Array of object
        * @returns {Array} - Nothing change if some value not meet to requirement
        */
-      lib["arr_objectjson"] = (...args) => {
+      const arr_objectjson = (...args) => {
         let [value] = args;
         let output = value.map((obj) => {
           let rtnobj = {};
@@ -390,7 +388,7 @@ module.exports = async (...args) => {
        * @param {Array} value - Multi dimesiion array of any datatype value
        * @returns {Array}
        */
-      lib["arr_constkey_insertobj"] = (...args) => {
+      const arr_constkey_insertobj = (...args) => {
         let [option, values] = args;
         let output = {};
         option.map((val, key) => {
@@ -407,7 +405,7 @@ module.exports = async (...args) => {
        * @param {Object} obj - Object of value for insert to parent.
        * @returns {Array} - Nothing change if some value not meet to requirement
        */
-      lib["arr_objpick_insert"] = (...args) => {
+      const arr_objpick_insert = (...args) => {
         let [src, target, obj] = args;
         let output = [];
         src.map((val, key) => {
@@ -426,7 +424,7 @@ module.exports = async (...args) => {
        * @param {Array} obj - Compare Keys of Object which is match to parent keys.
        * @returns {Array} - Nothing change if some value not meet to requirement
        */
-      lib["arr_objpick_delete"] = (...args) => {
+      const arr_objpick_delete = (...args) => {
         let [src, target, obj] = args;
         let output = [];
         src.map((val, key) => {
@@ -447,7 +445,7 @@ module.exports = async (...args) => {
        * @param {Object} obj - Object of value for update to parent.
        * @returns {Array} - Nothing change if some value not meet to requirement
        */
-      lib["arr_objpick_update"] = (...args) => {
+      const arr_objpick_update = (...args) => {
         let [src, target, obj] = args;
         let output = [];
         src.map((val, key) => {
@@ -468,7 +466,7 @@ module.exports = async (...args) => {
        * @param {String} keys - Add empty space between key and next key when need delete multiple keys
        * @returns {Object} - Return object
        */
-      lib["omit"] = (...args) => {
+      const omit = (...args) => {
         let [object, keys] = args;
         let rtn = object;
         keys.split(" ").map((val) => {
@@ -486,7 +484,7 @@ module.exports = async (...args) => {
        * @param {String} keys - Add empty space between key and next key when need delete multiple keys
        * @returns {Object} - Return object
        */
-      lib["objpick"] = (...args) => {
+      const objpick = (...args) => {
         let [object, keys] = args;
         let rtn = {};
         keys.split(" ").map((key) => (rtn[key] = object[key]));
@@ -500,7 +498,7 @@ module.exports = async (...args) => {
        * @returns {Object| string } - Empty value string return empty object,
        *  the return data will same as param when the param data type not equal to string
        */
-      lib["string2json"] = (value) => {
+      const string2json = (value) => {
         try {
           let output = {};
           if (value != "") {
@@ -530,7 +528,7 @@ module.exports = async (...args) => {
        * @param {Object} next - When error happen will execution if not undefined
        * @returns {Object} - Return final result
        */
-      lib["serialize"] = async (...args) => {
+      const serialize = async (...args) => {
         return new Promise(async (resolve, reject) => {
           const [obj, proc, next] = args;
           const { getNestedObject, handler, errhandler } = obj.utils;
@@ -637,7 +635,7 @@ module.exports = async (...args) => {
        * @param {Array} args[1] - compare base on the array list.
        * @returns {Array} - Nothing change if some value not meet to requirement
        */
-      lib["arr_selected"] = (...args) => {
+      const arr_selected = (...args) => {
         const [source, compare] = args;
         let output = { code: 0, msg: "", data: null };
         try {
@@ -660,7 +658,7 @@ module.exports = async (...args) => {
        * @param {Array} args[1] - compare base on the array list.
        * @returns {Array} - Return the different value in array type
        */
-      lib["arr_diff"] = (...args) => {
+      const arr_diff = (...args) => {
         const [source, compare] = args;
         let output = { code: 0, msg: "", data: null };
         try {
@@ -683,7 +681,7 @@ module.exports = async (...args) => {
        * @param {Array} args[2] - format is result data format,2 is object and 1 is array of object.
        * @returns {Array} - Return the different value in array type with index
        */
-      lib["arr_diffidx"] = (...args) => {
+      const arr_diffidx = (...args) => {
         const [source, compare, format = 1] = args;
         let output = { code: 0, msg: "", data: null };
         try {
@@ -739,7 +737,7 @@ module.exports = async (...args) => {
        *  @param {Boolean} args[2] - save is a flag where is decide the upload file save to the disk.
        * @returns {Object} - Return default value is no error
        */
-      lib["webstorage"] = async (...args) => {
+      const webstorage = async (...args) => {
         let [request, setting, save = false] = args;
         let { disk, location, stream } = setting;
         let output = {
@@ -789,7 +787,7 @@ module.exports = async (...args) => {
        * @param {Boolean|Array} args[2] - param2 is an object or array type which ready for merge or concat.
        * @returns {Object} - Return as Object|Array|undefined
        */
-      lib["concatobj"] = (...args) => {
+      const concatobj = (...args) => {
         const [type, param1, param2] = args;
         let output;
         let data1, data2;
@@ -824,10 +822,80 @@ module.exports = async (...args) => {
         }
       };
 
-      lib["errhandler"] = errhandler;
-      lib["datatype"] = datatype;
-      lib["mergeDeep"] = mergeDeep;
+      /**
+       * The main purpose is to prevent users from improperly using async/await and promise
+       * methods to trigger unpredictable errors and cause the entire system to shut down.
+       * When server receive the request from client, will proceed
+       * @alias module:reaction.sanbox
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - fn is mehtod/fuction for execution
+       * @param {Array} args[1] - params is in array type which contant with request and response variable
+       * @returns {Object} - Either return object or return data from execution function
+       */
+      const sanbox = async (...args) => {
+        let [fn, params] = args;
+        let [, response] = params;
+        try {
+          response.inspector = async (...args) => {
+            let [fn, params] = args;
+            try {
+              let result = fn.apply(null, params);
+              if (result instanceof Promise) {
+                result = await result;
+                if (result instanceof ReferenceError) throw result;
+              } else if (result instanceof ReferenceError) throw result;
+              return result;
+            } catch (error) {
+              if (error.msg) response.err.error = error.msg;
+              else if (error.stack) response.err.error = error.stack;
+              else if (error.message) response.err.error = error.message;
+              return response;
+            }
+          };
 
+          let result = fn.apply(null, params);
+          if (result instanceof Promise) {
+            result = await result;
+            if (result instanceof ReferenceError) throw result;
+          } else if (result instanceof ReferenceError) throw result;
+          return result;
+        } catch (error) {
+          if (error.msg) response.err.error = error.msg;
+          else if (error.stack) response.err.error = error.stack;
+          else if (error.message) response.err.error = error.message;
+          return response;
+        }
+      };
+
+      let lib = {
+        dir_module: dir_module,
+        import_cjs: import_cjs,
+        import_mjs: import_mjs,
+        getNestedObject: getNestedObject,
+        updateObject: updateObject,
+        renameObjectKeys: renameObjectKeys,
+        insert2obj: insert2obj,
+        pick_arrayofobj: pick_arrayofobj,
+        pick_arrayobj2list: pick_arrayobj2list,
+        arr_objectjson: arr_objectjson,
+        arr_constkey_insertobj: arr_constkey_insertobj,
+        arr_objpick_insert: arr_objpick_insert,
+        arr_objpick_delete: arr_objpick_delete,
+        arr_objpick_update: arr_objpick_update,
+        omit: omit,
+        objpick: objpick,
+        string2json: string2json,
+        serialize: serialize,
+        arr_selected: arr_selected,
+        arr_diff: arr_diff,
+        arr_diffidx: arr_diffidx,
+        webstorage: webstorage,
+        concatobj: concatobj,
+        errhandler: errhandler,
+        datatype: datatype,
+        mergeDeep: mergeDeep,
+        sanbox: sanbox,
+      };
       resolve(lib);
     } catch (error) {
       reject(error);
