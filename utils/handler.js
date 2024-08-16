@@ -70,12 +70,9 @@ module.exports = async (...args) => {
           return Object.assign(
             {},
             {
-              argv: {},
+              err: [],
               func: {},
-              param: {},
-              error: {},
-              temp: {},
-              pool: {},
+              share: {},
             }
           );
         },
@@ -84,15 +81,12 @@ module.exports = async (...args) => {
           return Object.assign(
             {},
             {
-              workflow: {
-                name: "",
-                func: "",
-                param: [],
-                pull: [],
-                push: [],
-                error: [],
-                pool: [],
-              },
+              error: "",
+              func: "",
+              name: "",
+              param: [],
+              pull: [],
+              push: [],
             }
           );
         },

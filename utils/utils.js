@@ -14,6 +14,9 @@
  * -------------------------------------------------------------------------
  */
 "use strict";
+
+const { promises } = require("dns");
+
 /**
  * The submodule utils module
  * @module utils_utils
@@ -523,79 +526,95 @@ module.exports = async (...args) => {
       /**
        * Serialize execution of a set of functions
        * @alias module:utils.serialize
-       *  @param {Object} obj - The source of functions prepare to call by proc defination especially kernel.utils
-       * @param {Object} proc - Value support all data type
-       * @param {Object} next - When error happen will execution if not undefined
+       * @param {...Object} args - 2 parameters
+       * @param {Object} args[0] - params  is an object type which content functions and data in fmtseries format
+       * @param {Object} args[1] - obj  is an array type which content entire system engine and setting
        * @returns {Object} - Return final result
        */
       const serialize = async (...args) => {
-        return new Promise(async (resolve, reject) => {
-          const [obj, proc, next] = args;
-          const { getNestedObject, handler, errhandler } = obj.utils;
-          let output = handler.dataformat;
+        return new Promise(async (resolve) => {
+          const [params, obj] = args;
+          const [library, sys, cosetting] = obj;
+          const { errhandler, getNestedObject, handler, sanbox } =
+            library.utils;
+          const { jptr } = sys;
+
           try {
-            const pre_funcparam = (...args) => {
-              let [obj, params] = args;
-              let output = [];
-              let name;
-              for (let [qname, qvalue] of Object.entries(params)) {
-                if (qname == "name") name = qvalue;
-                else if (qname == "data") {
-                  for (let queue of qvalue) {
-                    let paramdata = jptr.get(obj, queue);
-                    if (paramdata) output.push(paramdata);
-                  }
-                }
-              }
-              return [name, output];
-            };
-            for (let [, compval] of Object.entries(proc)) {
-              let { func } = compval;
-              let fn = getNestedObject(obj.library, func);
+            const { err, func: funcs, workflow, share } = params;
+            let output = handler.dataformat;
+            let temp = {},
+              pool = {},
+              fnerrs = [];
+
+            err.map((fname) => {
+              let fnerr = getNestedObject(funcs, fname);
+              if (fnerr) fnerrs.push(fnerr);
+            });
+            for (let [idx, compval] of Object.entries(workflow)) {
+              let { error, func, name, param, pull, push } = compval;
+              let fn = getNestedObject(funcs, func);
+
               if (!fn) {
                 output.code = -3;
-                output.msg = `Cannot find "${func}" function int object!`;
+                output.msg = `Process stop at (${name}).Current onging  step:${
+                  parseInt(idx) + 1
+                }/${workflow.length}. `;
                 break;
-              }
-            }
-            if (output.code == 0) {
-              let funcname;
-              for (let [, compval] of Object.entries(proc)) {
-                let { func, params, save, save_args, save_rtn } = compval;
-                let fn = getNestedObject(obj.library, func);
-                let funcparams = [];
-                let queuertn;
-                if (params) {
-                  let [pname, pdata] = pre_funcparam(obj, params);
-                  funcname = pname;
-                  funcparams = pdata;
-                }
-                queuertn = fn.apply(null, funcparams);
-                if (queuertn instanceof Promise) queuertn = await queuertn;
-                let { code, data } = queuertn;
-                if (code == 0) {
-                  if (save) {
-                    jptr.set(obj, save.param, data);
-                  }
-                } else {
-                  if (next) next.failure(queuertn);
+              } else {
+                let queuertn, funcparams;
+                if (pull.length == 0) funcparams = param;
+                else {
+                  funcparams = [];
+                  pull.map((value, id) => {
+                    if (value.lastIndexOf(".") > -1) {
+                      let location = value.replaceAll(".", "/");
+                      let getpull = jptr.get(pool, location);
+                      let getpull1 = jptr.get(temp, location);
+                      let getpull2 = jptr.get(share, location);
+                      if (getpull) funcparams.push(getpull);
+                      else if (getpull1) funcparams.push(getpull1);
+                      else if (getpull2) funcparams.push(getpull2);
+                    }
+                  });
+                  if (param.length > 0) funcparams.concat(param);
                 }
 
-                if (save_args) {
-                  if (!obj.save_args) obj.save_args = {};
-                  obj.save_args[funcname] = funcparams;
-                }
-                if (save_rtn) {
-                  if (!obj.save_rtn) obj.save_rtn = {};
-                  obj.save_rtn[funcname] = data;
+                queuertn = sanbox(fn, funcparams);
+                if (queuertn instanceof Promise) queuertn = await queuertn;
+                let { code, data, msg } = queuertn;
+                if (code == 0) {
+                  push.map((value, id) => {
+                    let dataval = data[value];
+                    if (!dataval) dataval = data;
+                    if (value.lastIndexOf(".") > -1) {
+                      let location = value.replaceAll(".", "/");
+                      jptr.set(share, location, dataval);
+                    } else {
+                      jptr.set(pool, value, dataval);
+                      jptr.set(temp, `${name}/${value}`, dataval);
+                    }
+                  });
+                } else {
+                  if (fnerrs.length > 0) {
+                    let fnerr = [];
+                    fnerrs.map((fn) => {
+                      fnerr.push(fn([queuertn]));
+                    });
+                    await Promise.all(fnerr);
+                  } else if (error != "") {
+                    let fnerr = getNestedObject(funcs, error);
+                    fnerr.apply(null, [queuertn]);
+                  }
                 }
               }
-            } else {
-              if (next.failure) next.failure(output);
+            }
+
+            if (output.code == 0) {
+              output.data = pool;
             }
             resolve(output);
           } catch (error) {
-            reject(errhandler(error));
+            resolve(errhandler(error));
           }
         });
       };
@@ -834,25 +853,7 @@ module.exports = async (...args) => {
        */
       const sanbox = async (...args) => {
         let [fn, params] = args;
-        let [, response] = params;
         try {
-          response.inspector = async (...args) => {
-            let [fn, params] = args;
-            try {
-              let result = fn.apply(null, params);
-              if (result instanceof Promise) {
-                result = await result;
-                if (result instanceof ReferenceError) throw result;
-              } else if (result instanceof ReferenceError) throw result;
-              return result;
-            } catch (error) {
-              if (error.msg) response.err.error = error.msg;
-              else if (error.stack) response.err.error = error.stack;
-              else if (error.message) response.err.error = error.message;
-              return response;
-            }
-          };
-
           let result = fn.apply(null, params);
           if (result instanceof Promise) {
             result = await result;
@@ -860,10 +861,7 @@ module.exports = async (...args) => {
           } else if (result instanceof ReferenceError) throw result;
           return result;
         } catch (error) {
-          if (error.msg) response.err.error = error.msg;
-          else if (error.stack) response.err.error = error.stack;
-          else if (error.message) response.err.error = error.message;
-          return response;
+          return errhandler(error);
         }
       };
 
@@ -895,6 +893,7 @@ module.exports = async (...args) => {
         datatype: datatype,
         mergeDeep: mergeDeep,
         sanbox: sanbox,
+        // serialize1: serialize1,
       };
       resolve(lib);
     } catch (error) {

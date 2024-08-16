@@ -319,6 +319,135 @@
       });
     };
 
+    let startupfunc = {
+      load: (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [params, obj] = args;
+          const [library, sys, cosetting] = obj;
+          const {
+            utils,
+            utils: { errhandler, handler, import_cjs },
+          } = library;
+          let output = handler.dataformat;
+          try {
+            output.data = await import_cjs(params, utils, obj);
+            if (output.code != 0) throw output;
+            resolve(output);
+          } catch (error) {
+            reject(errhandler(error));
+          }
+        });
+      },
+      nested_load: (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [params, general, obj] = args;
+          const [library, sys, cosetting] = obj;
+          const {
+            utils,
+            utils: { errhandler, handler, import_cjs },
+          } = library;
+          let output = handler.dataformat;
+          let rtn = {};
+          try {
+            for (let val of general) {
+              rtn[val] = await import_cjs(params[val], utils, obj);
+            }
+            output.data = rtn;
+            resolve(output);
+          } catch (error) {
+            reject(errhandler(error));
+          }
+        });
+      },
+      mergedata: (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [cosetting, tmp] = args;
+          let output = { code: 0, msg: "", data: null };
+          try {
+            output.data = { ...cosetting };
+            for (let [, v] of Object.entries(tmp)) {
+              output.data = { ...output.data, ...v };
+            }
+            resolve(output);
+          } catch (error) {
+            reject(errhandler(error));
+          }
+        });
+      },
+      call_message: (...args) => {
+        const [params, obj] = args;
+        const [library, sys, cosetting] = obj;
+        console.log(
+          `Import ${params} done (${sys.dayjs().format("DD-MM-YYYY HH:mm:ss")})`
+        );
+        return library.utils.handler.dataformat;
+      },
+      work: (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [params, obj] = args;
+          const [library, sys, cosetting] = obj;
+          const {
+            components,
+            utils: { errhandler, handler },
+          } = library;
+          let output = handler.dataformat;
+
+          try {
+            let { startup, start } = components;
+            if (startup) {
+              for (let module of startup) {
+                let rtn = await module(params.ongoing);
+                if (rtn) throw rtn;
+              }
+            }
+            if (start) {
+              let rtn = await start(params);
+              if (rtn) throw rtn;
+            }
+            resolve(output);
+          } catch (error) {
+            reject(errhandler(error));
+          }
+        });
+      },
+      routejson: (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [params, obj] = args;
+          const [library, sys, cosetting] = obj;
+          const {
+            dir,
+            utils: { errhandler, handler },
+          } = library;
+          const {
+            fs: { existsSync, readFileSync, writeFileSync },
+            path: { join },
+          } = sys;
+          let output = handler.dataformat;
+
+          try {
+            if (params.routejson) {
+              let routefilename = join(dir, "components", "route.json");
+              let routefile;
+              if (existsSync(routefilename))
+                routefile = JSON.parse(readFileSync(routefilename, "utf8"));
+
+              if (!routefile)
+                writeFileSync(routefilename, JSON.stringify(params.routejson));
+              else if (
+                JSON.stringify(params.routejson) !== JSON.stringify(routefile)
+              )
+                writeFileSync(routefilename, JSON.stringify(params.routejson));
+            }
+            resolve(output);
+          } catch (error) {
+            reject(errhandler(error));
+          }
+        });
+      },
+      failure: (error) => {
+        throw error;
+      },
+    };
     /**
      * Start loading main project
      * @param {...Object} args - 3 parameters
@@ -329,267 +458,116 @@
      */
     const startup = (...args) => {
       return new Promise(async (resolve, reject) => {
-        const [params, obj] = args;
-        const [core, sys, cosetting] = obj;
+        const [, obj] = args;
+        const [library, sys, cosetting] = obj;
         const {
-          errhandler,
-          handler: { dataformat, fmtseries },
-          import_cjs,
-          serialize,
-        } = core.utils;
+          utils: {
+            errhandler,
+            handler: { dataformat, fmtseries, wfwseries },
+            serialize,
+          },
+        } = library;
         let output = dataformat;
+        let input = fmtseries;
+
         try {
-          let cond = [
+          input.func = startupfunc;
+          input.err = ["failure"];
+          input.share = {
+            lib: { library: library },
+            setting: { cosetting: cosetting },
+            message: {
+              engine: "engine",
+              atomic: "atomic",
+              components: "components",
+            },
+            core: { obj: obj },
+          };
+          input.workflow = [
             {
-              func: "load",
-              save: { param: "/params/kernel/engine" },
-              save_args: true,
-              save_rtn: true,
-              params: {
-                name: "engine",
-                data: ["/params/coresetting/engine", "/params/kernel/utils"],
+              ...wfwseries,
+              ...{
+                name: "load_engine",
+                func: "load",
+                pull: ["setting.cosetting.engine", "core.obj"],
+                push: ["engine", "lib.library.engine"],
               },
             },
             {
-              func: "call_message",
-              save: {},
-              save_args: true,
-              save_rtn: false,
-              params: {
+              ...wfwseries,
+              ...{
                 name: "msg_engine",
-                data: ["/save_args/engine/0/2", "/params/coresetting/engine"],
+                func: "call_message",
+                pull: ["message.engine", "core.obj"],
               },
             },
             {
-              func: "nested_load",
-              save: { param: "/params/kernel/atomic" },
-              save_args: true,
-              save_rtn: false,
-              params: {
-                name: "atomic",
-                data: [
-                  "/params/coresetting/atomic",
-                  "/params/coresetting/general/atomic",
-                  "/params/kernel/utils",
+              ...wfwseries,
+              ...{
+                name: "load_atomic",
+                func: "nested_load",
+                pull: [
+                  "setting.cosetting.atomic",
+                  "setting.cosetting.general.atomic",
+                  "core.obj",
                 ],
+                push: ["atomic", "lib.library.atomic"],
               },
             },
             {
-              func: "call_message",
-              save: {},
-              save_args: true,
-              save_rtn: false,
-              params: {
+              ...wfwseries,
+              ...{
                 name: "msg_atomic",
-                data: ["/params/msg_atomic", "/params/coresetting/atomic"],
+                func: "call_message",
+                pull: ["message.atomic", "core.obj"],
               },
             },
             {
-              func: "load",
-              save: { param: "/params/tmp" },
-              save_args: true,
-              save_rtn: false,
-              params: {
-                name: "components",
-                data: [
-                  "/params/coresetting/components",
-                  "/params/kernel/utils",
-                ],
+              ...wfwseries,
+              ...{
+                name: "load_components",
+                func: "load",
+                pull: ["setting.cosetting.components", "core.obj"],
+                push: ["components"],
               },
             },
             {
-              func: "mergedata",
-              save: { param: "/params/coresetting" },
-              save_args: true,
-              save_rtn: false,
-              params: {
+              ...wfwseries,
+              ...{
                 name: "merge_coresetting",
-                data: ["/params/coresetting", "/params/tmp"],
+                func: "mergedata",
+                pull: ["setting.cosetting", "load_components.components"],
+                push: ["cosetting", "setting.cosetting"],
               },
             },
             {
-              func: "work",
-              save: {},
-              save_args: true,
-              save_rtn: false,
-              params: {
+              ...wfwseries,
+              ...{
+                // error: "failure",
                 name: "work",
-                data: ["/params/coresetting", "/params/kernel/components"],
+                func: "work",
+                pull: ["setting.cosetting", "core.obj"],
               },
             },
             {
-              func: "routejson",
-              save: {},
-              save_args: true,
-              save_rtn: false,
-              params: {
+              ...wfwseries,
+              ...{
                 name: "routejson",
-                data: [
-                  "/params/kernel/components",
-                  "/params/kernel",
-                  "/params/fs",
-                ],
+                func: "routejson",
+                pull: ["lib.library.components", "core.obj"],
               },
             },
             {
-              func: "call_message",
-              save: {},
-              save_args: false,
-              save_rtn: false,
-              params: {
+              ...wfwseries,
+              ...{
                 name: "msg_components",
-                data: [
-                  "/save_args/components/0/2",
-                  "/params/coresetting/components",
-                ],
+                func: "call_message",
+                pull: ["message.components", "core.obj"],
               },
             },
           ];
-          let rtn = await serialize(
-            {
-              utils: core.utils,
-              library: {
-                load: (...args) => {
-                  return new Promise(async (resolve, reject) => {
-                    const [params, obj] = args;
-                    let output = { code: 0, msg: "", data: null };
-                    try {
-                      output.data = await import_cjs(params, obj, [
-                        core,
-                        sys,
-                        cosetting,
-                      ]);
-                      if (output.code != 0) throw output;
-                      resolve(output);
-                    } catch (error) {
-                      reject(errhandler(error));
-                    }
-                  });
-                },
-                nested_load: (...args) => {
-                  return new Promise(async (resolve, reject) => {
-                    const [params, general, obj] = args;
-                    let output = { code: 0, msg: "", data: null };
-                    let rtn = {};
-                    try {
-                      for (let val of general) {
-                        rtn[val] = await import_cjs(params[val], obj, [
-                          kernel,
-                          sysmodule,
-                          coresetting,
-                        ]);
-                      }
-                      output.data = rtn;
-                      resolve(output);
-                    } catch (error) {
-                      reject(errhandler(error));
-                    }
-                  });
-                },
-                mergedata: (...args) => {
-                  return new Promise(async (resolve, reject) => {
-                    const [cosetting, tmp] = args;
-                    let output = { code: 0, msg: "", data: null };
-                    try {
-                      output.data = { ...cosetting };
-                      for (let [, v] of Object.entries(tmp)) {
-                        output.data = { ...output.data, ...v };
-                      }
-                      resolve(output);
-                    } catch (error) {
-                      reject(errhandler(error));
-                    }
-                  });
-                },
-                call_message: (...args) => {
-                  const [name, value] = args;
-                  let emitdata = {};
-                  emitdata[name] = value;
-                  emitter.emit("onapp", emitdata);
-                  console.log(
-                    `Import ${name} done (${sys
-                      .dayjs()
-                      .format("DD-MM-YYYY HH:mm:ss")})`
-                  );
-                  return { code: 0, msg: "", data: null };
-                },
-                work: (...args) => {
-                  return new Promise(async (resolve, reject) => {
-                    const [cosetting, comp] = args;
-                    let output = { code: 0, msg: "", data: null };
-                    try {
-                      let { startup, start } = comp;
-                      if (startup) {
-                        for (let module of startup) {
-                          let rtn = await module(cosetting.ongoing);
-                          if (rtn) throw rtn;
-                        }
-                      }
-                      if (start) {
-                        let rtn = await start(cosetting);
-                        if (rtn) throw rtn;
-                      }
-                      resolve(output);
-                    } catch (error) {
-                      reject(errhandler(error));
-                    }
-                  });
-                },
-                routejson: (...args) => {
-                  return new Promise(async (resolve, reject) => {
-                    const [comp, core, func] = args;
-                    let output = { code: 0, msg: "", data: null };
-                    try {
-                      if (comp.routejson) {
-                        let routefilename = func.path.join(
-                          core.dir,
-                          "components",
-                          "route.json"
-                        );
-                        let routefile;
-                        if (func.fs.existsSync(routefilename))
-                          routefile = JSON.parse(
-                            func.fs.readFileSync(routefilename, "utf8")
-                          );
 
-                        if (!routefile)
-                          func.fs.writeFileSync(
-                            routefilename,
-                            JSON.stringify(comp.routejson)
-                          );
-                        else if (
-                          JSON.stringify(comp.routejson) !==
-                          JSON.stringify(routefile)
-                        )
-                          func.fs.writeFileSync(
-                            routefilename,
-                            JSON.stringify(comp.routejson)
-                          );
-                      }
-                      resolve(output);
-                    } catch (error) {
-                      reject(errhandler(error));
-                    }
-                  });
-                },
-              },
-              params: {
-                kernel: core,
-                coresetting: cosetting,
-                msg_engine: "engine",
-                msg_atomic: "atomic",
-                msg_components: "components",
-                fs: sys,
-                tmp: {},
-              },
-            },
-            cond,
-            {
-              failure: (error) => {
-                throw error;
-              },
-            }
-          );
+          let rtn = await serialize(input, obj);
           if (rtn.code != 0) throw rtn;
           resolve(output);
         } catch (error) {
