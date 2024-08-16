@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Optimize startup function at app.js. Completed on 2024-08-15
 - Restructure utils export method. Completed on 2024-08-15
 - Remove workflow key from handler.wfwseries property in handler at utils. Completed on 2024-08-15
-- Rewrite serialize function at utils and provide advance feature. Completed on 2024-08-15
+- Rewrite serialize function at utils and provide advance feature. Completed on 2024-08-16
 
 ### Deprecated
 
@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix deskelectronjs unrecognized sub folders of content in atmom/browser. Completed on 2024-08-05
 - Fix `preload.html` from deskelectronjs and webnodejs. Completed on 2024-08-07
 - Fix sanbox function in utils. Completed on 2024-08-15
+- Fix serialize function in utils. Completed on 2024-08-16
 
 ### Security
 

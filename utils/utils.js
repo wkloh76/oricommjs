@@ -576,7 +576,7 @@ module.exports = async (...args) => {
                       else if (getpull2) funcparams.push(getpull2);
                     }
                   });
-                  if (param.length > 0) funcparams.concat(param);
+                  if (param.length > 0) funcparams = funcparams.concat(param);
                 }
 
                 queuertn = sanbox(fn, funcparams);
