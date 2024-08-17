@@ -205,7 +205,7 @@ module.exports = async (...args) => {
               } else if (index == 0) output.data.value += value.data;
             }
           });
-          output.data.value += ";";
+          output.data.value = output.data.value.trim() + ";";
           return output;
         } catch (error) {
           return errhandler(error);
