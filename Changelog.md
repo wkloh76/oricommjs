@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add handler.fmtseries property in handler at utils for serialize function. Completed on 2024-08-14
 - Add handler.wfwseries property in handler at utils for serialize function. Completed on 2024-08-15
 - Add sanbox function to utils. Completed on 2024-08-15
+- Support array of array data type into handler.wfwseries.pull property to support utils.serialize merge multi param in one array type for next function parameters preparation. Completed on 2024-08-17
 
 ### Changed
 

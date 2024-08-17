@@ -535,7 +535,7 @@ module.exports = async (...args) => {
         return new Promise(async (resolve) => {
           const [params, obj] = args;
           const [library, sys, cosetting] = obj;
-          const { errhandler, getNestedObject, handler, sanbox } =
+          const { datatype, errhandler, getNestedObject, handler, sanbox } =
             library.utils;
           const { jptr } = sys;
 
@@ -564,18 +564,37 @@ module.exports = async (...args) => {
                 let queuertn, funcparams;
                 if (pull.length == 0) funcparams = param;
                 else {
-                  funcparams = [];
-                  pull.map((value, id) => {
+                  const getparams = (...args) => {
+                    let [value, cache_temp, cache_share] = args;
+                    let result;
                     if (value.lastIndexOf(".") > -1) {
                       let location = value.replaceAll(".", "/");
-                      let getpull = jptr.get(pool, location);
-                      let getpull1 = jptr.get(temp, location);
-                      let getpull2 = jptr.get(share, location);
-                      if (getpull) funcparams.push(getpull);
-                      else if (getpull1) funcparams.push(getpull1);
-                      else if (getpull2) funcparams.push(getpull2);
+                      let getpull_temp = jptr.get(cache_temp, location);
+                      let getpull_share = jptr.get(cache_share, location);
+                      if (getpull_temp) result = getpull_temp;
+                      else if (getpull_share) result = getpull_share;
                     }
-                  });
+                    return result;
+                  };
+
+                  funcparams = [];
+                  for (let value of pull) {
+                    let dtype = datatype(value);
+                    switch (dtype) {
+                      case "string":
+                        let result = getparams(value, temp, share);
+                        if (result) funcparams.push(result);
+                        break;
+                      case "array":
+                        let arr_result = [];
+                        for (let subval of value) {
+                          let result = getparams(subval, temp, share);
+                          if (result) arr_result.push(result);
+                        }
+                        funcparams.push(arr_result);
+                        break;
+                    }
+                  }
                   if (param.length > 0) funcparams = funcparams.concat(param);
                 }
 
@@ -590,7 +609,6 @@ module.exports = async (...args) => {
                       let location = value.replaceAll(".", "/");
                       jptr.set(share, location, dataval);
                     } else {
-                      jptr.set(pool, value, dataval);
                       jptr.set(temp, `${name}/${value}`, dataval);
                     }
                   });
@@ -598,7 +616,7 @@ module.exports = async (...args) => {
                   if (fnerrs.length > 0) {
                     let fnerr = [];
                     fnerrs.map((fn) => {
-                      fnerr.push(fn([queuertn]));
+                      fnerr.push(fn.apply(null, [queuertn]));
                     });
                     await Promise.all(fnerr);
                   } else if (error != "") {
