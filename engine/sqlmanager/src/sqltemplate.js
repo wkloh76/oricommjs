@@ -198,8 +198,12 @@ module.exports = async (...args) => {
             if (!output.data) {
               output.data = { cmd: sqlcmd, value: "" };
             }
-            if (sqlcmd != "INSERT") output.data.value += value.data;
-            else if (index == 0) output.data.value += value.data;
+
+            if (sqlcmd != "INSERT") {
+              if (value.data !== undefined && value.data !== null) {
+                output.data.value += value.data;
+              } else if (index == 0) output.data.value += value.data;
+            }
           });
           output.data.value += ";";
           return output;
