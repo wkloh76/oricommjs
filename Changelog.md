@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add `serialize,errhandler, dataformat,fmtseries,wfwseries` function and property to `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-19
+- Redesign serialize from backend utils, webnodejs and deskeletronjs engine. Completed on 2024-08-20
 
 ### Changed
 

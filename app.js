@@ -487,55 +487,57 @@
             {
               name: "load_engine",
               func: "load",
-              pull: ["setting.cosetting.engine", "core.obj"],
-              push: ["engine", "lib.library.engine"],
+              pull: [["setting.cosetting.engine", "core.obj"]],
+              push: [["engine", "lib.library.engine"]],
             },
             {
               name: "msg_engine",
               func: "call_message",
-              pull: ["message.engine", "core.obj"],
+              pull: [["message.engine", "core.obj"]],
             },
             {
               name: "load_atomic",
               func: "nested_load",
               pull: [
-                "setting.cosetting.atomic",
-                "setting.cosetting.general.atomic",
-                "core.obj",
+                [
+                  "setting.cosetting.atomic",
+                  "setting.cosetting.general.atomic",
+                  "core.obj",
+                ],
               ],
-              push: ["atomic", "lib.library.atomic"],
+              push: [["atomic", "lib.library.atomic"]],
             },
             {
               name: "msg_atomic",
               func: "call_message",
-              pull: ["message.atomic", "core.obj"],
+              pull: [["message.atomic", "core.obj"]],
             },
             {
               name: "load_components",
               func: "load",
-              pull: ["setting.cosetting.components", "core.obj"],
-              push: ["components"],
+              pull: [["setting.cosetting.components", "core.obj"]],
+              push: [["components"]],
             },
             {
               name: "merge_coresetting",
               func: "mergedata",
-              pull: ["setting.cosetting", "load_components.components"],
-              push: ["cosetting", "setting.cosetting"],
+              pull: [["setting.cosetting", "load_components.components"]],
+              push: [["cosetting", "setting.cosetting"]],
             },
             {
               name: "work",
               func: "work",
-              pull: ["setting.cosetting", "core.obj"],
+              pull: [["setting.cosetting", "core.obj"]],
             },
             {
               name: "routejson",
               func: "routejson",
-              pull: ["lib.library.components", "core.obj"],
+              pull: [["lib.library.components", "core.obj"]],
             },
             {
               name: "msg_components",
               func: "call_message",
-              pull: ["message.components", "core.obj"],
+              pull: [["message.components", "core.obj"]],
             },
           ];
 
