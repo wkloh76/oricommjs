@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update error message to `serialize` function to `utils`, `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-19
+- Assign wfwseries default value into `serialize` function at utils to instead assign at parameter during calling the function.. Completed on 2024-08-19
 
 ### Deprecated
 

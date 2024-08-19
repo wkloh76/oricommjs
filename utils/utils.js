@@ -534,7 +534,7 @@ module.exports = async (...args) => {
       const serialize = async (...args) => {
         return new Promise(async (resolve) => {
           const [params, obj] = args;
-          const [library, sys, cosetting] = obj;
+          const [library, sys] = obj;
           const { datatype, errhandler, getNestedObject, handler, sanbox } =
             library.utils;
           const { jptr } = sys;
@@ -551,7 +551,10 @@ module.exports = async (...args) => {
               if (fnerr) fnerrs.push(fnerr);
             });
             for (let [idx, compval] of Object.entries(workflow)) {
-              let { error, func, name, param, pull, push } = compval;
+              let { error, func, name, param, pull, push } = {
+                ...handler.wfwseries,
+                ...compval,
+              };
               let fn = getNestedObject(funcs, func);
 
               if (!fn) {

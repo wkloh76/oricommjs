@@ -485,85 +485,57 @@
           };
           input.workflow = [
             {
-              ...wfwseries,
-              ...{
-                name: "load_engine",
-                func: "load",
-                pull: ["setting.cosetting.engine", "core.obj"],
-                push: ["engine", "lib.library.engine"],
-              },
+              name: "load_engine",
+              func: "load",
+              pull: ["setting.cosetting.engine", "core.obj"],
+              push: ["engine", "lib.library.engine"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "msg_engine",
-                func: "call_message",
-                pull: ["message.engine", "core.obj"],
-              },
+              name: "msg_engine",
+              func: "call_message",
+              pull: ["message.engine", "core.obj"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "load_atomic",
-                func: "nested_load",
-                pull: [
-                  "setting.cosetting.atomic",
-                  "setting.cosetting.general.atomic",
-                  "core.obj",
-                ],
-                push: ["atomic", "lib.library.atomic"],
-              },
+              name: "load_atomic",
+              func: "nested_load",
+              pull: [
+                "setting.cosetting.atomic",
+                "setting.cosetting.general.atomic",
+                "core.obj",
+              ],
+              push: ["atomic", "lib.library.atomic"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "msg_atomic",
-                func: "call_message",
-                pull: ["message.atomic", "core.obj"],
-              },
+              name: "msg_atomic",
+              func: "call_message",
+              pull: ["message.atomic", "core.obj"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "load_components",
-                func: "load",
-                pull: ["setting.cosetting.components", "core.obj"],
-                push: ["components"],
-              },
+              name: "load_components",
+              func: "load",
+              pull: ["setting.cosetting.components", "core.obj"],
+              push: ["components"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "merge_coresetting",
-                func: "mergedata",
-                pull: ["setting.cosetting", "load_components.components"],
-                push: ["cosetting", "setting.cosetting"],
-              },
+              name: "merge_coresetting",
+              func: "mergedata",
+              pull: ["setting.cosetting", "load_components.components"],
+              push: ["cosetting", "setting.cosetting"],
             },
             {
-              ...wfwseries,
-              ...{
-                // error: "failure",
-                name: "work",
-                func: "work",
-                pull: ["setting.cosetting", "core.obj"],
-              },
+              name: "work",
+              func: "work",
+              pull: ["setting.cosetting", "core.obj"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "routejson",
-                func: "routejson",
-                pull: ["lib.library.components", "core.obj"],
-              },
+              name: "routejson",
+              func: "routejson",
+              pull: ["lib.library.components", "core.obj"],
             },
             {
-              ...wfwseries,
-              ...{
-                name: "msg_components",
-                func: "call_message",
-                pull: ["message.components", "core.obj"],
-              },
+              name: "msg_components",
+              func: "call_message",
+              pull: ["message.components", "core.obj"],
             },
           ];
 
