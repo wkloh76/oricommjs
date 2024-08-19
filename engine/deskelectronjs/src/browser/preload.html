@@ -183,7 +183,7 @@
     let output;
     let data1, data2;
     try {
-      let mergedata = (type, arg1, arg2) => {
+      const mergedata = (type, arg1, arg2) => {
         let output;
         switch (type) {
           case "array":
@@ -227,6 +227,131 @@
       return;
     }
   };
+  
+  const serialize = async (...args) => {
+    return new Promise(async (resolve) => {
+      const [params, obj] = args;
+      const [library, sys, cosetting] = obj;
+      const { datatype, errhandler, getNestedObject, handler, sanbox } =
+        library.utils;
+      const { jptr } = sys;
+
+      try {
+        const { err, func: funcs, workflow, share } = params;
+        let output = handler.dataformat;
+        let temp = {},
+          pool = {},
+          fnerrs = [];
+
+        err.map((fname) => {
+          let fnerr = getNestedObject(funcs, fname);
+          if (fnerr) fnerrs.push(fnerr);
+        });
+        for (let [idx, compval] of Object.entries(workflow)) {
+          let { error, func, name, param, pull, push } = compval;
+          let fn = getNestedObject(funcs, func);
+
+          if (!fn) {
+            output.code = -3;
+            output.msg = `Process stop at (${name}).Current onging  step:${parseInt(idx) + 1
+              }/${workflow.length}. `;
+            break;
+          } else {
+            let queuertn, funcparams;
+            if (pull.length == 0) funcparams = param;
+            else {
+              const getparams = (...args) => {
+                let [value, cache_temp, cache_share] = args;
+                let result;
+                if (value.lastIndexOf(".") > -1) {
+                  let location = value.replaceAll(".", "/");
+                  let getpull_temp = jptr.get(cache_temp, location);
+                  let getpull_share = jptr.get(cache_share, location);
+                  if (getpull_temp) result = getpull_temp;
+                  else if (getpull_share) result = getpull_share;
+                }
+                return result;
+              };
+
+              funcparams = [];
+              for (let value of pull) {
+                let dtype = datatype(value);
+                switch (dtype) {
+                  case "string":
+                    let result = getparams(value, temp, share);
+                    if (result) funcparams.push(result);
+                    break;
+                  case "array":
+                    let arr_result = [];
+                    for (let subval of value) {
+                      let result = getparams(subval, temp, share);
+                      if (result) arr_result.push(result);
+                    }
+                    funcparams.push(arr_result);
+                    break;
+                }
+              }
+              if (param.length > 0) funcparams = funcparams.concat(param);
+            }
+
+            queuertn = sanbox(fn, funcparams);
+            if (queuertn instanceof Promise) queuertn = await queuertn;
+            let { code, data, msg } = queuertn;
+            if (code == 0) {
+              push.map((value, id) => {
+                let dataval = data[value];
+                if (!dataval) dataval = data;
+                if (value.lastIndexOf(".") > -1) {
+                  let location = value.replaceAll(".", "/");
+                  jptr.set(share, location, dataval);
+                } else {
+                  jptr.set(temp, `${name}/${value}`, dataval);
+                }
+              });
+            } else {
+              if (fnerrs.length > 0) {
+                let fnerr = [];
+                fnerrs.map((fn) => {
+                  fnerr.push(fn.apply(null, [queuertn]));
+                });
+                await Promise.all(fnerr);
+              } else if (error != "") {
+                let fnerr = getNestedObject(funcs, error);
+                fnerr.apply(null, [queuertn]);
+              }
+            }
+          }
+        }
+
+        if (output.code == 0) {
+          output.data = pool;
+        }
+        resolve(output);
+      } catch (error) {
+        resolve(errhandler(error));
+      }
+    });
+  };
+
+  const errhandler = (...args) => {
+    let [error] = args;
+    if (error.errno)
+      return {
+        code: error.errno,
+        errno: error.errno,
+        message: error.message,
+        stack: error.stack,
+        data: error,
+      };
+    else
+      return {
+        code: -1,
+        errno: -1,
+        message: error.message,
+        stack: error.stack,
+        data: error,
+      };
+  };
 
   glib = {
     utils: {
@@ -240,6 +365,41 @@
       arr_selected: arr_selected,
       arr_diffidx: arr_diffidx,
       concatobj: concatobj,
+      serialize: serialize,
+      errhandler: errhandler,
+      get dataformat() {
+        return Object.assign(
+          {},
+          {
+            code: 0,
+            msg: "",
+            data: null,
+          }
+        );
+      },
+      get fmtseries() {
+        return Object.assign(
+          {},
+          {
+            err: [],
+            func: {},
+            share: {},
+          }
+        );
+      },
+      get wfwseries() {
+        return Object.assign(
+          {},
+          {
+            error: "",
+            func: "",
+            name: "",
+            param: [],
+            pull: [],
+            push: [],
+          }
+        );
+      },
     },
   };
 
