@@ -556,7 +556,7 @@ module.exports = async (...args) => {
 
               if (!fn) {
                 output.code = -3;
-                output.msg = `Process stop at (${name}).Current onging  step:${
+                output.msg = `Process stop at (${name}).Current onging step is:${
                   parseInt(idx) + 1
                 }/${workflow.length}. `;
                 break;
@@ -615,8 +615,13 @@ module.exports = async (...args) => {
                 } else {
                   if (fnerrs.length > 0) {
                     let fnerr = [];
+                    let errmsg = `Current onging step is:${parseInt(idx) + 1}/${
+                      workflow.length
+                    }. `;
+                    if (queuertn.stack) queuertn.stack += errmsg;
+                    else if (queuertn.message) queuertn.message += errmsg;
                     fnerrs.map((fn) => {
-                      fnerr.push(fn.apply(null, [queuertn]));
+                      fnerr.push(fn.apply(null, [queuertn, errmsg]));
                     });
                     await Promise.all(fnerr);
                   } else if (error != "") {
