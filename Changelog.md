@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix engine.sqlmanager.sqltemplate unable resolve when the WHERE condition undefined. Completed on 2024-08-17
 - Fix `serialize` function concat param value issue, affect include both `webnodejs,deskelectronjs` `preload.html` and `utils`. Completed on 2024-08-20
 - Fix engine.sqlmanager.sqltemplate unable produce INSERT statement. Completed on 2024-08-20
+- Fix all serialize function when data is null error will occur. Completed on 2024-08-20
 
 ### Security
 

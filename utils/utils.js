@@ -628,8 +628,10 @@ module.exports = async (...args) => {
                   if (code == 0) {
                     if (push[kfunc]) {
                       push[kfunc].map((value, id) => {
-                        let dataval = data[value];
-                        if (!dataval) dataval = data;
+                        let dataval;
+                        if (data == null) dataval = data;
+                        else if (data[value]) dataval = data[value];
+                        else dataval = data;
                         if (value.lastIndexOf(".") > -1) {
                           let location = value.replaceAll(".", "/");
                           jptr.set(share, location, dataval);
