@@ -127,7 +127,7 @@ module.exports = async (...args) => {
               }
             }
             if (cond.debug) await this._conn.rollback();
-            await this._conn.commit();
+            else await this._conn.commit();
           } catch (error) {
             await this._conn.rollback();
             output = errhandler(error);
