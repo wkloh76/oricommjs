@@ -252,79 +252,103 @@
             ...handler.wfwseries,
             ...compval,
           };
-          let fn = getNestedObject(funcs, func);
 
-          if (!fn) {
-            output.code = -3;
-            output.msg = `Process stop at (${name}).Current onging step is:${parseInt(idx) + 1
-              }/${workflow.length}. `;
-            break;
-          } else {
-            let queuertn, funcparams;
-            if (pull.length == 0) funcparams = param;
-            else {
-              const getparams = (...args) => {
-                let [value, cache_temp, cache_share] = args;
-                let result;
-                if (value.lastIndexOf(".") > -1) {
-                  let location = value.replaceAll(".", "/");
-                  let getpull_temp = jptr.get(cache_temp, location);
-                  let getpull_share = jptr.get(cache_share, location);
-                  if (getpull_temp) result = getpull_temp;
-                  else if (getpull_share) result = getpull_share;
-                }
-                return result;
-              };
-
-              funcparams = [];
-              for (let value of pull) {
-                let dtype = datatype(value);
-                switch (dtype) {
-                  case "string":
-                    let result = getparams(value, temp, share);
-                    if (result) funcparams.push(result);
-                    break;
-                  case "array":
-                    let arr_result = [];
-                    for (let subval of value) {
-                      let result = getparams(subval, temp, share);
-                      if (result) arr_result.push(result);
+          for (let [kfunc, vfunc] of Object.entries(func.split(","))) {
+            let fn = getNestedObject(funcs, vfunc);
+            if (!fn) {
+              output.code = -3;
+              output.msg = `Process stop at (${name}).Current onging step is:${parseInt(idx) + 1
+                }/${workflow.length}. `;
+              break;
+            } else {
+              let queuertn,
+                funcparams = [];
+              if (pull[kfunc]) {
+                if (pull[kfunc].length == 0) {
+                  if (param[kfunc]) {
+                    if (param[kfunc].length > 0) funcparams = param[kfunc];
+                  }
+                } else {
+                  const getparams = (...args) => {
+                    let [value, cache_temp, cache_share] = args;
+                    let result;
+                    if (value.lastIndexOf(".") > -1) {
+                      let location = value.replaceAll(".", "/");
+                      let getpull_temp = jptr.get(cache_temp, location);
+                      let getpull_share = jptr.get(cache_share, location);
+                      if (getpull_temp) result = getpull_temp;
+                      else if (getpull_share) result = getpull_share;
                     }
-                    funcparams.push(arr_result);
-                    break;
+                    return result;
+                  };
+
+                  let cache_pull = [];
+                  for (let value of pull[kfunc]) {
+                    let dtype = datatype(value);
+                    switch (dtype) {
+                      case "string":
+                        let result = getparams(value, temp, share);
+                        if (result) cache_pull.push(result);
+                        break;
+                      case "array":
+                        let arr_result = [];
+                        for (let subval of value) {
+                          let result = getparams(subval, temp, share);
+                          if (result) arr_result.push(result);
+                        }
+                        cache_pull.push(arr_result);
+                        break;
+                    }
+                  }
+                  if (!param[kfunc]) {
+                    if (cache_pull.length > 0) funcparams = cache_pull;
+                  } else {
+                    if (cache_pull.length == 1) funcparams = cache_pull;
+                    else if (cache_pull.length >= 1)
+                      funcparams.push(cache_pull);
+                    if (param[kfunc].length > 0) {
+                      funcparams = funcparams.concat(param[kfunc]);
+                    }
+                  }
+                }
+              } else {
+                if (param[kfunc]) {
+                  if (param[kfunc].length > 0)
+                    funcparams = funcparams.concat(param[kfunc]);
                 }
               }
-              if (param.length > 0) funcparams = funcparams.concat(param);
-            }
 
-            queuertn = sanbox(fn, funcparams);
-            if (queuertn instanceof Promise) queuertn = await queuertn;
-            let { code, data, msg } = queuertn;
-            if (code == 0) {
-              push.map((value, id) => {
-                let dataval = data[value];
-                if (!dataval) dataval = data;
-                if (value.lastIndexOf(".") > -1) {
-                  let location = value.replaceAll(".", "/");
-                  jptr.set(share, location, dataval);
-                } else {
-                  jptr.set(temp, `${name}/${value}`, dataval);
+              queuertn = sanbox(fn, funcparams);
+              if (queuertn instanceof Promise) queuertn = await queuertn;
+              let { code, data, msg } = queuertn;
+              if (code == 0) {
+                if (push[kfunc]) {
+                  push[kfunc].map((value, id) => {
+                    let dataval = data[value];
+                    if (!dataval) dataval = data;
+                    if (value.lastIndexOf(".") > -1) {
+                      let location = value.replaceAll(".", "/");
+                      jptr.set(share, location, dataval);
+                    } else {
+                      jptr.set(temp, `${name}/${value}`, dataval);
+                    }
+                  });
                 }
-              });
-            } else {
-              if (fnerrs.length > 0) {
-                let fnerr = [];
-                let errmsg = `Current onging step is:${parseInt(idx) + 1}/${workflow.length
-                  }. `;
-                if (queuertn.stack) queuertn.stack += errmsg;
-                else if (queuertn.message) queuertn.message += errmsg;
-                fnerrs.map((fn) => {
-                  fnerr.push(fn.apply(null, [queuertn, errmsg]));
-                });
-                await Promise.all(fnerr);
-              } else if (error != "") {
-                let fnerr = getNestedObject(funcs, error);
-                fnerr.apply(null, [queuertn]);
+              } else {
+                if (fnerrs.length > 0) {
+                  let fnerr = [];
+                  let errmsg = `Current onging step is:${parseInt(idx) + 1
+                    }/${workflow.length}. `;
+                  if (queuertn.stack) queuertn.stack += errmsg;
+                  else if (queuertn.message) queuertn.message += errmsg;
+                  fnerrs.map((fn) => {
+                    fnerr.push(fn.apply(null, [queuertn, errmsg]));
+                  });
+                  await Promise.all(fnerr);
+                } else if (error != "") {
+                  let fnerr = getNestedObject(funcs, error);
+                  fnerr.apply(null, [queuertn]);
+                }
               }
             }
           }

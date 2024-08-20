@@ -340,8 +340,9 @@
       },
       nested_load: (...args) => {
         return new Promise(async (resolve, reject) => {
-          const [params, general, obj] = args;
-          const [library, sys, cosetting] = obj;
+          const [params, obj] = args;
+          const [atomic, general] = params;
+          const [library] = obj;
           const {
             utils,
             utils: { errhandler, handler, import_cjs },
@@ -350,7 +351,7 @@
           let rtn = {};
           try {
             for (let val of general) {
-              rtn[val] = await import_cjs(params[val], utils, obj);
+              rtn[val] = await import_cjs(atomic[val], utils, obj);
             }
             output.data = rtn;
             resolve(output);
@@ -376,7 +377,7 @@
       },
       call_message: (...args) => {
         const [params, obj] = args;
-        const [library, sys, cosetting] = obj;
+        const [library, sys] = obj;
         console.log(
           `Import ${params} done (${sys.dayjs().format("DD-MM-YYYY HH:mm:ss")})`
         );
@@ -385,7 +386,7 @@
       work: (...args) => {
         return new Promise(async (resolve, reject) => {
           const [params, obj] = args;
-          const [library, sys, cosetting] = obj;
+          const [library] = obj;
           const {
             components,
             utils: { errhandler, handler },
@@ -413,7 +414,7 @@
       routejson: (...args) => {
         return new Promise(async (resolve, reject) => {
           const [params, obj] = args;
-          const [library, sys, cosetting] = obj;
+          const [library, sys] = obj;
           const {
             dir,
             utils: { errhandler, handler },
@@ -487,22 +488,25 @@
             {
               name: "load_engine",
               func: "load",
-              pull: [["setting.cosetting.engine", "core.obj"]],
+              param: [[obj]],
+              push: [["data"]],
+              pull: [["setting.cosetting.engine"]],
               push: [["engine", "lib.library.engine"]],
             },
             {
               name: "msg_engine",
               func: "call_message",
-              pull: [["message.engine", "core.obj"]],
+              param: [[obj]],
+              pull: [["message.engine"]],
             },
             {
               name: "load_atomic",
               func: "nested_load",
+              param: [[obj]],
               pull: [
                 [
                   "setting.cosetting.atomic",
                   "setting.cosetting.general.atomic",
-                  "core.obj",
                 ],
               ],
               push: [["atomic", "lib.library.atomic"]],
@@ -510,12 +514,14 @@
             {
               name: "msg_atomic",
               func: "call_message",
-              pull: [["message.atomic", "core.obj"]],
+              param: [[obj]],
+              pull: [["message.atomic"]],
             },
             {
               name: "load_components",
               func: "load",
-              pull: [["setting.cosetting.components", "core.obj"]],
+              param: [[obj]],
+              pull: [["setting.cosetting.components"]],
               push: [["components"]],
             },
             {
@@ -527,17 +533,20 @@
             {
               name: "work",
               func: "work",
-              pull: [["setting.cosetting", "core.obj"]],
+              param: [[obj]],
+              pull: [["setting.cosetting"]],
             },
             {
               name: "routejson",
               func: "routejson",
-              pull: [["lib.library.components", "core.obj"]],
+              param: [[obj]],
+              pull: [["lib.library.components"]],
             },
             {
               name: "msg_components",
               func: "call_message",
-              pull: [["message.components", "core.obj"]],
+              param: [[obj]],
+              pull: [["message.components"]],
             },
           ];
 

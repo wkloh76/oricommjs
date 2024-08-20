@@ -261,7 +261,8 @@
                 }/${workflow.length}. `;
               break;
             } else {
-              let queuertn, funcparams = [];
+              let queuertn,
+                funcparams = [];
               if (pull[kfunc]) {
                 if (pull[kfunc].length == 0) {
                   if (param[kfunc]) {
@@ -281,8 +282,7 @@
                     return result;
                   };
 
-
-                  let cache_pull = []
+                  let cache_pull = [];
                   for (let value of pull[kfunc]) {
                     let dtype = datatype(value);
                     switch (dtype) {
@@ -301,18 +301,17 @@
                     }
                   }
                   if (!param[kfunc]) {
-                    if (cache_pull.length > 0) funcparams = cache_pull
-                  }
-                  else {
-                    if (cache_pull.length == 1) funcparams = cache_pull
-                    else if (cache_pull.length >= 1) funcparams.push(cache_pull);
+                    if (cache_pull.length > 0) funcparams = cache_pull;
+                  } else {
+                    if (cache_pull.length == 1) funcparams = cache_pull;
+                    else if (cache_pull.length >= 1)
+                      funcparams.push(cache_pull);
                     if (param[kfunc].length > 0) {
                       funcparams = funcparams.concat(param[kfunc]);
                     }
                   }
                 }
-              }
-              else {
+              } else {
                 if (param[kfunc]) {
                   if (param[kfunc].length > 0)
                     funcparams = funcparams.concat(param[kfunc]);
