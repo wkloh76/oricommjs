@@ -54,6 +54,7 @@ module.exports = async (...args) => {
         #rules = {
           transaction: false,
           queryone: false,
+          debug: false,
         };
 
         #dboption = {
@@ -74,7 +75,7 @@ module.exports = async (...args) => {
          * @param {String} args[0] - statement is string data in sql statement format.
          */
         trans = async (...args) => {
-          let [statements, opt] = args;
+          let [statements, opt, cond] = args;
           let output = handler.dataformat;
           try {
             output.data = [];
@@ -125,6 +126,7 @@ module.exports = async (...args) => {
                 } else output.data.push(result);
               }
             }
+            if (cond.debug) await this._conn.rollback();
             await this._conn.commit();
           } catch (error) {
             await this._conn.rollback();
@@ -320,7 +322,7 @@ module.exports = async (...args) => {
             if (cond.queryone) sql = this.prepare_queryone(sql);
             if (cond.transaction) await this._conn.beginTransaction();
             if (cond.transaction) {
-              result = await this.trans(sql, opt);
+              result = await this.trans(sql, opt, cond);
             } else {
               result = await this.notrans(sql, opt);
             }
