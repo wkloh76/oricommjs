@@ -172,7 +172,7 @@ module.exports = async (...args) => {
         let output = handler.dataformat;
 
         try {
-          let { DB, DEFAULT, DELETE, INSERT, SELECT, TABLE, UPDATE, ...cond } =
+          let { DB, DELETE, INSERT, SELECT, TABLE, UPDATE, ...cond } =
             sqlgeneric;
 
           let sqlcmd;
@@ -200,10 +200,9 @@ module.exports = async (...args) => {
             }
 
             if (sqlcmd != "INSERT") {
-              if (value.data !== undefined && value.data !== null) {
+              if (value.data !== undefined && value.data !== null)
                 output.data.value += value.data;
-              } else if (index == 0) output.data.value += value.data;
-            }
+            } else if (index == 0) output.data.value += value.data;
           });
           output.data.value = output.data.value.trim() + ";";
           return output;
