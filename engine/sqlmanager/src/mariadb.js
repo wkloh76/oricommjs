@@ -92,8 +92,19 @@ module.exports = async (...args) => {
                   result = rows[0];
                   break;
                 case "UPDATE":
-                  rows = await this._conn.query(query);
-                  result = rows[0];
+                  let strict_cond = query.sql.toUpperCase().indexOf("WHERE");
+                  if (strict_cond == -1) {
+                    result = [
+                      {
+                        code: 10007,
+                        msg: "Without where codition may cause entire database data overwrite!",
+                      },
+                    ];
+                    output.code = 10007;
+                  } else {
+                    rows = await this._conn.query(query);
+                    result = rows[0];
+                  }
                   break;
                 case "DELETE":
                   rows = await this._conn.query(query);
@@ -143,8 +154,19 @@ module.exports = async (...args) => {
                   result = rows[0];
                   break;
                 case "UPDATE":
-                  rows = await this._conn.query(query);
-                  result = rows[0];
+                  let strict_cond = query.sql.toUpperCase().indexOf("WHERE");
+                  if (strict_cond == -1) {
+                    result = [
+                      {
+                        code: 10007,
+                        msg: "Without where codition may cause entire database data overwrite!",
+                      },
+                    ];
+                    output.code = 10007;
+                  } else {
+                    rows = await this._conn.query(query);
+                    result = rows[0];
+                  }
                   break;
                 case "DELETE":
                   rows = await this._conn.query(query);
@@ -305,7 +327,8 @@ module.exports = async (...args) => {
             if (result.code == 0) output.data = [...result.data];
             else throw result;
           } catch (error) {
-            output = errhandler(error);
+            let { code, data } = error;
+            if (code && data) output = error;
             sqlmanager.errlog(error);
           } finally {
             return output;

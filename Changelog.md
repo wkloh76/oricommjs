@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `serialize,errhandler, dataformat,fmtseries,wfwseries` function and property to `webnodejs/src/browser/preload.html` and `deskelectronjs/src/browser/preload.html` glib. Completed on 2024-08-19
 - Redesign serialize from backend utils, webnodejs and deskeletronjs engine. Completed on 2024-08-20
 - Restructure workflow in`startup` function at `app.js`. Completed on 2024-08-20
+- query function in sqlmanager.mariadb `UPDATE` command must has `WHERE` codition else will throw error. Completed on 2024-08-20
 
 ### Changed
 
