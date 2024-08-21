@@ -445,8 +445,13 @@
           }
         });
       },
-      failure: (error) => {
-        throw error;
+      failure: (...args) => {
+        const [error] = args;
+        return;
+      },
+      failure1: (...args) => {
+        const [error] = args;
+        return;
       },
     };
     /**
@@ -473,7 +478,14 @@
 
         try {
           input.func = startupfunc;
-          input.err = ["failure"];
+          input.err = [
+            {
+              func: "failure",
+              name: "load_failureengine",
+              pull: [["setting.cosetting.engine"]],
+              push: [["engine", "lib.library.engine"]],
+            },
+          ];
           input.share = {
             lib: { library: library },
             setting: { cosetting: cosetting },
@@ -531,6 +543,7 @@
               push: [["cosetting", "setting.cosetting"]],
             },
             {
+              // error: "failure1",
               name: "work",
               func: "work",
               param: [[obj]],

@@ -239,15 +239,76 @@
       try {
         const { err, func: funcs, workflow, share } = params;
         let output = handler.dataformat;
-        let temp = {},
-          pool = {},
-          fnerrs = [];
+        let temp = {};
+        let terminate = false;
+        let errmsg;
 
-        err.map((fname) => {
-          let fnerr = getNestedObject(funcs, fname);
-          if (fnerr) fnerrs.push(fnerr);
-        });
+        const getparams = (...args) => {
+          let [value, cache_temp, cache_share] = args;
+          let result;
+          if (value.lastIndexOf(".") > -1) {
+            let location = value.replaceAll(".", "/");
+            let getpull_temp = jptr.get(cache_temp, location);
+            let getpull_share = jptr.get(cache_share, location);
+            if (getpull_temp) result = getpull_temp;
+            else if (getpull_share) result = getpull_share;
+          }
+          return result;
+        };
+
+        const proparams = (...args) => {
+          const [param, obj] = args;
+          const [pulling, parameter, idx] = param;
+          const [localshare, pubshare] = obj;
+          let funcparams = [];
+          if (pulling[idx]) {
+            if (pulling[idx].length == 0) {
+              if (parameter[idx]) {
+                if (parameter[idx].length > 0) funcparams = parameter[idx];
+              }
+            } else {
+              let cache_pull = [];
+              for (let value of pulling[idx]) {
+                let dtype = datatype(value);
+                switch (dtype) {
+                  case "string":
+                    let result = getparams(value, localshare, pubshare);
+                    if (result) cache_pull.push(result);
+                    break;
+                  case "array":
+                    let arr_result = [];
+                    for (let subval of value) {
+                      let result = getparams(subval, localshare, pubshare);
+                      if (result) arr_result.push(result);
+                    }
+                    cache_pull.push(arr_result);
+                    break;
+                }
+              }
+              if (!parameter[idx]) {
+                if (cache_pull.length > 0) funcparams = cache_pull;
+              } else {
+                if (cache_pull.length == 1) funcparams = cache_pull;
+                else if (cache_pull.length >= 1)
+                  funcparams.push(cache_pull);
+                if (parameter[idx].length > 0) {
+                  funcparams = funcparams.concat(parameter[idx]);
+                }
+              }
+            }
+          } else {
+            if (parameter[idx]) {
+              if (parameter[idx].length > 0)
+                funcparams = funcparams.concat(parameter[idx]);
+            }
+          }
+
+          return funcparams;
+        };
+
         for (let [idx, compval] of Object.entries(workflow)) {
+          errmsg = `Current onging step is:${parseInt(idx) + 1}/${workflow.length
+            }. `;
           let { error, func, name, param, pull, push } = {
             ...handler.wfwseries,
             ...compval,
@@ -255,77 +316,19 @@
 
           for (let [kfunc, vfunc] of Object.entries(func.split(","))) {
             let fn = getNestedObject(funcs, vfunc);
-            if (!fn) {
-              output.code = -3;
-              output.msg = `Process stop at (${name}).Current onging step is:${parseInt(idx) + 1
-                }/${workflow.length}. `;
-              break;
-            } else {
-              let queuertn,
-                funcparams = [];
-              if (pull[kfunc]) {
-                if (pull[kfunc].length == 0) {
-                  if (param[kfunc]) {
-                    if (param[kfunc].length > 0) funcparams = param[kfunc];
-                  }
-                } else {
-                  const getparams = (...args) => {
-                    let [value, cache_temp, cache_share] = args;
-                    let result;
-                    if (value.lastIndexOf(".") > -1) {
-                      let location = value.replaceAll(".", "/");
-                      let getpull_temp = jptr.get(cache_temp, location);
-                      let getpull_share = jptr.get(cache_share, location);
-                      if (getpull_temp) result = getpull_temp;
-                      else if (getpull_share) result = getpull_share;
-                    }
-                    return result;
-                  };
+            if (fn) {
+              let funcparams = proparams(
+                [pull, param, kfunc],
+                [temp, share]
+              );
 
-                  let cache_pull = [];
-                  for (let value of pull[kfunc]) {
-                    let dtype = datatype(value);
-                    switch (dtype) {
-                      case "string":
-                        let result = getparams(value, temp, share);
-                        if (result) cache_pull.push(result);
-                        break;
-                      case "array":
-                        let arr_result = [];
-                        for (let subval of value) {
-                          let result = getparams(subval, temp, share);
-                          if (result) arr_result.push(result);
-                        }
-                        cache_pull.push(arr_result);
-                        break;
-                    }
-                  }
-                  if (!param[kfunc]) {
-                    if (cache_pull.length > 0) funcparams = cache_pull;
-                  } else {
-                    if (cache_pull.length == 1) funcparams = cache_pull;
-                    else if (cache_pull.length >= 1)
-                      funcparams.push(cache_pull);
-                    if (param[kfunc].length > 0) {
-                      funcparams = funcparams.concat(param[kfunc]);
-                    }
-                  }
-                }
-              } else {
-                if (param[kfunc]) {
-                  if (param[kfunc].length > 0)
-                    funcparams = funcparams.concat(param[kfunc]);
-                }
-              }
-
-              queuertn = sanbox(fn, funcparams);
-              if (queuertn instanceof Promise) queuertn = await queuertn;
+              let queuertn = await sanbox(fn, funcparams);
               let { code, data, msg } = queuertn;
               if (code == 0) {
                 if (push[kfunc]) {
                   push[kfunc].map((value, id) => {
                     let dataval;
-                    if (data == null) dataval = data
+                    if (data == null) dataval = data;
                     else if (data[value]) dataval = data[value];
                     else dataval = data;
                     if (value.lastIndexOf(".") > -1) {
@@ -337,35 +340,65 @@
                   });
                 }
               } else {
-                if (fnerrs.length > 0) {
-                  let fnerr = [];
-                  let errmsg = `Current onging step is:${parseInt(idx) + 1
-                    }/${workflow.length}. `;
-                  if (queuertn.stack) queuertn.stack += errmsg;
-                  else if (queuertn.message) queuertn.message += errmsg;
-                  fnerrs.map((fn) => {
-                    fnerr.push(fn.apply(null, [queuertn, errmsg]));
-                  });
-                  await Promise.all(fnerr);
-                } else if (error != "") {
+                if (error != "") {
                   let fnerr = getNestedObject(funcs, error);
-                  fnerr.apply(null, [queuertn]);
+                  let fnerrrtn = await sanbox(fnerr, [queuertn, errmsg]);
+                  if (!fnerrrtn) {
+                    if (queuertn.stack) queuertn.stack += errmsg;
+                    else if (queuertn.message) queuertn.message += errmsg;
+                    else if (queuertn.msg) queuertn.msg += errmsg;
+                    output = { ...queuertn, data: temp };
+                    terminate = true;
+                  }
+                } else if (err.length > 0) {
+                  for (let [errkey, errfunc] of Object.entries(err)) {
+                    let { func, name, param, pull, push } = {
+                      ...handler.wfwseries,
+                      ...errfunc,
+                    };
+
+                    let fn = getNestedObject(funcs, func);
+                    if (fn) {
+                      let funcparams = proparams(
+                        [pull, param, errkey],
+                        [temp, share]
+                      );
+                      let fnerrrtn = await sanbox(fn, [
+                        queuertn,
+                        errmsg,
+                        funcparams,
+                      ]);
+                      // let { code, data, msg } = fnerrrtn;
+                      if (!fnerrrtn) {
+                        if (queuertn.stack) queuertn.stack += errmsg;
+                        else if (queuertn.message)
+                          queuertn.message += errmsg;
+                        else if (queuertn.msg) queuertn.msg += errmsg;
+                        output = { ...queuertn, data: temp };
+                        terminate = true;
+                      }
+                    }
+                  }
                 }
               }
+            } else {
+              output.code = -3;
+              output.msg = `Process stop at (${name}).${errmsg}. `;
+              terminate = true;
             }
+            if (terminate == true) break;
           }
+          if (terminate == true) break;
         }
 
-        if (output.code == 0) {
-          output.data = pool;
-        }
+        if (output.code == 0) output.data = temp;
+
         resolve(output);
       } catch (error) {
         resolve(errhandler(error));
       }
     });
   };
-
   const errhandler = (...args) => {
     let [error] = args;
     if (error.errno)
