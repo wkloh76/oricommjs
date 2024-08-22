@@ -594,9 +594,10 @@ module.exports = async (...args) => {
                     if (cache_pull.length == 1) funcparams = cache_pull;
                     else if (cache_pull.length >= 1)
                       funcparams.push(cache_pull);
-                    if (parameter[idx].length > 0) {
+                    if (parameter[idx].length == 1)
                       funcparams = funcparams.concat(parameter[idx]);
-                    }
+                    else if (parameter[idx].length > 1)
+                      funcparams.push(parameter[idx]);
                   }
                 }
               } else {
@@ -672,7 +673,6 @@ module.exports = async (...args) => {
                             errmsg,
                             funcparams,
                           ]);
-                          // let { code, data, msg } = fnerrrtn;
                           if (!fnerrrtn) {
                             if (queuertn.stack) queuertn.stack += errmsg;
                             else if (queuertn.message)
