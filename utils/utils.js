@@ -526,14 +526,15 @@ module.exports = async (...args) => {
       /**
        * Serialize execution of a set of functions
        * @alias module:utils.serialize
-       * @param {...Object} args - 2 parameters
+       * @param {...Object} args - 3 parameters
        * @param {Object} args[0] - params  is an object type which content functions and data in fmtseries format
        * @param {Object} args[1] - obj  is an array type which content entire system engine and setting
+       * @param {Boolean} args[2] - verbose  is a boolean type which decide return entire cache result,default is true
        * @returns {Object} - Return final result
        */
       const serialize = async (...args) => {
         return new Promise(async (resolve) => {
-          const [params, obj] = args;
+          const [params, obj, verbose = true] = args;
           const [library, sys] = obj;
           const { datatype, errhandler, getNestedObject, handler, sanbox } =
             library.utils;
@@ -630,6 +631,7 @@ module.exports = async (...args) => {
                   let queuertn = await sanbox(fn, funcparams);
                   let { code, data, msg } = queuertn;
                   if (code == 0) {
+                    jptr.set(temp, `${name}/detail`, data);
                     if (push[kfunc]) {
                       push[kfunc].map((value, id) => {
                         let dataval;
@@ -638,10 +640,35 @@ module.exports = async (...args) => {
                         else dataval = data;
                         if (value.lastIndexOf(".") > -1) {
                           let location = value.replaceAll(".", "/");
-                          jptr.set(share, location, dataval);
-                        } else {
-                          jptr.set(temp, `${name}/${value}`, dataval);
-                        }
+                          let emptycheck = jptr.get(share, location);
+                          if (!emptycheck) jptr.set(share, location, dataval);
+                          else {
+                            let dtype = datatype(emptycheck);
+                            switch (dtype) {
+                              case "object":
+                                jptr.set(
+                                  share,
+                                  location,
+                                  mergeDeep(emptycheck, dataval)
+                                );
+                                break;
+                              case "array":
+                                if (emptycheck.length == 0)
+                                  jptr.set(
+                                    share,
+                                    location,
+                                    mergeDeep(emptycheck, dataval)
+                                  );
+                                else
+                                  jptr.set(
+                                    share,
+                                    location,
+                                    emptycheck.concat(dataval)
+                                  );
+                                break;
+                            }
+                          }
+                        } else jptr.set(temp, `${name}/${value}`, dataval);
                       });
                     }
                   } else {
@@ -652,7 +679,8 @@ module.exports = async (...args) => {
                         if (queuertn.stack) queuertn.stack += errmsg;
                         else if (queuertn.message) queuertn.message += errmsg;
                         else if (queuertn.msg) queuertn.msg += errmsg;
-                        output = { ...queuertn, data: temp };
+                        if (verbose == true)
+                          output = { ...queuertn, data: temp };
                         terminate = true;
                       }
                     } else if (err.length > 0) {
@@ -678,7 +706,8 @@ module.exports = async (...args) => {
                             else if (queuertn.message)
                               queuertn.message += errmsg;
                             else if (queuertn.msg) queuertn.msg += errmsg;
-                            output = { ...queuertn, data: temp };
+                            if (verbose == true)
+                              output = { ...queuertn, data: temp };
                             terminate = true;
                           }
                         }
@@ -695,7 +724,7 @@ module.exports = async (...args) => {
               if (terminate == true) break;
             }
 
-            if (output.code == 0) output.data = temp;
+            if (output.code == 0 && verbose == true) output.data = temp;
 
             resolve(output);
           } catch (error) {

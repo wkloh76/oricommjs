@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restructure workflow in`startup` function at `app.js`. Completed on 2024-08-20
 - query function in sqlmanager.mariadb `UPDATE` command must has `WHERE` codition else will throw error. Completed on 2024-08-20
 - Add debug commit rollback when call trans function in sqlmanager.mariadb. Completed on 2024-08-20
+- Add third arguments to all serialize function which will decide return entire cache result. Completed on 2024-08-23
+- Force each block function data return save into temporary variables object base on block name with `detail` key name. This apply to all serialize function. Completed on 2024-08-23
+- Check the share object value is null/array/object type and decide the which data should be replace/concat/mergediff. This apply to all serialize function. Completed on 2024-08-23
 
 ### Changed
 
