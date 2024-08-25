@@ -1,11 +1,9 @@
 "use strict";
-
 /**
  * ES Module type
  * The detail refer tohttps://cdn.jsdelivr.net/npm/@sagold/json-pointer@6.0.1/dist/jsonPointer.min.js
- * @module manager
+ * @module jspointer
  */
-
 export default await (() => {
   "use strict";
   var e = {

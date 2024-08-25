@@ -15,19 +15,22 @@
  */
 "use strict";
 /**
- * The smfetch module
- * @module smfetch
+ * ES submodule of guimaker
+ * @module interface
  */
 export default await (async () => {
-  const { default: utils } = await import(`./guimaker/utils/utils.js`);
-  const { default: sys } = await import(`./guimaker/sysmodule/sysmodule.js`);
-  const { default: interfaces } = await import(
-    "./guimaker/interfaces/interfaces.js"
-  );
+  let library, sys;
+  const { default: reaction } = await import(`./reaction.js`);
   try {
-    interfaces.load({ utils }, sys);
-    let lib = { library: { utils }, sys, interfaces };
-
+    let lib = {
+      reaction,
+      load: (...args) => {
+        const [kernel, sysmodule] = args;
+        library = kernel;
+        sys = sysmodule;
+        reaction.load(library, sys);
+      },
+    };
     return lib;
   } catch (error) {
     return error;

@@ -1,15 +1,28 @@
+/**
+ * Copyright (c) 2024   Loh Wah Kiang
+ *
+ * openGauss is licensed under Mulan PSL v2.
+ * You can use this software according to the terms and conditions of the Mulan PSL v2.
+ * You may obtain a copy of Mulan PSL v2 at:
+ *
+ *          http://license.coscl.org.cn/MulanPSL2
+ *
+ * THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND,
+ * EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT,
+ * MERCHANTABILITY OR FIT FOR A PARTICULAR PURPOSE.
+ * See the Mulan PSL v2 for more details.
+ * -------------------------------------------------------------------------
+ */
 "use strict";
-
 /**
  * ES Module type
- * @module manager
+ * @module sysmodule
  */
-
 export default await (async () => {
-  const { default: jspointer } = await import(`./jspointer.js`);
+  const { default: jptr } = await import(`./jspointer.js`);
 
   try {
-    return { jptr: jspointer };
+    return { jptr };
   } catch (error) {
     return error;
   }
