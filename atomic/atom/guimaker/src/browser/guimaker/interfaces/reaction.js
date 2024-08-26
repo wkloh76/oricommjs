@@ -24,7 +24,7 @@ export default await (async () => {
     const regevents = (...args) => {
       const [param, objfuncs] = args;
       const { utils } = library;
-      const { getNestedObject } = utils;
+      const { datatype, getNestedObject } = utils;
 
       for (let [, valobjevent] of Object.entries(param)) {
         for (let [key, value] of Object.entries(valobjevent)) {
@@ -32,8 +32,15 @@ export default await (async () => {
             let qs = document.querySelector(evt);
             if (qs) {
               if (typeof fn === "function") qs.addEventListener(key, func);
-              else if (typeof fn === "string") {
+              else if (datatype(fn) === "string") {
                 let func = getNestedObject(objfuncs, fn);
+                if (func) qs.addEventListener(key, func);
+              } else if (datatype(fn) === "object") {
+                if (fn.attr) {
+                  for (let [attrkey, attrval] of Object.entries(fn.attr))
+                    qs.setAttribute(attrkey, attrval);
+                }
+                let func = getNestedObject(objfuncs, fn.evt);
                 if (func) qs.addEventListener(key, func);
               }
             }

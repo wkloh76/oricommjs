@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Force each block function data return save into temporary variables object base on block name with `detail` key name. This apply to all serialize function. Completed on 2024-08-23
 - Check the share object value is null/array/object type and decide the which data should be replace/concat/mergediff. This apply to all serialize function. Completed on 2024-08-23
 - Add guimaker module to atom which will support browser in module type. It provide uitls,utils.handler and sysmodule function which similar as backend kernel.utils sysmodule. The preload.html similar object/function will remove and this only affected in webnodejs and deskelectronjs engine. Completed on 2024-08-24
+- Add set attribute method into `reaction.js` at guimaker module. Completed on 2024-08-26
 
 ### Changed
 
