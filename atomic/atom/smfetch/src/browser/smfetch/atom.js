@@ -59,13 +59,16 @@ export default await (() => {
 
         default:
           if (typeof reqdata == "object") {
-            output["headers"] = {
-              ...output["headers"],
-              ...{
-                "Content-Type": "application/json",
-              },
-            };
-            output["body"] = JSON.stringify(reqdata);
+            if (reqdata instanceof FormData) output["body"] = reqdata;
+            else {
+              output["headers"] = {
+                ...output["headers"],
+                ...{
+                  "Content-Type": "application/json",
+                },
+              };
+              output["body"] = JSON.stringify(reqdata);
+            }
           } else if (typeof reqdata == "string") {
             output["headers"] = {
               ...output["headers"],
@@ -147,6 +150,7 @@ export default await (() => {
           data: reqdata,
           success: achieve,
           error: fault,
+          ajax = true,
           option = {},
         } = param;
 
@@ -170,23 +174,24 @@ export default await (() => {
           reqdata,
         });
 
+        let { url: furl, ...fdata } = data;
         if (async) {
-          fetch(data.url, data)
+          fetch(furl, fdata)
             .then(async (response) => {
               if (response.ok) {
-                if (param?.success) {
+                if (achieve) {
                   let result = {};
                   if (response.redirected) result.redirected = response.url;
                   else result.data = await response.json();
-                  param.success({
+                  success({
                     status: response.status,
                     statusText: response.statusText,
                     data: result,
                   });
                 }
               } else {
-                if (param?.error) {
-                  param.error({
+                if (fault) {
+                  fault({
                     status: response.status,
                     statusText: response.statusText,
                   });
@@ -202,7 +207,7 @@ export default await (() => {
             });
           return;
         } else {
-          let response = await fetch(data.url, data);
+          let response = await fetch(furl, fdata);
           let result = {
             status: response.status,
             statusText: response.statusText,
@@ -211,15 +216,14 @@ export default await (() => {
             if (response.redirected) {
               result.redirected = response.url;
             } else {
-              result.data = await response.json();
-              if (param?.success) {
-                param.success(result);
-              }
+              let resp = await response.json();
+              if (ajax) result.data = await resp;
+              else result = resp;
+
+              if (achieve) achieve(result);
             }
           } else {
-            if (param?.error) {
-              param.error(result);
-            }
+            if (fault) fault(result);
           }
           return result;
         }
@@ -260,7 +264,7 @@ export default await (() => {
         console.log(error);
       }
     };
-    
+
     let lib = { webfetch: webfetch, deskfetch: deskfetch };
     return lib;
   } catch (error) {
