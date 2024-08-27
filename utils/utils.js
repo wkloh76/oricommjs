@@ -667,11 +667,7 @@ module.exports = async (...args) => {
                                   break;
                                 case "array":
                                   if (emptycheck.length == 0)
-                                    jptr.set(
-                                      share,
-                                      location,
-                                      mergeDeep(emptycheck, dataval)
-                                    );
+                                    jptr.set(share, location, dataval);
                                   else
                                     jptr.set(
                                       share,

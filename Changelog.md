@@ -42,6 +42,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix all serialize function when data is null error will occur. Completed on 2024-08-20
 - Fix all serialize function when param more than one not group to second array issue. Completed on 2024-08-22
 - Fix some bug from smfetch broswer at atom. Completed on 2024-08-26
+- Fix all serialize function when update data to share if the data type is array and the return data become object issue. Affected are all utils in the backend engine and atom/guimaker browser. Completed on 2024-08-27
 
 ### Security
 
