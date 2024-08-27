@@ -563,7 +563,7 @@
             },
           ];
 
-          let rtn = await serialize(input, obj);
+          let rtn = await new serialize(input, obj);
           if (rtn.code != 0) throw rtn;
           resolve(output);
         } catch (error) {

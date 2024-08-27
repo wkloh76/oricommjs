@@ -235,200 +235,215 @@ export default await (async () => {
       }
     };
 
-    const serialize = async (...args) => {
-      return new Promise(async (resolve) => {
+    class serialize {
+      constructor(...args) {
         const [params, obj, verbose = true] = args;
-        const [library, sys] = obj;
-        const { datatype, errhandler, getNestedObject, handler, sanbox } =
-          library.utils;
-        const { jptr } = sys;
+        return (async () => {
+          return await this.serialize(params, obj, verbose);
+        })();
+      }
 
-        try {
-          const { err, func: funcs, workflow, share } = params;
-          let output = handler.dataformat;
-          let temp = {};
-          let terminate = false;
-          let errmsg;
+      serialize = async (...args) => {
+        return new Promise(async (resolve) => {
+          const [params, obj, verbose = true] = args;
+          const [library, sys] = obj;
+          const { datatype, errhandler, getNestedObject, handler, sanbox } =
+            library.utils;
+          const { jptr } = sys;
 
-          const getparams = (...args) => {
-            let [value, cache_temp, cache_share] = args;
-            let result;
-            if (value.lastIndexOf(".") > -1) {
-              let location = value.replaceAll(".", "/");
-              let getpull_temp = jptr.get(cache_temp, location);
-              let getpull_share = jptr.get(cache_share, location);
-              if (getpull_temp) result = getpull_temp;
-              else if (getpull_share) result = getpull_share;
-            }
-            return result;
-          };
+          try {
+            const { err, func: funcs, workflow, share } = params;
+            let output = handler.dataformat;
+            let temp = {};
+            let terminate = false;
+            let errmsg;
 
-          const proparams = (...args) => {
-            const [param, obj] = args;
-            const [pulling, parameter, idx] = param;
-            const [localshare, pubshare] = obj;
-            let funcparams = [];
-            if (pulling[idx]) {
-              if (pulling[idx].length == 0) {
-                if (parameter[idx]) {
-                  if (parameter[idx].length > 0) funcparams = parameter[idx];
-                }
-              } else {
-                let cache_pull = [];
-                for (let value of pulling[idx]) {
-                  let dtype = datatype(value);
-                  switch (dtype) {
-                    case "string":
-                      let result = getparams(value, localshare, pubshare);
-                      if (result) cache_pull.push(result);
-                      break;
-                    case "array":
-                      let arr_result = [];
-                      for (let subval of value) {
-                        let result = getparams(subval, localshare, pubshare);
-                        if (result) arr_result.push(result);
-                      }
-                      cache_pull.push(arr_result);
-                      break;
-                  }
-                }
-                if (!parameter[idx]) {
-                  if (cache_pull.length > 0) funcparams = cache_pull;
-                } else {
-                  if (cache_pull.length == 1) funcparams = cache_pull;
-                  else if (cache_pull.length >= 1) funcparams.push(cache_pull);
-                  if (parameter[idx].length == 1)
-                    funcparams = funcparams.concat(parameter[idx]);
-                  else if (parameter[idx].length > 1)
-                    funcparams.push(parameter[idx]);
-                }
+            const getparams = (...args) => {
+              let [value, cache_temp, cache_share] = args;
+              let result;
+              if (value.lastIndexOf(".") > -1) {
+                let location = value.replaceAll(".", "/");
+                let getpull_temp = jptr.get(cache_temp, location);
+                let getpull_share = jptr.get(cache_share, location);
+                if (getpull_temp) result = getpull_temp;
+                else if (getpull_share) result = getpull_share;
               }
-            } else {
-              if (parameter[idx]) {
-                if (parameter[idx].length > 0)
-                  funcparams = funcparams.concat(parameter[idx]);
-              }
-            }
-
-            return funcparams;
-          };
-
-          for (let [idx, compval] of Object.entries(workflow)) {
-            errmsg = `Current onging step is:${parseInt(idx) + 1}/${
-              workflow.length
-            }. `;
-            let { error, func, name, param, pull, push } = {
-              ...handler.wfwseries,
-              ...compval,
+              return result;
             };
 
-            for (let [kfunc, vfunc] of Object.entries(func.split(","))) {
-              let fn = getNestedObject(funcs, vfunc);
-              if (fn) {
-                let funcparams = proparams([pull, param, kfunc], [temp, share]);
+            const proparams = (...args) => {
+              const [param, obj] = args;
+              const [pulling, parameter, idx] = param;
+              const [localshare, pubshare] = obj;
+              let funcparams = [];
+              if (pulling[idx]) {
+                if (pulling[idx].length == 0) {
+                  if (parameter[idx]) {
+                    if (parameter[idx].length > 0) funcparams = parameter[idx];
+                  }
+                } else {
+                  let cache_pull = [];
+                  for (let value of pulling[idx]) {
+                    let dtype = datatype(value);
+                    switch (dtype) {
+                      case "string":
+                        let result = getparams(value, localshare, pubshare);
+                        if (result) cache_pull.push(result);
+                        break;
+                      case "array":
+                        let arr_result = [];
+                        for (let subval of value) {
+                          let result = getparams(subval, localshare, pubshare);
+                          if (result) arr_result.push(result);
+                        }
+                        cache_pull.push(arr_result);
+                        break;
+                    }
+                  }
+                  if (!parameter[idx]) {
+                    if (cache_pull.length > 0) funcparams = cache_pull;
+                  } else {
+                    if (cache_pull.length == 1) funcparams = cache_pull;
+                    else if (cache_pull.length >= 1)
+                      funcparams.push(cache_pull);
+                    if (parameter[idx].length == 1)
+                      funcparams = funcparams.concat(parameter[idx]);
+                    else if (parameter[idx].length > 1)
+                      funcparams.push(parameter[idx]);
+                  }
+                }
+              } else {
+                if (parameter[idx]) {
+                  if (parameter[idx].length > 0)
+                    funcparams = funcparams.concat(parameter[idx]);
+                }
+              }
 
-                let queuertn = await sanbox(fn, funcparams);
-                let { code, data, msg } = queuertn;
-                if (code == 0) {
-                  jptr.set(temp, `${name}/detail`, data);
-                  if (push[kfunc]) {
-                    push[kfunc].map((value, id) => {
-                      let dataval;
-                      if (data == null) dataval = data;
-                      else if (data[value]) dataval = data[value];
-                      else dataval = data;
-                      if (value.lastIndexOf(".") > -1) {
-                        let location = value.replaceAll(".", "/");
-                        let emptycheck = jptr.get(share, location);
-                        if (!emptycheck) jptr.set(share, location, dataval);
-                        else {
-                          let dtype = datatype(emptycheck);
-                          switch (dtype) {
-                            case "object":
-                              jptr.set(
-                                share,
-                                location,
-                                mergeDeep(emptycheck, dataval)
-                              );
-                              break;
-                            case "array":
-                              if (emptycheck.length == 0)
+              return funcparams;
+            };
+
+            for (let [idx, compval] of Object.entries(workflow)) {
+              errmsg = `Current onging step is:${parseInt(idx) + 1}/${
+                workflow.length
+              }. `;
+              let { error, func, name, param, pull, push } = {
+                ...handler.wfwseries,
+                ...compval,
+              };
+
+              for (let [kfunc, vfunc] of Object.entries(func.split(","))) {
+                let fn = getNestedObject(funcs, vfunc);
+                if (fn) {
+                  let funcparams = proparams(
+                    [pull, param, kfunc],
+                    [temp, share]
+                  );
+
+                  let queuertn = await sanbox(fn, funcparams);
+                  let { code, data, msg } = queuertn;
+                  if (code == 0) {
+                    jptr.set(temp, `${name}/detail`, data);
+                    if (push[kfunc]) {
+                      push[kfunc].map((value, id) => {
+                        let dataval;
+                        if (data == null) dataval = data;
+                        else if (data[value]) dataval = data[value];
+                        else dataval = data;
+                        if (value.lastIndexOf(".") > -1) {
+                          let location = value.replaceAll(".", "/");
+                          let emptycheck = jptr.get(share, location);
+                          if (!emptycheck) jptr.set(share, location, dataval);
+                          else {
+                            let dtype = datatype(emptycheck);
+                            switch (dtype) {
+                              case "object":
                                 jptr.set(
                                   share,
                                   location,
                                   mergeDeep(emptycheck, dataval)
                                 );
-                              else
-                                jptr.set(
-                                  share,
-                                  location,
-                                  emptycheck.concat(dataval)
-                                );
-                              break;
+                                break;
+                              case "array":
+                                if (emptycheck.length == 0)
+                                  jptr.set(
+                                    share,
+                                    location,
+                                    mergeDeep(emptycheck, dataval)
+                                  );
+                                else
+                                  jptr.set(
+                                    share,
+                                    location,
+                                    emptycheck.concat(dataval)
+                                  );
+                                break;
+                            }
                           }
-                        }
-                      } else jptr.set(temp, `${name}/${value}`, dataval);
-                    });
-                  }
-                } else {
-                  if (error != "") {
-                    let fnerr = getNestedObject(funcs, error);
-                    let fnerrrtn = await sanbox(fnerr, [queuertn, errmsg]);
-                    if (!fnerrrtn) {
-                      if (queuertn.stack) queuertn.stack += errmsg;
-                      else if (queuertn.message) queuertn.message += errmsg;
-                      else if (queuertn.msg) queuertn.msg += errmsg;
-                      if (verbose == true) output = { ...queuertn, data: temp };
-                      terminate = true;
+                        } else jptr.set(temp, `${name}/${value}`, dataval);
+                      });
                     }
-                  } else if (err.length > 0) {
-                    for (let [errkey, errfunc] of Object.entries(err)) {
-                      let { func, name, param, pull, push } = {
-                        ...handler.wfwseries,
-                        ...errfunc,
-                      };
+                  } else {
+                    if (error != "") {
+                      let fnerr = getNestedObject(funcs, error);
+                      let fnerrrtn = await sanbox(fnerr, [queuertn, errmsg]);
+                      if (!fnerrrtn) {
+                        if (queuertn.stack) queuertn.stack += errmsg;
+                        else if (queuertn.message) queuertn.message += errmsg;
+                        else if (queuertn.msg) queuertn.msg += errmsg;
+                        if (verbose == true)
+                          output = { ...queuertn, data: temp };
+                        terminate = true;
+                      }
+                    } else if (err.length > 0) {
+                      for (let [errkey, errfunc] of Object.entries(err)) {
+                        let { func, name, param, pull, push } = {
+                          ...handler.wfwseries,
+                          ...errfunc,
+                        };
 
-                      let fn = getNestedObject(funcs, func);
-                      if (fn) {
-                        let funcparams = proparams(
-                          [pull, param, errkey],
-                          [temp, share]
-                        );
-                        let fnerrrtn = await sanbox(fn, [
-                          queuertn,
-                          errmsg,
-                          funcparams,
-                        ]);
-                        if (!fnerrrtn) {
-                          if (queuertn.stack) queuertn.stack += errmsg;
-                          else if (queuertn.message) queuertn.message += errmsg;
-                          else if (queuertn.msg) queuertn.msg += errmsg;
-                          if (verbose == true)
-                            output = { ...queuertn, data: temp };
-                          terminate = true;
+                        let fn = getNestedObject(funcs, func);
+                        if (fn) {
+                          let funcparams = proparams(
+                            [pull, param, errkey],
+                            [temp, share]
+                          );
+                          let fnerrrtn = await sanbox(fn, [
+                            queuertn,
+                            errmsg,
+                            funcparams,
+                          ]);
+                          if (!fnerrrtn) {
+                            if (queuertn.stack) queuertn.stack += errmsg;
+                            else if (queuertn.message)
+                              queuertn.message += errmsg;
+                            else if (queuertn.msg) queuertn.msg += errmsg;
+                            if (verbose == true)
+                              output = { ...queuertn, data: temp };
+                            terminate = true;
+                          }
                         }
                       }
                     }
                   }
+                } else {
+                  output.code = -3;
+                  output.msg = `Process stop at (${name}).${errmsg}. `;
+                  terminate = true;
                 }
-              } else {
-                output.code = -3;
-                output.msg = `Process stop at (${name}).${errmsg}. `;
-                terminate = true;
+                if (terminate == true) break;
               }
               if (terminate == true) break;
             }
-            if (terminate == true) break;
+
+            if (output.code == 0 && verbose == true) output.data = temp;
+
+            resolve(output);
+          } catch (error) {
+            resolve(errhandler(error));
           }
-
-          if (output.code == 0 && verbose == true) output.data = temp;
-
-          resolve(output);
-        } catch (error) {
-          resolve(errhandler(error));
-        }
-      });
-    };
+        });
+      };
+    }
 
     const errhandler = (...args) => {
       let [error] = args;
