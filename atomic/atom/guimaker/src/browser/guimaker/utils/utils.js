@@ -62,6 +62,43 @@ export default await (async () => {
       }
     };
 
+    const import_module = async (...args) => {
+      try {
+        let [param] = args;
+        for (let item of param) {
+          let fn = item.split("/").pop().replace(".js", "");
+          fn = fn.replace(".", "-");
+          let { default: df, ...otherlib } = await import(item);
+          if (Object.keys(otherlib).length > 0)
+            glib[fn] = { ...df, ...otherlib };
+          else glib[fn] = df;
+        }
+        return;
+      } catch (error) {
+        console.log(error);
+      }
+    };
+    const mergeDeep = (...objects) => {
+      const isObject = (obj) => obj && typeof obj === "object";
+
+      return objects.reduce((prev, obj) => {
+        Object.keys(obj).forEach((key) => {
+          const pVal = prev[key];
+          const oVal = obj[key];
+
+          if (Array.isArray(pVal) && Array.isArray(oVal)) {
+            prev[key] = pVal.concat(...oVal);
+          } else if (isObject(pVal) && isObject(oVal)) {
+            prev[key] = mergeDeep(pVal, oVal);
+          } else {
+            prev[key] = oVal;
+          }
+        });
+
+        return prev;
+      }, {});
+    };
+
     const pick_arrayofobj = (...args) => {
       let [arrobj, picker, rename] = args;
       let output = [];
@@ -465,6 +502,8 @@ export default await (async () => {
       sanbox,
       getNestedObject,
       datatype,
+      import_module,
+      mergeDeep,
       pick_arrayofobj,
       pick_arrayobj2list,
       omit,

@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add guimaker module to atom which will support browser in module type. It provide uitls,utils.handler and sysmodule function which similar as backend kernel.utils sysmodule. The preload.html similar object/function will remove and this only affected in webnodejs and deskelectronjs engine. Completed on 2024-08-24
 - Add set attribute method into `reaction.js` at guimaker module. Completed on 2024-08-26
 - Switch all serialize function to class base. Affected are all utils in the backend engine and atom/guimaker browser. Completed on 2024-08-27
+- Add `import_module,mergeDeep` function into guimaker/browser/utils module. Completed on 2024-08-28
 
 ### Changed
 
