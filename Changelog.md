@@ -80,6 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restructure utils export method. Completed on 2024-08-15
 - Remove workflow key from handler.wfwseries property in handler at utils. Completed on 2024-08-15
 - Rewrite serialize function at utils and provide advance feature. Completed on 2024-08-16
+- Save the serialize result to the share variable instea to the console.log at `preload.html/start/run` method. Completed on 2024-08-30
 
 ### Deprecated
 

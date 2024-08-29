@@ -140,7 +140,7 @@
             input.func = objfuncs;
             input.share = share;
             let rtn = await new serialize(input, [library, sys], showdata);
-            console.log(rtn.data);
+            share["serialize_result"] = rtn
           }
         } else {
           console.log(`Error: Incomplete workflow in ${func} process`);
