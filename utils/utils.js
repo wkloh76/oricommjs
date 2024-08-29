@@ -721,6 +721,7 @@ module.exports = async (...args) => {
                             }
                           }
                         }
+                        terminate = true;
                       }
                     }
                   } else {

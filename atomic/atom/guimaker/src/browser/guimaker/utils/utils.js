@@ -62,22 +62,6 @@ export default await (async () => {
       }
     };
 
-    const import_module = async (...args) => {
-      try {
-        let [param] = args;
-        for (let item of param) {
-          let fn = item.split("/").pop().replace(".js", "");
-          fn = fn.replace(".", "-");
-          let { default: df, ...otherlib } = await import(item);
-          if (Object.keys(otherlib).length > 0)
-            glib[fn] = { ...df, ...otherlib };
-          else glib[fn] = df;
-        }
-        return;
-      } catch (error) {
-        console.log(error);
-      }
-    };
     const mergeDeep = (...objects) => {
       const isObject = (obj) => obj && typeof obj === "object";
 
@@ -456,6 +440,7 @@ export default await (async () => {
                           }
                         }
                       }
+                      terminate = true;
                     }
                   }
                 } else {
@@ -502,7 +487,6 @@ export default await (async () => {
       sanbox,
       getNestedObject,
       datatype,
-      import_module,
       mergeDeep,
       pick_arrayofobj,
       pick_arrayobj2list,

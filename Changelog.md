@@ -35,6 +35,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove `import_module` function from guimaker/browser/utils module. Completed on 2024-08-28
+
 ### Fixed
 
 - Fix engine.sqlmanager.sqltemplate unable resolve when the WHERE condition undefined. Completed on 2024-08-17
@@ -44,6 +46,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix all serialize function when param more than one not group to second array issue. Completed on 2024-08-22
 - Fix some bug from smfetch broswer at atom. Completed on 2024-08-26
 - Fix all serialize function when update data to share if the data type is array and the return data become object issue. Affected are all utils in the backend engine and atom/guimaker browser. Completed on 2024-08-27
+- Fix all serialize function when last error routine rturn data code is 0, the process serialize not terminate and will keep process the rest logicflow process issue. Completed on 2024-08-29
 
 ### Security
 
