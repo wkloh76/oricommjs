@@ -102,11 +102,123 @@
     }
   };
 
+  const start = async () => {
+    const [library, sys, interfaces] = Object.values(glib.guimaker);
+    const { utils } = library;
+    const { handler, getNestedObject, objpick } = utils;
+    const { jptr } = sys;
+    const atom = {
+      ...objpick(glib, "smfetch"),
+    };
+    const { webengine } = injectionjs;
+
+    let lib = {};
+    let share = {};
+    let htmlengine = {};
+    let objfuncs = {};
+    let html_objevents = handler.winevents;
+
+    const run = async (...args) => {
+      const [event, func, showdata = true] = args;
+      const { utils } = library;
+      const { datatype, getNestedObject, serialize } = utils;
+      let { htmlworkflow } = htmlengine;
+      let objkeys = Object.keys(htmlworkflow);
+      let fn;
+      for (let item of objkeys) {
+        let getfn = getNestedObject(htmlworkflow, `${item}.${func}`);
+        if (getfn) {
+          fn = getfn;
+          break;
+        }
+      }
+      if (fn) {
+        let inputs = fn(event, func);
+        if (inputs) {
+          if (datatype(inputs) == "object") inputs = [inputs];
+          for (let input of inputs) {
+            input.func = objfuncs;
+            input.share = share;
+            let rtn = await new serialize(input, [library, sys], showdata);
+            console.log(rtn.data);
+          }
+        } else {
+          console.log(`Error: Incomplete workflow in ${func} process`);
+        }
+      }
+    };
+
+    const preproc = async (...args) => {
+      const [event, showdata = true] = args;
+
+      let attrs = event.currentTarget.attributes;
+      let func = attrs["func"].nodeValue;
+      if (func) await run(event, func, showdata);
+    };
+
+    const load = async (...args) => {
+      const [param] = args;
+      for (let [name, value] of Object.entries(param.load)) {
+        let folder;
+        if (name.substring(0, 4) == "html") {
+          folder = name.substring(4);
+          htmlengine[name] = {};
+          for (let item of value) {
+            let fnpath = `${param.path}${folder}/${item}`;
+            let fn = fnpath.split("/").pop().replace(".js", "");
+            fn = fn.replace(".", "-");
+            let { default: df } = await import(fnpath);
+            if (df) {
+              let { load, register, ...other } = df;
+              htmlengine[name][fn] = other;
+              if (load) {
+                let helper;
+                if (folder == "event") helper = preproc;
+                else helper = atom;
+                await df.load([library, sys, interfaces], helper);
+              }
+            }
+          }
+        }
+      }
+    };
+
+    const register = (...args) => {
+      const [param, obj] = args;
+      const { htmllogicflow, htmlrender, htmlcollection } = param;
+      const { htmlevent } = param;
+      const { utils } = library;
+      const { mergeDeep } = utils;
+      const { reaction } = interfaces;
+
+      for (let funcs of [htmllogicflow, htmlrender, htmlcollection])
+        objfuncs = mergeDeep(objfuncs, { ...funcs });
+
+      reaction.regevents(obj, htmlevent);
+    };
+
+    if (webengine) {
+      await load(webengine);
+
+      for (let [name, value] of Object.entries(webengine.trigger)) {
+        let fn = getNestedObject(html_objevents, name);
+        if (fn) {
+          let location = name.replaceAll(".", "/");
+          jptr.set(html_objevents, location, value);
+        }
+      }
+
+      register(htmlengine, html_objevents);
+      if (webengine.startup) run(null, webengine.startup);
+    }
+  }
+
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {
       if (mjs.lib.length > 0) await loadlib(mjs.lib);
       if (Object.keys(mjs.initialize).length > 0)
         await initialize(mjs.initialize);
     }
+    await start();
   });
 </script>

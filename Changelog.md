@@ -47,6 +47,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix some bug from smfetch broswer at atom. Completed on 2024-08-26
 - Fix all serialize function when update data to share if the data type is array and the return data become object issue. Affected are all utils in the backend engine and atom/guimaker browser. Completed on 2024-08-27
 - Fix all serialize function when last error routine rturn data code is 0, the process serialize not terminate and will keep process the rest logicflow process issue. Completed on 2024-08-29
+- Add webengine property to utils/hanlder. Completed on 2024-08-29
+- Add webengine to the all preload.html for handle and proper manage frontend from event trigger until html render. Affected are webnodejs and deskelectron engine. Completed on 2024-08-29
 
 ### Security
 

@@ -136,6 +136,24 @@ module.exports = async (...args) => {
           );
         },
 
+        get webengine() {
+          return Object.assign(
+            {},
+            {
+              path: "",
+              load: {
+                htmlevent: [],
+                htmlrender: [],
+                htmllogicflow: [],
+                htmlcollection: [],
+                htmlworkflow: [],
+              },
+              trigger: {},
+              startup: "",
+            }
+          );
+        },
+
         get sqlgeneric() {
           return Object.assign(
             {},
