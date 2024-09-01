@@ -105,7 +105,7 @@
   const start = async () => {
     const [library, sys, interfaces] = Object.values(glib.guimaker);
     const { utils } = library;
-    const { handler, getNestedObject, objpick } = utils;
+    const { datatype, handler, getNestedObject, objpick, pick_arrayofobj, pick_arrayobj2list, serialize } = utils;
     const { jptr } = sys;
     const atom = {
       ...objpick(glib, "smfetch"),
@@ -113,47 +113,90 @@
     const { webengine } = injectionjs;
 
     let lib = {};
-    let share = {};
+
     let htmlengine = {};
     let objfuncs = {};
     let html_objevents = handler.winevents;
 
     const run = async (...args) => {
       const [event, func, showdata = true] = args;
-      const { utils } = library;
-      const { datatype, getNestedObject, serialize } = utils;
-      let { htmlworkflow } = htmlengine;
-      let objkeys = Object.keys(htmlworkflow);
-      let fn;
-      for (let item of objkeys) {
-        let getfn = getNestedObject(htmlworkflow, `${item}.${func}`);
-        if (getfn) {
-          fn = getfn;
-          break;
-        }
-      }
-      if (fn) {
-        let inputs = fn(event, func);
-        if (inputs) {
-          if (datatype(inputs) == "object") inputs = [inputs];
-          for (let input of inputs) {
-            input.func = objfuncs;
-            input.share = share;
-            let rtn = await new serialize(input, [library, sys], showdata);
-            share["serialize_result"] = rtn
+      let output = handler.dataformat;
+      try {
+        let { htmlworkflow } = htmlengine;
+        let objkeys = Object.keys(htmlworkflow);
+        let fn;
+
+        const parallel = async (...args) => {
+          const [input, share] = args
+          let process = [];
+          for (let objserialize of input) {
+            objserialize.func = objfuncs;
+            objserialize.share = share;
+            let rtn = await new serialize(objserialize, [library, sys], showdata)
+            process.push(rtn)
           }
-        } else {
-          console.log(`Error: Incomplete workflow in ${func} process`);
+          return process;
         }
+        for (let item of objkeys) {
+          let getfn = getNestedObject(htmlworkflow, `${item}.${func}`);
+          if (getfn) {
+            fn = getfn;
+            break;
+          }
+        }
+        if (fn) {
+          let rtnprocess = [];
+          let inputs = fn(event, func);
+          if (inputs) {
+            let share = {};
+            if (datatype(inputs) == "object") inputs = [inputs];
+            let allexec = [];
+            for (let input of inputs) {
+              if (datatype(input) == "object") {
+                input.func = objfuncs;
+                input.share = share;
+                allexec.push(new serialize(input, [library, sys], showdata));
+              } else if (datatype(input) == "array")
+                allexec.push(parallel(input, share));
+            }
+            rtnprocess = await Promise.all(allexec);
+
+            let code = "";
+            for (let chkrtnproc of rtnprocess) {
+              if (datatype(chkrtnproc) == "array") {
+                let pickarrobj = pick_arrayofobj(chkrtnproc, ["code"])
+                let chkcode = pick_arrayobj2list(pickarrobj, ["code"]).code.join("");
+                let validcode = "0".padStart(chkrtnproc.length, "0");
+                if (chkcode != validcode) code += `[${chkcode}],`;
+              } else {
+                if (chkrtnproc["code"] != 0) code += `[${chkrtnproc["code"].toString()}],`;
+              }
+            }
+
+            if (code != "") {
+              output.code = -1
+              output.msg = code
+            };
+            output.data = rtnprocess
+
+          } else {
+            output.code = -1;
+
+            output.msg = `Error: Incomplete workflow in ${func} process`;
+          }
+        }
+      } catch (error) {
+        output = errhandler(error);
+      } finally {
+        return output;
       }
     };
 
     const preproc = async (...args) => {
       const [event, showdata = true] = args;
-
       let attrs = event.currentTarget.attributes;
       let func = attrs["func"].nodeValue;
-      if (func) await run(event, func, showdata);
+      if (func) return await run(event, func, showdata);
     };
 
     const load = async (...args) => {
@@ -207,11 +250,10 @@
           jptr.set(html_objevents, location, value);
         }
       }
-
       register(htmlengine, html_objevents);
-      if (webengine.startup) run(null, webengine.startup);
+      if (webengine.startup) run(null, webengine.startup, false);
     }
-  }
+  };
 
   window.addEventListener("DOMContentLoaded", async () => {
     if (mjs) {

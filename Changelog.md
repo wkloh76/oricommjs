@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add set attribute method into `reaction.js` at guimaker module. Completed on 2024-08-26
 - Switch all serialize function to class base. Affected are all utils in the backend engine and atom/guimaker browser. Completed on 2024-08-27
 - Add `import_module,mergeDeep` function into guimaker/browser/utils module. Completed on 2024-08-28
+- Add parallel sub function into guimaker/browser/utils/serialize/run module. Completed on 2024-08-30
 
 ### Changed
 
