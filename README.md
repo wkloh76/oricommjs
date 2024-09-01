@@ -41,10 +41,13 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
   - appservicejs(NodeJS,Bunjs)
   - webbunjs (bunJS)
   - webnodejs (NodeJS,bunJS)
+    - Implement workflow engine which will proper manage the frontend code instead write the code in one html/js file.
   - deskeletronjs (ElectronJS)
+    - Implement workflow engine which will proper manage the frontend code instead write the code in one html/js file.
 - Optional modules:
   - sqlmanager
     - sqlite3
+    - mariadb
 
 ## atomic
 
@@ -54,6 +57,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 ### atom
 
 - smfetch
+- guimaker
 
 ---
 
@@ -184,7 +188,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 
 ## Launch: Linux console or Window CMD
 
-- NodeJS: node app.js --mode=debug --engine=webnodejs 
+- NodeJS: node app.js --mode=debug --engine=webnodejs
 - BunJS: Bun app.js --mode=debug --engine=webnodejs
 - ElectronJS: electron app.js --mode=debug --engine=deskelectronjs --project=desktop_xxxx
 
