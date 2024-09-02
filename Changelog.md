@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.7] - 2024-09-02
+
+### Summary
+
+### Added
+
+### Changed
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Fix all serialize in both engine/utils guimaker/utils which no return error code after error function all done. Completed on 2024-09-02
+- Fix all preload.html/startup when serialize receive error code still keep continue the next loop. Completed on 2024-09-02
+
+### Security
+
+[1.1.7]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.7
+
 ## [1.1.6] - 2024-08-17
 
 ### Summary

@@ -723,6 +723,8 @@ module.exports = async (...args) => {
                         }
                         terminate = true;
                       }
+                      output.code = code;
+                      output.msg = msg;
                     }
                   } else {
                     output.code = -3;

@@ -442,6 +442,8 @@ export default await (async () => {
                       }
                       terminate = true;
                     }
+                    output.code = code;
+                    output.msg = msg;
                   }
                 } else {
                   output.code = -3;

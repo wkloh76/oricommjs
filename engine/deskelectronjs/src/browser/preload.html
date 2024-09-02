@@ -132,8 +132,9 @@
           for (let objserialize of input) {
             objserialize.func = objfuncs;
             objserialize.share = share;
-            let rtn = await new serialize(objserialize, [library, sys], showdata)
-            process.push(rtn)
+            let rtn = await new serialize(objserialize, [library, sys], showdata);
+            process.push(rtn);
+            if (rtn.code != 0) break;
           }
           return process;
         }
