@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Implement required value which for frontend checking when envent trigger and execute the function. The file changer involve both webnodejs/browser/preload.html and deskelectronjs/browser/preload.html. Completed on 04/09/2024
+- Implement required value which for frontend checking when envent trigger and execute the function. The file changer involve both webnodejs/browser/preload.html and deskelectronjs/browser/preload.html. Completed on 2024-09-04
 
 ### Changed
 
@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix all serialize in both engine/utils guimaker/utils which no return error code after error function all done. Completed on 2024-09-02
 - Fix all preload.html/startup when serialize receive error code still keep continue the next loop. Completed on 2024-09-02
+- Fix minus bug in guimaker/interfaces/reaction.js. Completed on 2024-09-04
 
 ### Security
 

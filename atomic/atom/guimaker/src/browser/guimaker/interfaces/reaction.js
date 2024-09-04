@@ -31,7 +31,7 @@ export default await (async () => {
           for (let [evt, fn] of Object.entries(value)) {
             let qs = document.querySelector(evt);
             if (qs) {
-              if (typeof fn === "function") qs.addEventListener(key, func);
+              if (typeof fn === "function") qs.addEventListener(key, fn);
               else if (datatype(fn) === "string") {
                 let func = getNestedObject(objfuncs, fn);
                 if (func) qs.addEventListener(key, func);
