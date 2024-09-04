@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Implement required value which for frontend checking when envent trigger and execute the function. The file changer involve both webnodejs/browser/preload.html and deskelectronjs/browser/preload.html. Completed on 04/09/2024
+
 ### Changed
 
 ### Deprecated

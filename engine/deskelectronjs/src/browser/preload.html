@@ -105,7 +105,7 @@
   const start = async () => {
     const [library, sys, interfaces] = Object.values(glib.guimaker);
     const { utils } = library;
-    const { datatype, handler, getNestedObject, objpick, pick_arrayofobj, pick_arrayobj2list, serialize } = utils;
+    const { arr_selected, datatype, handler, getNestedObject, objpick, pick_arrayofobj, pick_arrayobj2list, serialize } = utils;
     const { jptr } = sys;
     const atom = {
       ...objpick(glib, "smfetch"),
@@ -119,12 +119,19 @@
     let html_objevents = handler.winevents;
 
     const run = async (...args) => {
-      const [event, func, showdata = true] = args;
+      const [event, task, showdata = true] = args;
       let output = handler.dataformat;
       try {
         let { htmlworkflow } = htmlengine;
         let objkeys = Object.keys(htmlworkflow);
-        let fn;
+        let fn, func, required;
+        let task_type = datatype(task);
+        if (task_type == "string") func = task;
+        else if (task_type == "object") {
+          let { taskname, required: req } = task
+          func = taskname;
+          if (req) required = req;
+        }
 
         const parallel = async (...args) => {
           const [input, share] = args
@@ -150,6 +157,7 @@
           let inputs = fn(event, func);
           if (inputs) {
             let share = {};
+            if (required) share = { shared: { required } };
             if (datatype(inputs) == "object") inputs = [inputs];
             let allexec = [];
             for (let input of inputs) {
@@ -193,10 +201,40 @@
       }
     };
 
+    const alter_arr2str = (...args) => {
+      const [arr, front, back] = args
+      const inistr = "";
+      const result = arr.reduce(
+        (accumulator, cval) => accumulator + `${front}${cval}${back}`,
+        inistr,
+      );
+      return result.toString().trim()
+    }
+
     const preproc = async (...args) => {
       const [event, showdata = true] = args;
       let attrs = event.currentTarget.attributes;
+      let clsname = alter_arr2str(event.currentTarget.className.split(" "), ".", " ");
+      let tagName = event.currentTarget.tagName;
+      let id = `#${event.currentTarget.id}`;
       let func = attrs["func"].nodeValue;
+      let qslist = [];
+
+      if (tagName) qslist.push(tagName);
+      if (id) qslist.push(id);
+      if (clsname) qslist.push(clsname);
+
+      for (let [key, valobjevent] of Object.entries(webengine.trigger)) {
+        let evtkeys = Object.keys(valobjevent);
+        let { code, data, msg } = arr_selected(qslist, evtkeys)
+        if (data && data.length == 1) {
+          if (valobjevent[data[0]].attr.required) {
+            let { func: fn, required } = valobjevent[data[0]].attr;
+            func = { taskname: fn, required: required }
+          }
+
+        }
+      }
       if (func) return await run(event, func, showdata);
     };
 
