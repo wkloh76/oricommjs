@@ -156,8 +156,8 @@
           let rtnprocess = [];
           let inputs = fn(event, func);
           if (inputs) {
-            let share = {};
-            if (required) share = { shared: { required } };
+            let share = { shared: { htmlengine, convtrigger } };
+            if (required) share.shared = { ...share.shared, required };
             if (datatype(inputs) == "object") inputs = [inputs];
             let allexec = [];
             for (let input of inputs) {
@@ -279,18 +279,23 @@
       reaction.regevents(obj, htmlevent);
     };
 
-    if (webengine) {
-      await load(webengine);
-
-      for (let [name, value] of Object.entries(webengine.trigger)) {
+    const convtrigger = (...args) => {
+      const [trigger] = args
+      let objevents = handler.winevents;
+      for (let [name, value] of Object.entries(trigger)) {
         let fn = getNestedObject(html_objevents, name);
         if (fn) {
           let location = name.replaceAll(".", "/");
-          jptr.set(html_objevents, location, value);
+          jptr.set(objevents, location, value);
         }
       }
-      register(htmlengine, html_objevents);
-      if (webengine.startup) run(null, webengine.startup, false);
+      return objevents;
+    }
+
+    if (webengine) {
+      await load(webengine);
+      register(htmlengine, convtrigger(webengine.trigger));
+      if (webengine.startup) await run(null, webengine.startup, false);
     }
   };
 
