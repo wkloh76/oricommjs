@@ -142,11 +142,11 @@ module.exports = async (...args) => {
             {
               path: "",
               load: {
-                htmlevent: [],
-                htmlrender: [],
-                htmllogicflow: [],
-                htmlcollection: [],
-                htmlworkflow: [],
+                htmlevent: {},
+                htmlrender: {},
+                htmllogicflow: {},
+                htmlcollection: {},
+                htmlworkflow: {},
               },
               trigger: {},
               startup: "",

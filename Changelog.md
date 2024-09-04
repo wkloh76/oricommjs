@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Deprecated
 
+- Change uitls/handler/webengine.load property to object type and the content of keys name will be a folder name and the values remain as array type.The file changer involve both webnodejs/browser/preload.html and deskelectronjs/browser/preload.html.. Completed on 2024-09-05
+
 ### Removed
 
 ### Fixed

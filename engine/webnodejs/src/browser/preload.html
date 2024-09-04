@@ -241,23 +241,25 @@
     const load = async (...args) => {
       const [param] = args;
       for (let [name, value] of Object.entries(param.load)) {
-        let folder;
         if (name.substring(0, 4) == "html") {
-          folder = name.substring(4);
+          let folder = name.substring(4);
           htmlengine[name] = {};
-          for (let item of value) {
-            let fnpath = `${param.path}${folder}/${item}`;
-            let fn = fnpath.split("/").pop().replace(".js", "");
-            fn = fn.replace(".", "-");
-            let { default: df } = await import(fnpath);
-            if (df) {
-              let { load, register, ...other } = df;
-              htmlengine[name][fn] = other;
-              if (load) {
-                let helper;
-                if (folder == "event") helper = preproc;
-                else helper = atom;
-                await df.load([library, sys, interfaces], helper);
+          for (let [parent, child] of Object.entries(value)) {
+            for (let item of child) {
+              let fnpath = `${param.path}${parent}/${folder}/${item}`;
+              let fn = fnpath.split("/").pop().replace(".js", "");
+              fn = fn.replace(".", "-");
+              let { default: df } = await import(fnpath);
+              if (df) {
+                let { load, register, ...other } = df;
+                if (htmlengine[name][fn]) htmlengine[name][fn] = { ...htmlengine[name][fn], ...other }
+                else htmlengine[name][fn] = other;
+                if (load) {
+                  let helper;
+                  if (folder == "event") helper = preproc;
+                  else helper = atom;
+                  await df.load([library, sys, interfaces], helper);
+                }
               }
             }
           }
