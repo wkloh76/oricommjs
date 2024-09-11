@@ -228,11 +228,13 @@
         let evtkeys = Object.keys(valobjevent);
         let { code, data, msg } = arr_selected(qslist, evtkeys)
         if (data && data.length == 1) {
-          if (valobjevent[data[0]].attr.required) {
-            let { func: fn, required } = valobjevent[data[0]].attr;
-            func = { taskname: fn, required: required }
+          let { attr } = valobjevent[data[0]];
+          if (attr) {
+            if (attr.required) {
+              let { func: fn, required } = attr;
+              func = { taskname: fn, required: required }
+            }
           }
-
         }
       }
       if (func) return await run(event, func, showdata);
