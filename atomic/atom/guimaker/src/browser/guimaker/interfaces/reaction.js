@@ -21,41 +21,45 @@
 export default await (async () => {
   let library, sys;
   try {
-    const regevents = (...args) => {
+    let lib = {};
+
+    lib.load = (...args) => {
+      const [kernel, sysmodule] = args;
+      library = kernel;
+      sys = sysmodule;
+    };
+    lib.regevents = (...args) => {
       const [param, objfuncs] = args;
       const { utils } = library;
-      const { datatype, getNestedObject } = utils;
-
-      for (let [, valobjevent] of Object.entries(param)) {
-        for (let [key, value] of Object.entries(valobjevent)) {
-          for (let [evt, fn] of Object.entries(value)) {
-            let qs = document.querySelector(evt);
-            if (qs) {
-              if (typeof fn === "function") qs.addEventListener(key, fn);
-              else if (datatype(fn) === "string") {
-                let func = getNestedObject(objfuncs, fn);
-                if (func) qs.addEventListener(key, func);
-              } else if (datatype(fn) === "object") {
-                if (fn.attr) {
-                  for (let [attrkey, attrval] of Object.entries(fn.attr))
-                    qs.setAttribute(attrkey, attrval);
+      const { datatype, errhandler, getNestedObject, handler } = utils;
+      let output = handler.dataformat;
+      try {
+        for (let [, valobjevent] of Object.entries(param)) {
+          for (let [key, value] of Object.entries(valobjevent)) {
+            for (let [evt, fn] of Object.entries(value)) {
+              let qs = document.querySelector(evt);
+              if (qs) {
+                if (typeof fn === "function") qs.addEventListener(key, fn);
+                else if (datatype(fn) === "string") {
+                  let func = getNestedObject(objfuncs, fn);
+                  if (func) qs.addEventListener(key, func);
+                } else if (datatype(fn) === "object") {
+                  if (fn.attr) {
+                    for (let [attrkey, attrval] of Object.entries(fn.attr))
+                      qs.setAttribute(attrkey, attrval);
+                  }
+                  let func = getNestedObject(objfuncs, fn.evt);
+                  if (func) qs.addEventListener(key, func);
                 }
-                let func = getNestedObject(objfuncs, fn.evt);
-                if (func) qs.addEventListener(key, func);
               }
             }
           }
         }
+      } catch (error) {
+        output = errhandler(error);
+      } finally {
+        return output;
       }
-    };
-
-    let lib = {
-      regevents,
-      load: (...args) => {
-        const [kernel, sysmodule] = args;
-        library = kernel;
-        sys = sysmodule;
-      },
     };
 
     return lib;

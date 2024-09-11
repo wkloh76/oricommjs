@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Implement required value which for frontend checking when envent trigger and execute the function. The file changer involve both webnodejs/browser/preload.html and deskelectronjs/browser/preload.html. Completed on 2024-09-04
 - Add new feature which is provide `htmlengine` object and `convtrigger` function to the workflow shared.The file changer involve both webnodejs/browser/preload.html and deskelectronjs/browser/preload.html. Completed on 2024-09-04
+- Apply trycatch error handlering in reaction.js at atom/guimaker/interfaces. Completed on 2024-09-11
 
 ### Changed
 
