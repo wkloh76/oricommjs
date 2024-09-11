@@ -28,6 +28,7 @@ export default await (async () => {
       library = kernel;
       sys = sysmodule;
     };
+
     lib.regevents = (...args) => {
       const [param, objfuncs] = args;
       const { utils } = library;
@@ -37,19 +38,22 @@ export default await (async () => {
         for (let [, valobjevent] of Object.entries(param)) {
           for (let [key, value] of Object.entries(valobjevent)) {
             for (let [evt, fn] of Object.entries(value)) {
-              let qs = document.querySelector(evt);
+              let qs = document.querySelectorAll(evt);
               if (qs) {
-                if (typeof fn === "function") qs.addEventListener(key, fn);
-                else if (datatype(fn) === "string") {
-                  let func = getNestedObject(objfuncs, fn);
-                  if (func) qs.addEventListener(key, func);
-                } else if (datatype(fn) === "object") {
-                  if (fn.attr) {
-                    for (let [attrkey, attrval] of Object.entries(fn.attr))
-                      qs.setAttribute(attrkey, attrval);
+                for (let nodevalue of qs) {
+                  if (typeof fn === "function")
+                    nodevalue.addEventListener(key, fn);
+                  else if (datatype(fn) === "string") {
+                    let func = getNestedObject(objfuncs, fn);
+                    if (func) nodevalue.addEventListener(key, func);
+                  } else if (datatype(fn) === "object") {
+                    if (fn.attr) {
+                      for (let [attrkey, attrval] of Object.entries(fn.attr))
+                        nodevalue.setAttribute(attrkey, attrval);
+                    }
+                    let func = getNestedObject(objfuncs, fn.evt);
+                    if (func) nodevalue.addEventListener(key, func);
                   }
-                  let func = getNestedObject(objfuncs, fn.evt);
-                  if (func) qs.addEventListener(key, func);
                 }
               }
             }
