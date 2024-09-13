@@ -91,6 +91,11 @@ export default await (async () => {
               over: {},
               up: {},
             },
+            keyboard: {
+              keydown: {},
+              keypress: {},
+              keyup: {},
+            },
           }
         );
       },
