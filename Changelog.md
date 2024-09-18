@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Change export method in utils.js. Completed on 2024-09-11
+- Change the grab the remaining string to instead the older method in establish/resource method at deskelectron/src/desktop.jsCompleted on 2024-09-18
 
 ### Deprecated
 
@@ -33,6 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix all preload.html/startup when serialize receive error code still keep continue the next loop. Completed on 2024-09-02
 - Fix minus bug in guimaker/interfaces/reaction.js. Completed on 2024-09-04
 - Fix undefined required attributes in preproc function at preload.thml.The file changer involve both webnodejs and deskelectronjs engine. Completed on 2024-09-11
+- Bug fix in load_atomic method at deskelectron/src/desktop.js which failure load more than one module. Completed on 2024-09-18
 
 ### Security
 

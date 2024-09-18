@@ -211,7 +211,7 @@ module.exports = async (...args) => {
           for (let unit of units) {
             let sharepath = join(share, atomic_items, unit, "src", "browser");
             if (existsSync(sharepath))
-              obj[units] = {
+              obj[unit] = {
                 checkpoint: join(atomic_items, unit),
                 filepath: sharepath,
               };
@@ -276,19 +276,12 @@ module.exports = async (...args) => {
                       if (val.content) {
                         apicontent = val.content;
                         joinstr = filePath.replace(`/${val.checkpoint}/`, "");
-                      } else{                        
-                        joinstr = filePath
-                          .split(setting.splitter)
-                          .slice(-1)
-                          .pop();
-                          if(joinstr!=`${key}.js`) {
-                            joinstr = filePath
-                            .split(setting.splitter)
-                            .slice(-2).join(setting.splitter)
-                            
-                            
-                          }
-                        }
+                      } else {
+                        let startpos = pathname.indexOf(val.checkpoint);
+                        joinstr = pathname.substring(
+                          startpos + val.checkpoint.length
+                        );
+                      }
                     } else {
                       fp = val;
                       joinstr = filePath.slice(key.length);
