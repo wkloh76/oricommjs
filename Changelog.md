@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apply trycatch error handlering in reaction.js at atom/guimaker/interfaces. Completed on 2024-09-11
 - Apply querySelectorAll instead querySelector only in reaction.js at atom/guimaker/interfaces where are the current method will miss addlistener to different element but with same feature such as same set of class. Completed on 2024-09-11
 - Add keyboard event to guimaker/browser/utils. Completed on 2024-09-13
+- Implement grabscript method to atomic/atom/guimaker/utils which will find all scripts from the relevant floders at the backen side. Completed on 2024-09-19
 
 ### Changed
 
