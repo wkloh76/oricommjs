@@ -23,7 +23,7 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const sqlite3 = require("better-sqlite3");
+    const sqlite3 = require("libsql");
     const { fs, path, logger } = sys;
     const {
       utils: { datatype, handler, errhandler },
@@ -362,7 +362,7 @@ module.exports = async (...args) => {
         try {
           if (registered[compname][dbname]) {
             let db = registered[compname][dbname];
-            let options = {};
+            // let options = {};
             let rtn;
             let logpath = db.path;
             if (db.path == "")
@@ -373,17 +373,18 @@ module.exports = async (...args) => {
               );
             else logpath = path.join(db.path, db.engine, `${dbname}.db3`);
 
-            if (dblog[dbname])
-              options.verbose = (message) => {
-                dblog[dbname].info(message);
-              };
-            if (db.type == "file") rtn = await new sqlite3(logpath, options);
-            else rtn = await new sqlite3(":memory:", options);
+            // if (dblog[dbname])
+            //   options.verbose = (message) => {
+            //     dblog[dbname].info(message);
+            //   };
+            // if (db.type == "file") rtn = await new sqlite3(logpath, options);
+            // else rtn = await new sqlite3(":memory:", options);
+            if (db.type == "file") rtn = await new sqlite3(logpath);
+            else rtn = await new sqlite3(":memory:");
             if (!rtn)
               throw {
                 message: "newschema execution failure!",
-                stack:
-                  " newschema execution failure!better-sqlite3 return undefind.",
+                stack: " newschema execution failure! libsql return undefind.",
               };
 
             output.data = new clsSQLiteDB(rtn, dbname, terminator);

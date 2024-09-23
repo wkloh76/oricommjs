@@ -29,7 +29,7 @@ module.exports = async (...args) => {
     } = sys;
     const { datatype, dir_module } = library.utils;
     const express = require("express");
-    const sqlite3 = require("better-sqlite3");
+    const sqlite3 = require("libsql");
     const router = express.Router();
     const bodyParser = require("body-parser");
     const flash = require("connect-flash");
