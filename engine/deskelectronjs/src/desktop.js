@@ -212,7 +212,7 @@ module.exports = async (...args) => {
             let sharepath = join(share, atomic_items, unit, "src", "browser");
             if (existsSync(sharepath))
               obj[unit] = {
-                checkpoint: join(atomic_items, unit),
+                checkpoint: `${atomic_items}/${unit}`,
                 filepath: sharepath,
               };
           }

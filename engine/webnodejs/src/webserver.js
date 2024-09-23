@@ -127,7 +127,7 @@ module.exports = async (...args) => {
               store.client = new sqlite3(dbfile, { verbose: console.log });
             else {
               store.client = new sqlite3(dbfile);
-              console.log("Session db run silently!")
+              console.log("Session db run silently!");
             }
             setsession.store = new SqliteStore(store);
           }
@@ -173,11 +173,12 @@ module.exports = async (...args) => {
           let units = dir_module(join(share, atomic_items), excludefile);
           for (let unit of units) {
             let sharepath = join(share, atomic_items, unit, "src", "browser");
-            if (existsSync(sharepath))
+            if (existsSync(sharepath)) {
               obj.app.use(
-                join("/atomic", atomic_items, unit),
+                `/atomic/${atomic_items}/${unit}`,
                 expstatic(sharepath)
               );
+            }
           }
         }
       };

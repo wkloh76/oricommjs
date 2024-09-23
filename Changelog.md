@@ -37,6 +37,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix minus bug in guimaker/interfaces/reaction.js. Completed on 2024-09-04
 - Fix undefined required attributes in preproc function at preload.thml.The file changer involve both webnodejs and deskelectronjs engine. Completed on 2024-09-11
 - Bug fix in load_atomic method at deskelectron/src/desktop.js which failure load more than one module. Completed on 2024-09-18
+- Bug fix in load_atomic/webserver.js at webnodejs engine which unable find the url when boot from windows OS. Completed on 2024-09-23
+- Bug fix in load_atomic/desktop.js at deskelectronjs engine which unable find the url when boot from windows OS. Completed on 2024-09-23
 
 ### Security
 
