@@ -4,8 +4,8 @@
         "libsql": "0.4.5",
         "bcrypt": "5.1.1",
         "csv-parser": "3.0.0",
-        "jandas": "1.0.10",
-        "mariadb": "3.3.0",
+        "jandas": "1.2.2",
+        "mariadb": "3.3.2",
         "sql-fmt": "2.1.0"
     }
 }
