@@ -1,10 +1,11 @@
 # OriCommJS
 
 ![Static Badge](https://img.shields.io/badge/License-Mulan_PSL_v2-_)
-![Static Badge](https://img.shields.io/badge/NodeJS-V20_.12_.2-_)
+![Static Badge](https://img.shields.io/badge/NodeJS-V20_.16_.0-_)
 ![Static Badge](https://img.shields.io/badge/BunJS-V1_.1_.7-_)
-![Static Badge](https://img.shields.io/badge/ElectronJS-V28_.1_.3-_)
-![Static Badge](https://img.shields.io/badge/OS_Platform-Linux_Ubuntu%7C-_)
+![Static Badge](https://img.shields.io/badge/ElectronJS-V32_.1_.2-_)
+![Static Badge](https://img.shields.io/badge/OS-Ubuntu_24-_?style=flat)
+![Static Badge](https://img.shields.io/badge/OS-Windows_10-_?style=flat)
 ![GitHub Release](https://img.shields.io/github/v/release/wkloh76/oricommjs)
 
 A JavaScript project framework that provides an engine to handle desktop, web, and non-GUI application development. Node JS, bun JS and Electron JS are the backbone engines of this framework. The idea behind the framework is to develop a code model that can switch engines and build desktop, web, and non-GUI applications without changing the design. Due to some module issues, the framework design still retains the CommonJS design method. You can build your reusable modules or class and plugin into atomic folder. If you want the modules or class can be cross entire project than plugin into the enigne folder.
@@ -153,14 +154,21 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
       "request": "launch",
       "runtimeExecutable": "/electron/./electron",
       "windows": {
-        "runtimeExecutable": "/electron/./electron.cmd"
+        "runtimeExecutable": "D:\\electron\\electron.exe",
+        "runtimeArgs": [
+        "${workspaceRoot}\\app.js",
+        "--remote-debugging-port=9223",
+        "--mode=debug",
+        "--engine=deskelectronjs"
+        "--disable-gpu",
+        "--no-sandbox"
+      ],
       },
       "runtimeArgs": [
         "${workspaceRoot}/app.js",
         "--remote-debugging-port=9223",
         "--mode=debug",
         "--engine=deskelectronjs"
-        "--project=desktop_xxxx"
         "--disable-gpu",
         "--no-sandbox"
       ],
