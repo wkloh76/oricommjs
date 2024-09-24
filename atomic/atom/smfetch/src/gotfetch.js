@@ -24,10 +24,8 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const { default: got } = await import("got");
-    const { fs, path, logger } = sys;
-    const {
-      utils: { datatype, handler, errhandler },
-    } = library;
+    const { fs } = sys;
+
     try {
       let lib = {};
 

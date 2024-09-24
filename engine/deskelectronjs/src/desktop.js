@@ -24,14 +24,9 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const {
-      utils: { datatype, dir_module, intercomm },
-    } = library;
-    const {
-      events,
-      fs: { existsSync },
-      path: { join },
-    } = sys;
+    const { datatype, dir_module, intercomm } = library.utils;
+    const { existsSync } = sys.fs;
+    const { join } = sys.path;
 
     const {
       app,

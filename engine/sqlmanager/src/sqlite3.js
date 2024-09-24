@@ -25,9 +25,7 @@ module.exports = async (...args) => {
     const [library, sys, cosetting] = obj;
     const sqlite3 = require("libsql");
     const { fs, path, logger } = sys;
-    const {
-      utils: { datatype, handler, errhandler },
-    } = library;
+    const { datatype, handler, errhandler } = library.utils;
     try {
       let conn = {};
       let lib = {};

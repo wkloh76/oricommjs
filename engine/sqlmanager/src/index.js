@@ -28,9 +28,7 @@ module.exports = async (...args) => {
     const jandas = require("jandas");
     const sqlfmt = require("sql-fmt");
     const { path, logger } = sys;
-    const {
-      utils: { datatype, handler, errhandler, renameObjectKeys },
-    } = library;
+    const { handler, errhandler } = library.utils;
     try {
       let lib = {
         sqlite3: await require("./sqlite3")(params, obj),
@@ -116,7 +114,7 @@ module.exports = async (...args) => {
         try {
           let saltrounds = 10;
           if (password && hashpassword) {
-            let hashpwd= structuredClone(hashpassword)
+            let hashpwd = structuredClone(hashpassword);
             // For old encrypt format in minor with y replace to b
             if (hashpwd.indexOf("$2y") == 0)
               hashpwd = hashpwd.replace(/^\$2y/, "$2b");

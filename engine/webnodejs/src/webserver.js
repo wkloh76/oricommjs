@@ -23,11 +23,14 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const {
-      fs: { existsSync },
-      path: { join },
-    } = sys;
     const { datatype, dir_module } = library.utils;
+    const { existsSync } = sys.fs;
+    const { join } = sys.path;
+    // const {
+    //   // fs: { existsSync },
+    //   // path: { join },
+    // } = sys;
+
     const express = require("express");
     const sqlite3 = require("libsql");
     const router = express.Router();

@@ -24,10 +24,7 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const mariadb = require("mariadb");
-    const { fs, path, logger } = sys;
-    const {
-      utils: { datatype, handler, errhandler },
-    } = library;
+    const { datatype, handler, errhandler } = library.utils;
     try {
       let conn = {};
       let lib = {};

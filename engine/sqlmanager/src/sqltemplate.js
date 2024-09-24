@@ -24,10 +24,7 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const sqlfmt = require("sql-fmt");
-    const { fs, path, logger } = sys;
-    const {
-      utils: { datatype, handler, errhandler },
-    } = library;
+    const { handler, errhandler } = library.utils;
     try {
       let lib = {};
 

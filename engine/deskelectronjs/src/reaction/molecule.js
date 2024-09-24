@@ -24,9 +24,6 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const { fs, path } = sys;
-    const {
-      utils: { datatype },
-    } = library;
 
     const jsdom = require("jsdom");
     const htmlTags = require("html-tags");

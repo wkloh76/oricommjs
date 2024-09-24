@@ -23,9 +23,7 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const { fs, path, logger } = sys;
-    const { utils } = library;
-    const { datatype, handler, errhandler } = utils;
+    const { fs, path } = sys;
 
     try {
       let lib = {};

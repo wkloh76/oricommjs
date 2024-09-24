@@ -26,9 +26,7 @@ module.exports = async (...args) => {
     const { minify } = require("html-minifier-terser");
     const jsdom = require("jsdom");
     const { fs, path, logger } = sys;
-    const {
-      utils: { handler, getNestedObject },
-    } = library;
+    const { handler, getNestedObject } = library.utils;
     try {
       const molecule = await require("./reaction/molecule")(params, obj);
 
