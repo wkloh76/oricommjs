@@ -97,14 +97,22 @@ export default await (() => {
      * @param {Object} error - Any data type
      * @returns {Object} - Return error data in json format
      */
-    const eoptions = (options) => {
-      let output = { method: options.method, originalUrl: options.url };
+    const eoptions = (...args) => {
+      let [options] = args;
+      let { method, originalUrl, reqdata, ...output } = options;
+      output = {
+        ...output,
+        body: {},
+        method,
+        originalUrl,
+        query: {},
+      };
 
       switch (options.method.toUpperCase()) {
         case "GET":
           output["query"] = {};
           if (options?.["dataType"] === "json") {
-            if (typeof options.data == "object") output["param"] = options.data;
+            if (typeof options.data == "object") output["param"] = data;
           } else if (typeof options.data == "string") {
             const mySearchParams = new URLSearchParams(options.data);
             let myobj = {};
@@ -116,10 +124,16 @@ export default await (() => {
           break;
 
         case "POST":
-          output["body"] = options.data;
+          if (reqdata instanceof FormData) {
+            for (const [key, val] of reqdata.entries())
+              output["body"][key] = val;
+          } else if (reqdata.files) {
+            output = { ...output, ...reqdata };
+            // output["files"] = reqdata.files;
+          } else output["body"] = reqdata;
+
           break;
       }
-      if (options?.["headers"]) output["headers"] = options.headers;
       return output;
     };
 
@@ -140,7 +154,7 @@ export default await (() => {
      * @param {Object} args[0] - param.option.headers can assign such as HTTP-Authorization basic headers
      */
     const webfetch = async (...args) => {
-      let [param] = args;
+      const [param] = args;
       try {
         let data = {};
         let {
@@ -243,16 +257,24 @@ export default await (() => {
      * @param {Object} args[0] - param for call api server base on electron ContentBridge format
      */
     const deskfetch = async (...args) => {
+      const [param] = args;
       try {
-        let [param] = args;
         let data = {};
-        let async = true;
+        let {
+          async = true,
+          url: originalUrl,
+          method,
+          data: reqdata,
+          success: achieve,
+          error: fault,
+          ajax = true,
+          option = {},
+        } = param;
 
-        data = eoptions(param);
+        data = eoptions({ async, method, originalUrl, reqdata });
         if (param?.success !== undefined) data.success = param.success;
         if (param?.error !== undefined) data.error = param.error;
         if (param?.async !== undefined) async = param.async;
-        data.async = async;
 
         if (async) {
           window.fetchapi.request(data);

@@ -50,7 +50,7 @@
         }
       }
       delete wait_callback[baseUrl];
-      return [render.status, render.statusText, render.options.json];
+      return render.options.json;
     } catch (error) {
       console.log(error.message);
       return [-1, error.message, null];

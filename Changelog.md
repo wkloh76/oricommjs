@@ -40,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Bug fix in load_atomic method at deskelectron/src/desktop.js which failure load more than one module. Completed on 2024-09-18
 - Bug fix in load_atomic/webserver.js at webnodejs engine which unable find the url when boot from windows OS. Completed on 2024-09-23
 - Bug fix in load_atomic/desktop.js at deskelectronjs engine which unable find the url when boot from windows OS. Completed on 2024-09-23
+- Fix bug in both deskelectron and smfetch during call backend function response data format issue. Completed on 2024-09-27
 
 ### Security
 
