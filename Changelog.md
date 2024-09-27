@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apply querySelectorAll instead querySelector only in reaction.js at atom/guimaker/interfaces where are the current method will miss addlistener to different element but with same feature such as same set of class. Completed on 2024-09-11
 - Add keyboard event to guimaker/browser/utils. Completed on 2024-09-13
 - Implement grabscript method to atomic/atom/guimaker/utils which will find all scripts from the relevant floders at the backen side. Completed on 2024-09-19
+- Add new feature to diskstore method in utils.js which support write file by ArrayBuffer format. Completed on 2024-09-27
 
 ### Changed
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change the grab the remaining string to instead the older method in establish/resource method at deskelectron/src/desktop.js. Completed on 2024-09-18
 - Apply libsql node module instead the better-sqlite3 which incompatible with bun.js. This affect webnodejs and slqmanager engine. Completed on 2024-09-18
 - Re-structure the module import method. Affected backend code includes guimaker,smfetch,deskelectronjs,sqlmanager and webnodejs. Completed on 2024-09-24
+- Rename webstorage function to diskstore in utils.js. Completed on 2024-09-27
 
 ### Deprecated
 

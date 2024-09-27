@@ -876,14 +876,14 @@ module.exports = async (...args) => {
 
       /**
        * File upload from we browser and kepp in memory or disk
-       * @alias module:utils.webstorage
+       * @alias module:utils.diskstore
        * @param {...Object} args - 2 parameters
        * @param {Object} args[0] - request is an object which provide by http server receiving client request
        * @param {Object} args[1] - setting is an object value from the coresetting
        *  @param {Boolean} args[2] - save is a flag where is decide the upload file save to the disk.
        * @returns {Object} - Return default value is no error
        */
-      const webstorage = async (...args) => {
+      const diskstore = async (...args) => {
         let [request, setting, save = false] = args;
         let { disk, location, stream } = setting;
         let output = {
@@ -893,23 +893,33 @@ module.exports = async (...args) => {
         };
 
         try {
-          let stack;
-          let sizeContent = request.headers["content-length"];
-          stack = multer.memoryStorage();
+          if (!request.files) {
+            let stack;
+            let sizeContent = request.headers["content-length"];
+            stack = multer.memoryStorage();
 
-          if (Number(sizeContent) / 1024 > stream) {
-          } else if (Number(sizeContent) / 1024 > disk || save) {
-            stack = multer.diskStorage({
-              destination: location,
-              limits: { fileSize: disk },
-              filename: function (req, file, cb) {
-                cb(null, file.originalname);
-              },
-            });
+            if (Number(sizeContent) / 1024 > stream) {
+            } else if (Number(sizeContent) / 1024 > disk || save) {
+              stack = multer.diskStorage({
+                destination: location,
+                limits: { fileSize: disk },
+                filename: function (req, file, cb) {
+                  cb(null, file.originalname);
+                },
+              });
+            }
+
+            const proceed = util.promisify(multer({ storage: stack }).any());
+            await proceed(request, {});
+          } else {
+            for (let file of request.files) {
+              file.buffer = Buffer.from(file.buffer);
+              await fs.writeFileSync(
+                path.join(location, file.originalname),
+                file.buffer
+              );
+            }
           }
-
-          const proceed = util.promisify(multer({ storage: stack }).any());
-          await proceed(request, {});
           if (request.files) output.data = request.files;
           else
             throw {
@@ -1014,7 +1024,7 @@ module.exports = async (...args) => {
         arr_selected,
         arr_diff,
         arr_diffidx,
-        webstorage,
+        diskstore,
         concatobj,
         errhandler,
         datatype,
