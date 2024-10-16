@@ -26,8 +26,9 @@ module.exports = (...args) => {
     const { path } = sys;
 
     try {
-      let dir = path.join(mpath, "src", "utils");
-      let lib = await require(dir)([dir, mname], obj);
+      let dir = path.join(mpath, "src");
+      let module = path.join(dir, "utils");
+      let lib = await require(module)([dir, mname], obj);
 
       resolve(lib);
     } catch (error) {
