@@ -99,7 +99,10 @@
           else if (fs.existsSync(`${dir}${splitter}resources${splitter}app`))
             dir += `${splitter}resources${splitter}app${splitter}`;
           if (cosetting.args["mode"]) mode = cosetting.args["mode"];
-          else mode = "production";
+          else {
+            mode = "production";
+            cosetting.args["mode"] = mode;
+          }
 
           let tomlpath = path.join(dir, `.${splitter}coresetting.toml`);
 

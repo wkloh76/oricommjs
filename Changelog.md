@@ -5,6 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.8] - 2024-10-16
+
+### Summary
+
+### Added
+
+### Changed
+
+- Update README.md. Completed on 2024-10-16
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+- Fix the bug in app.js when execute app.js without mode argument,the undefined cosetting.args["mode"] will cause system corrupt. Completed on 2024-10-16
+
+### Security
+
+[1.1.8]: https://github.com/wkloh76/oricommjs/releases/tag/1.1.8
+
 ## [1.1.7] - 2024-09-02
 
 ### Summary

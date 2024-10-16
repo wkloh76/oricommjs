@@ -159,7 +159,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
         "${workspaceRoot}\\app.js",
         "--remote-debugging-port=9223",
         "--mode=debug",
-        "--engine=deskelectronjs"
+        "--engine=deskelectronjs",
         "--disable-gpu",
         "--no-sandbox"
       ],
@@ -168,7 +168,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
         "${workspaceRoot}/app.js",
         "--remote-debugging-port=9223",
         "--mode=debug",
-        "--engine=deskelectronjs"
+        "--engine=deskelectronjs",
         "--disable-gpu",
         "--no-sandbox"
       ],
