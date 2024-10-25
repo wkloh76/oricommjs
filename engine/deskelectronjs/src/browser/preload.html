@@ -103,14 +103,13 @@
   };
 
   const start = async () => {
-    const [library, sys, interfaces] = Object.values(glib.guimaker);
+    const { webengine, ...injection } = injectionjs;
+    const { guimaker, ...otherglib } = glib;
+    const [library, sys, interfaces] = Object.values(guimaker);
     const { utils } = library;
     const { arr_selected, datatype, handler, getNestedObject, objpick, pick_arrayofobj, pick_arrayobj2list, serialize } = utils;
     const { jptr } = sys;
-    const atom = {
-      ...objpick(glib, "smfetch"),
-    };
-    const { webengine } = injectionjs;
+    const atom = { ...otherglib };
 
     let lib = {};
 

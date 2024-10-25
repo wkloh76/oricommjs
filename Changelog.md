@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Update README.md. Completed on 2024-10-16
+- Change directory path defination method in all atom browser modules. Completed on 2024-10-16
+- Change both webnodejs and deskelectronjs import atom module in browser method. Completed on 2024-10-25
 
 ### Deprecated
 
