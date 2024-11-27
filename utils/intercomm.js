@@ -20,7 +20,7 @@
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
+    const [params, obj] = args;
     const event = require("events");
     try {
       let myemitter = new event.EventEmitter();

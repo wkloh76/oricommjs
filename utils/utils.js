@@ -23,8 +23,11 @@ const { promises } = require("dns");
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
-    const { fs, path, jptr } = sysmodule;
+    const [params, obj] = args;
+    const [pathname, curdir] = params;
+    const [library, sys, cosetting] = obj;
+    const { fs, path, jptr } = sys;
+
     const util = require("util");
     const busboy = require("busboy");
     const multer = require("multer");

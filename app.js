@@ -137,9 +137,8 @@
 
           utils = {
             ...(await require(path.join(dir, "utils"))(
-              path.join(dir, "utils"),
-              "utils",
-              cosetting
+              [path.join(dir, "utils"), "utils"],
+              [kernel, sysmodule, cosetting]
             )),
           };
 

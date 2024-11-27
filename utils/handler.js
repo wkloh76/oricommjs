@@ -20,7 +20,7 @@
  */
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
-    const [pathname, curdir] = args;
+    const [params, obj] = args;
     try {
       let lib = {
         /**
