@@ -23,15 +23,19 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const { default: got } = await import("got");
+    const { utils } = library;
+    const { handler } = utils;
     const { fs } = sys;
+    const { default: got } = await import("got");
+    const FormData = require("form-data");
+    const jsonToFormData = require("@ajoelp/json-to-formdata");
 
     try {
       let lib = {};
 
       /**
        * Handle error throw by got module
-       * @alias module:got.goterr
+       * @alias module:gotfetch.goterr
        * @param {Object} error - Any data type
        * @returns {Object} - Return error data in json format
        */
@@ -57,7 +61,7 @@ module.exports = async (...args) => {
 
       /**
        * Arrange data the data suit to got options
-       * @alias module:got.gotoption
+       * @alias module:gotfetch.gotoption
        * @param {Object} error - Any data type
        * @returns {Object} - Return error data in json format
        */
@@ -85,7 +89,7 @@ module.exports = async (...args) => {
             break;
 
           case "POST":
-            output["json"] = options.data;
+            if (options.data) output["json"] = options.data;
             break;
 
           case "PUT":
@@ -105,7 +109,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS DELETE
-       * @alias module:got.delete
+       * @alias module:gotfetch.delete
        * @param {Object} param - Data in object type.
        * @param {Object} param.data - Data in json format. Note: The sequence will follow defination
        * @param {Object} param.headers - HTTP headers
@@ -136,7 +140,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS GET
-       * @alias module:got.get
+       * @alias module:gotfetch.get
        * @param {Object} param - Data in object type.
        * @param {String} param.datatype - "qs" will convert the json data to URLSearchParams pattern
        * @param {Object} param.data - Data in json format
@@ -170,7 +174,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS HEAD
-       * @alias module:got.head
+       * @alias module:gotfetch.head
        * @param {Object} param - Data in object type.
        * @param {Object} param.headers - HTTP headers example basic auth
        * @param {Number} param.timeout - Abort the wating responding time from web server.
@@ -201,7 +205,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS POST
-       * @alias module:got.post
+       * @alias module:gotfetch.post
        * @param {Object} param - Data in object type.
        * @param {Object} param.data - Data in json format
        * @param {Object} param.headers - HTTP headers
@@ -233,7 +237,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS PUT
-       * @alias module:got.put
+       * @alias module:gotfetch.put
        * @param {Object} param - Data in object type.
        * @param {Object} param.data - Data in json format
        * @param {Object} param.headers - HTTP headers
@@ -265,7 +269,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS DOWNLOAD
-       * @alias module:got.download
+       * @alias module:gotfetch.download
        * @param {Object} param - Data in object type.
        * @param {Object} param.headers - HTTP headers example basic auth
        * @param {Object} param.location - Local directory for save file
@@ -343,7 +347,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS DOWNLOAD
-       * @alias module:got.removefile
+       * @alias module:gotfetch.removefile
        * @param {Object} param - Data in object type.
        * @param {Object} param.file - The physical file
        * @returns {Object} - The result return with property (code, data, msg)
@@ -362,7 +366,7 @@ module.exports = async (...args) => {
 
       /**
        * Call HTTP/HTTPS RESTFUL API base on method definantion
-       * @alias module:got.request
+       * @alias module:gotfetch.request
        * @param {Object} param - Data in object type.
        * @param {Object} param.data - Data in json format
        * @param {Object} param.headers - HTTP headers
@@ -396,6 +400,59 @@ module.exports = async (...args) => {
             resolve(output);
           } catch (error) {
             resolve(goterr(error));
+          }
+        });
+      };
+
+      /**
+       * Call HTTP/HTTPS UPLOAD
+       * @alias module:gotfetch.upload
+       * @param {Object} param - Data in object type.
+       * @param {Object} param.data - Data in json format
+       * @param {Object} param.headers - HTTP headers
+       * @param {Number} param.timeout - Abort the wating responding time from web server.
+       * @param {String} param.url - The URL for Web API or web server
+       * @returns {Object} - The result return with property (code, data, msg)
+       */
+      lib.upload = (...args) => {
+        return new Promise(async (resolve) => {
+          const [param] = args;
+          const { file, data, ...other } = param;
+          let output = handler.dataformat;
+          try {
+            const abortController = new AbortController();
+            if (!file) throw new Error("Undefined file path and file name");
+            let formdata = new FormData();
+            formdata.append("smfetch_upload", fs.createReadStream(file));
+
+            if (data) jsonToFormData(data, {}, formdata);
+            let options = gotoption(Object.assign({ method: "POST" }, other));
+
+            if (options.headers) {
+              for (let keyname of Object.keys(options.headers)) {
+                let value = options.headers[keyname].toLowerCase();
+                if (value == "multipart/form-data")
+                  delete options.headers[keyname];
+              }
+            }
+            if (Object.keys(options.headers).length == 0)
+              delete options.headers;
+
+            options.body = formdata;
+
+            if (options["timeout"]) {
+              options["signal"] = abortController.signal;
+              setTimeout(() => {
+                abortController.abort();
+              }, options["timeout"]);
+            }
+
+            let rtn = await got(options);
+            output.data = rtn.body;
+          } catch (error) {
+            output = goterr(error);
+          } finally {
+            resolve(output);
           }
         });
       };

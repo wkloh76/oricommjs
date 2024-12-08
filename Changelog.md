@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add upload function in gotfetch at atomic/atom/smfetch. Completed on 2024-12-08
+
 ### Changed
 
 - Update README.md. Completed on 2024-10-16
@@ -18,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change both webnodejs and deskelectronjs import atom module in browser method. Completed on 2024-10-25
 - Seprately atomic module in glib at both webnodejs and deskelectronjs to avoid no related modules flow to the workflow engine. Completed on 2024-10-25
 - Change entire utils modules import module arguments method. The invole changer involve app.js and entire utils. Completed on 2024-11-27
+- Update gotfetch jsdoc module name. Completed on 2024-12-08
+- Update gotoption in gotfetch to make sure options.data not undefinded during POST method. Completed on 2024-12-08
 
 ### Deprecated
 
