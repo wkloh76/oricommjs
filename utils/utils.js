@@ -883,12 +883,16 @@ module.exports = async (...args) => {
        * @param {...Object} args - 2 parameters
        * @param {Object} args[0] - request is an object which provide by http server receiving client request
        * @param {Object} args[1] - setting is an object value from the coresetting
-       *  @param {Boolean} args[2] - save is a flag where is decide the upload file save to the disk.
+       * @param {Object} args[2] -  options is an object which content saving flag and save file renaming attach with timestamp value
+       * @param {Boolean} args[2][0] - save is a flag where is decide the upload file save to the disk.
+       * @param {Boolean} args[2][1] - timestamp is a flag where is provide timestamp value behind file original name during file saving .
        * @returns {Object} - Return default value is no error
        */
       const diskstore = async (...args) => {
-        let [request, setting, save = false] = args;
-        let { disk, location, stream } = setting;
+        const [request, setting, options = { save: undefined, timestamp: undefined }] =
+          args;
+        const { save = false, timestamp = false } = options;
+        const { disk, location, stream } = setting;
         let output = {
           code: 0,
           msg: "",
@@ -907,7 +911,9 @@ module.exports = async (...args) => {
                 destination: location,
                 limits: { fileSize: disk },
                 filename: function (req, file, cb) {
-                  cb(null, file.originalname);
+                  let fname = file.originalname;
+                  if (timestamp) fname += "_" + sys.dayjs().valueOf();
+                  cb(null, fname);
                 },
               });
             }

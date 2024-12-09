@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add upload function in gotfetch at atomic/atom/smfetch. Completed on 2024-12-08
+- Add save file name with timestamp value option in diskstore at utils. Completed on 2024-12-09
 
 ### Changed
 
