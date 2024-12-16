@@ -31,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix the bug in app.js when execute app.js without mode argument,the undefined cosetting.args["mode"] will cause system corrupt. Completed on 2024-10-16
+- Fix the bug in pick_arrayofobj method at utils.js where are result will double up when picker value more than one value. Completed on 2024-12-16
 
 ### Security
 

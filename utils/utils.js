@@ -308,7 +308,6 @@ module.exports = async (...args) => {
               let { [val]: reserve, ...rest } = obj;
               if (reserve !== undefined && reserve != null)
                 data = { ...data, ...{ [val]: reserve } };
-              output.push(data);
             } else if (dtype == "object") {
               let [keyname] = Object.keys(val);
               let { [keyname]: reserve, ...rest } = obj;
@@ -324,6 +323,7 @@ module.exports = async (...args) => {
               else output[0][keyname] = { ...output[0][keyname], ...data };
             }
           });
+          output.push(data);
         }
         return output;
       };
@@ -889,8 +889,11 @@ module.exports = async (...args) => {
        * @returns {Object} - Return default value is no error
        */
       const diskstore = async (...args) => {
-        const [request, setting, options = { save: undefined, timestamp: undefined }] =
-          args;
+        const [
+          request,
+          setting,
+          options = { save: undefined, timestamp: undefined },
+        ] = args;
         const { save = false, timestamp = false } = options;
         const { disk, location, stream } = setting;
         let output = {
