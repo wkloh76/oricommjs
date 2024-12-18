@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Change entire utils modules import module arguments method. The invole changer involve app.js and entire utils. Completed on 2024-11-27
 - Update gotfetch jsdoc module name. Completed on 2024-12-08
 - Update gotoption in gotfetch to make sure options.data not undefinded during POST method. Completed on 2024-12-08
+- Alter generate method in sqltemplate.js at sqlmanager which will no casting `DB` property value into the sql statement if the property is undefined. Completed on 2024-12-18
 
 ### Deprecated
 

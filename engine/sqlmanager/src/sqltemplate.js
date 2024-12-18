@@ -50,8 +50,8 @@ module.exports = async (...args) => {
                   if (sqltables.length == 1 && INSERT.length == 1) {
                     statement = "INSERT INTO ";
                     tables =
-                      `${sqldb}.${sqltables[0].trim()} ` +
-                      sqlfmt`${sqlcmds[cmd][0]}`;
+                      `${sqltables[0].trim()} ` + sqlfmt`${sqlcmds[cmd][0]}`;
+                    if (sqldb) tables = `${sqldb}.${tables}`;
                   }
                   break;
 
@@ -68,7 +68,8 @@ module.exports = async (...args) => {
                         if (val) castdata += ` AS ${val}`;
                         fields += `${castdata},`;
                       }
-                      tables += `${sqldb}.${sqltables[tlbidx].trim()},`;
+                      if (sqldb) tables += `${sqldb}.`;
+                      tables += `${sqltables[tlbidx].trim()},`;
                     }
                     if (fields.lastIndexOf(",") > -1)
                       fields = fields.substring(0, fields.lastIndexOf(","));
@@ -84,9 +85,10 @@ module.exports = async (...args) => {
                   if (sqltables.length > 0 && UPDATE.length > 0) {
                     let fields = {};
                     statement = "UPDATE ";
-                    tables = "";
+                    if (sqldb) tables += `${sqldb}.`;
+                    else tables = "";
                     for (let tlbidx in sqltables) {
-                      tables += `${sqldb}.${sqltables[tlbidx].trim()},`;
+                      tables += `${sqltables[tlbidx].trim()},`;
                       fields = { ...fields, ...UPDATE[tlbidx] };
                     }
                     fields = `${sqlfmt.set(fields)}`;
@@ -105,7 +107,6 @@ module.exports = async (...args) => {
                         tables = tables.substring(0, tables.lastIndexOf(","));
                     }
                     tables += ` SET ${fields} `;
-                    console.log(tables);
                   }
                   break;
               }
