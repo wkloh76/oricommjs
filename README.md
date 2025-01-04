@@ -198,7 +198,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 
 - NodeJS: node app.js --mode=debug --engine=webnodejs
 - BunJS: Bun app.js --mode=debug --engine=webnodejs
-- ElectronJS: electron app.js --mode=debug --engine=deskelectronjs --project=desktop_xxxx
+- ElectronJS: electron app.js --mode=debug --engine=deskelectronjs
 
 ## Handle package.json dependencies and devdependencies
 
