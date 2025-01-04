@@ -96,7 +96,6 @@ export default await (async () => {
             let { [val]: reserve, ...rest } = obj;
             if (reserve !== undefined && reserve != null)
               data = { ...data, ...{ [val]: reserve } };
-            output.push(data);
           } else if (dtype == "object") {
             let [keyname] = Object.keys(val);
             let { [keyname]: reserve, ...rest } = obj;
@@ -112,6 +111,7 @@ export default await (async () => {
             else output[0][keyname] = { ...output[0][keyname], ...data };
           }
         });
+        output.push(data);
       }
       return output;
     };
