@@ -43,7 +43,7 @@ module.exports = async (...args) => {
         try {
           for (let [cmd] of Object.entries(sqlcmds)) {
             if (sqlcmds[cmd]) {
-              let statement, tables;
+              let statement, tables="";
               switch (cmd) {
                 case "INSERT":
                   let INSERT = sqlcmds[cmd];
@@ -85,7 +85,7 @@ module.exports = async (...args) => {
                   if (sqltables.length > 0 && UPDATE.length > 0) {
                     let fields = {};
                     statement = "UPDATE ";
-                    if (sqldb) tables += `${sqldb}.`;
+                    if (sqldb) tables = `${sqldb}.`;
                     else tables = "";
                     for (let tlbidx in sqltables) {
                       tables += `${sqltables[tlbidx].trim()},`;

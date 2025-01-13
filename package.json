@@ -15,7 +15,7 @@
     "@sagold/json-pointer": "6.0.1",
     "dayjs": "1.11.13",
     "ini": "5.0.0",
-    "yaml": "2.5.1",
+    "yaml": "2.7.0",
     "log4js": "6.9.1",
     "multer": "1.4.5-lts.1"
   },
