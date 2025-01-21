@@ -15,6 +15,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Update Express module version to 4.21.2 in engine/webnodejs. Completed on 2026-01-21
+- Update libsql module version to 0.4.7 in engine/webnodejs. Completed on 2026-01-21
+
 ### Deprecated
 
 ### Removed
