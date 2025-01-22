@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Alter sqlson feature to `generate` method in sqlmanager/src/sqltemplate.js. Currently tested with SQLite3 database,work with new INSERT statement with data object, UPDTE statement with insert new pair of object into the column which content with object data. . Completed on 2026-01-22
+
 ### Changed
 
 - Update Express module version to 4.21.2 in engine/webnodejs. Completed on 2026-01-21

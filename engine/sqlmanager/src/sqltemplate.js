@@ -26,7 +26,34 @@ module.exports = async (...args) => {
     const sqlfmt = require("sql-fmt");
     const { handler, errhandler } = library.utils;
     try {
-      let lib = {};
+      let lib = {
+        /**
+         *  Getter sql json format
+         * @type {Object}
+         * @memberof module:src_sqltemplate.jsonsqlite
+         * @instance
+         */
+        get jsonsqlite() {
+          return Object.assign(
+            {},
+            {
+              DB: "SQLITE",
+              TABLE: [],
+              INSERT: {
+                FIELD: [{}],
+                INSERT: {},
+              },
+              UPDATE: {
+                FIELD: [{}],
+                INSERT: {},
+                REPLACE: {},
+                REMOVE: {},
+              },
+              WHERE: { AND: {}, OR: {}, BETWEEN: {}, LIKE: {} },
+            }
+          );
+        },
+      };
 
       /**
        * Create sql stamenet with command and table fields
@@ -43,7 +70,8 @@ module.exports = async (...args) => {
         try {
           for (let [cmd] of Object.entries(sqlcmds)) {
             if (sqlcmds[cmd]) {
-              let statement, tables="";
+              let statement,
+                tables = "";
               switch (cmd) {
                 case "INSERT":
                   let INSERT = sqlcmds[cmd];
@@ -157,6 +185,100 @@ module.exports = async (...args) => {
         }
       };
 
+      const extract = (...args) => {
+        let [param] = args;
+        let { DB, DELETE, INSERT, SELECT, TABLE, UPDATE, ...cond } = param;
+
+        let sqlcmd;
+        let presqlcmd = Object.entries({
+          DELETE,
+          INSERT,
+          SELECT,
+          UPDATE,
+        }).reduce((acc, [key, value]) => {
+          if (value) {
+            acc[key] = value;
+            sqlcmd = key;
+          }
+          return acc;
+        }, {});
+        if (Object.keys(presqlcmd).length > 0)
+          return { sqlcmd, DB, TABLE, presqlcmd, cond };
+        else return;
+      };
+
+      /**
+       * Replace specific character from text base on object key name
+       * Keyword <-{name}>
+       * @alias module:reaction.str_replace
+       * @param {...Object} args - 2 parameters
+       * @param {String} args[0] - text is a statement in string value
+       * @param {Object} args[1] - params a sets of values for change
+       * @returns {String} - Return unchange or changed text
+       */
+      const str_replace = (...args) => {
+        let [text, params] = args;
+        let output = text;
+        for (let [key, val] of Object.entries(params)) {
+          let name = `'<-{${key}}>'`;
+          while (output.indexOf(name) > -1) {
+            let idx = output.indexOf(name);
+            output =
+              output.substring(0, idx) +
+              val +
+              output.substring(idx + name.length);
+          }
+        }
+        return output;
+      };
+
+      const transform = (...args) => {
+        const [[generic, sqljson]] = args;
+        if (generic) {
+          let { cond, DB, presqlcmd, sqlcmd, TABLE } = generic;
+          return [[[presqlcmd, DB, TABLE], cond], sqlcmd];
+        }
+        if (sqljson) {
+          let output = {};
+          let jsondata = "";
+          let { DB, cond, presqlcmd, sqlcmd, TABLE } = sqljson;
+          for (let [cmdname, cmdval] of Object.entries(presqlcmd)) {
+            output[cmdname] = [{}];
+            for (let [k, v] of Object.entries(cmdval)) {
+              if (k == "FIELD" && v.length > 0) output[cmdname] = v;
+              else if (k == "INSERT") {
+                for (let [key, value] of Object.entries(v)) {
+                  if (cmdname == "INSERT") {
+                    if (jsondata == "") jsondata = {};
+                    jsondata[key] = `json('${value[0]}')`;
+                    output[cmdname][0][key] = `<-{${key}}>`;
+                  } else {
+                    let arr = value;
+                    const indexFrom = 2; // Index of element to move
+                    const indexTo = 1; // New index for the element
+                    arr[1] = `json('${value[1]}')`;
+                    if (value.length == 3) {
+                      [arr[indexFrom], arr[indexTo]] = [
+                        arr[indexTo],
+                        arr[indexFrom],
+                      ];
+                    }
+                    if (jsondata == "") jsondata = {};
+                    jsondata[key] = `json_insert(${arr.join(",")})`;
+                    output[cmdname][0][key] = `<-{${key}}>`;
+                  }
+                }
+              }
+            }
+          }
+          return [
+            [[output, DB, TABLE], cond],
+            sqlcmd,
+            { code: 0, msg: "", data: jsondata },
+          ];
+        }
+      };
+
       /**
        * General full sql stamenet
        * @alias module:src_sqltemplate.generate
@@ -166,41 +288,45 @@ module.exports = async (...args) => {
        * @returns {Object} - Return value in object type
        */
       lib["generate"] = async (...args) => {
-        let [sqlgeneric, sqljson] = args;
+        let [sqlgeneric = {}, sqljson = {}] = args;
         let output = handler.dataformat;
 
         try {
-          let { DB, DELETE, INSERT, SELECT, TABLE, UPDATE, ...cond } =
-            sqlgeneric;
-
-          let sqlcmd;
-          let presqlcmd = Object.entries({
-            DELETE,
-            INSERT,
-            SELECT,
-            UPDATE,
-          }).reduce((acc, [key, value]) => {
-            if (value) {
-              acc[key] = value;
-              sqlcmd = key;
-            }
-            return acc;
-          }, {});
-
+          let [[presqlcmd, cond], sqlcmd, jsondata] = transform(
+            await Promise.all([extract(sqlgeneric), extract(sqljson)])
+          );
           let rtnsqlcmd = await Promise.all([
-            getsqlcmd(presqlcmd, DB, TABLE),
+            getsqlcmd.apply(null, presqlcmd),
             getsqloperator(cond),
           ]);
+          if (jsondata) rtnsqlcmd.splice(1, 0, jsondata);
           rtnsqlcmd.map((value, index) => {
             if (value.code != 0) throw value;
             if (!output.data) {
               output.data = { cmd: sqlcmd, value: "" };
             }
-
-            if (sqlcmd != "INSERT") {
-              if (value.data !== undefined && value.data !== null)
-                output.data.value += value.data;
-            } else if (index == 0) output.data.value += value.data;
+            if (index == 0) output.data.value += value.data;
+            else {
+              if (value.data && value.data !== null) {
+                let cast = "";
+                if (sqlcmd != "INSERT") {
+                  cast = ",<-{${data}}> ";
+                  if (rtnsqlcmd.length == 3 && index == 1)
+                    output.data.value = str_replace(
+                      output.data.value,
+                      value.data
+                    );
+                  else output.data.value += value.data;
+                } else {
+                  if (rtnsqlcmd.length == 3 && index == 1)
+                    output.data.value = str_replace(
+                      output.data.value,
+                      value.data
+                    );
+                  else output.data.value += value.data;
+                }
+              }
+            }
           });
           output.data.value = output.data.value.trim() + ";";
           return output;
