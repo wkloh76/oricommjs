@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix the bug in sqlmanager.js when `DB` key value undefined cause the update statement return undefined value embed to the statement. Completed on 2025-01-13
+- Fix the bug in arr_objectjson function at utils.js which is the checking metod incorrectly to determine the value of string is possible covert to json. Completed on 2025-02-06
 
 ### Security
 

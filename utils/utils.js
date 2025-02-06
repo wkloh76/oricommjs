@@ -359,6 +359,16 @@ module.exports = async (...args) => {
        */
       const arr_objectjson = (...args) => {
         let [value] = args;
+
+        const isValidJSON = (str) => {
+          try {
+            JSON.parse(str);
+            return true;
+          } catch (e) {
+            return false;
+          }
+        };
+
         let output = value.map((obj) => {
           let rtnobj = {};
           if (obj != "string") {
@@ -368,20 +378,11 @@ module.exports = async (...args) => {
               else {
                 if (val == "") {
                   rtnobj[key] = {};
-                } else if (
-                  (val.indexOf("{") > -1 &&
-                    val.indexOf("}") > -1 &&
-                    val.indexOf(":") > -1) ||
-                  (val.indexOf("[") > -1 && val.indexOf("]") > -1)
-                ) {
-                  rtnobj[key] = JSON.parse(val);
-                } else {
-                  rtnobj[key] = val;
-                }
+                } else if (isValidJSON(val)) rtnobj[key] = JSON.parse(val);
+                else rtnobj[key] = val;
               }
             }
           }
-
           return rtnobj;
         });
         return output;
