@@ -21,7 +21,15 @@
 (async () => {
   try {
     let argv = [];
-
+    let homedir;
+    process.argv.map((value) => {
+      if (value.match("=")) {
+        let arg = value.split("=");
+        let args_key = arg[0].replace(/[\(,\),\.,\/,\-,\_, ,]/g, "");
+        if (args_key == "homedir") homedir = arg[1];
+      }
+    });
+    if (!homedir) homedir = require("os").homedir();
     global.sysmodule = {
       dayjs: require("dayjs"),
       events: require("events"),
@@ -45,7 +53,7 @@
       args: {},
       splitter: "/",
       platform: process.platform,
-      homedir: require("os").homedir(),
+      homedir: homedir,
       share: { public: {}, atomic: {} },
     };
 

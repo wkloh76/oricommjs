@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update Express module version to 4.21.2 in engine/webnodejs. Completed on 2026-01-21
 - Update libsql module version to 0.4.7 in engine/webnodejs. Completed on 2026-01-21
+- Add new argument `--homedir` to app.js which will overwrite the user home directory value detect by application if the argument exists during start running. Completed on 2026-02-07
 
 ### Deprecated
 

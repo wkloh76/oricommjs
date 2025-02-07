@@ -15,8 +15,8 @@
  */
 "use strict";
 /**
- * The smfetch module
- * @module smfetch
+ * The guimaker module
+ * @module guimaker
  */
 export default await (async () => {
   const { default: utils } = await import(`./guimaker/utils/utils.js`);
