@@ -26,10 +26,6 @@ module.exports = async (...args) => {
     const { datatype, dir_module } = library.utils;
     const { existsSync } = sys.fs;
     const { join } = sys.path;
-    // const {
-    //   // fs: { existsSync },
-    //   // path: { join },
-    // } = sys;
 
     const express = require("express");
     const sqlite3 = require("libsql");
@@ -39,6 +35,7 @@ module.exports = async (...args) => {
     const cookieParser = require("cookie-parser");
     const expsession = require("express-session");
     const SqliteStore = require("better-sqlite3-session-store")(expsession);
+    const compression = require("compression");
     try {
       let lib = {};
       let app = require("express")();
@@ -121,6 +118,8 @@ module.exports = async (...args) => {
           // parse an HTML body into a string
           app.use(bodyParser.text(parser.text));
 
+          // Compress all route
+         app.use(compression());
           if (savestore) {
             let dbfile;
             if (store.path == "") dbfile = join(logpath, "./sessions.db3");

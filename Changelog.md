@@ -13,13 +13,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Alter sqlson feature to `generate` method in sqlmanager/src/sqltemplate.js. Currently tested with SQLite3 database,work with new INSERT statement with data object, UPDTE statement with insert new pair of object into the column which content with object data. . Completed on 2026-01-22
+- Alter sqlson feature to `generate` method in sqlmanager/src/sqltemplate.js. Currently tested with SQLite3 database,work with new INSERT statement with data object, UPDTE statement with insert new pair of object into the column which content with object data. Completed on 2025-01-22
+- Implemenr compression module to webnodejs engine plug to route express which will compress and remove space from the origin source before render to client. Completed on 2025-02-11
 
 ### Changed
 
-- Update Express module version to 4.21.2 in engine/webnodejs. Completed on 2026-01-21
-- Update libsql module version to 0.4.7 in engine/webnodejs. Completed on 2026-01-21
-- Add new argument `--homedir` to app.js which will overwrite the user home directory value detect by application if the argument exists during start running. Completed on 2026-02-07
+- Update Express module version to 4.21.2 in engine/webnodejs. Completed on 2025-01-21
+- Update libsql module version to 0.4.7 in engine/webnodejs. Completed on 2025-01-21
+- Add new argument `--homedir` to app.js which will overwrite the user home directory value detect by application if the argument exists during start running. Completed on 2025-02-07
 
 ### Deprecated
 
