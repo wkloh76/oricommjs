@@ -2,7 +2,7 @@
   "name": "oricommjs",
   "productName": "OriCommJS Framework",
   "homepage": "",
-  "version": "1.1.9",
+  "version": "2.0.0",
   "description": "CommonJS framework architecture design suite for all console, web and desktop applications",
   "repository": "",
   "main": "app.js",
@@ -12,7 +12,7 @@
   "private": true,
   "dependencies": {
     "@ltd/j-toml": "1.38.0",
-    "@sagold/json-pointer": "6.0.1",
+    "@sagold/json-pointer": "7.1.1",
     "dayjs": "1.11.13",
     "ini": "5.0.0",
     "yaml": "2.7.0",
