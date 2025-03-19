@@ -82,6 +82,8 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 
 ## Debug: vscodelaunch.json setting
 
+### nodejs, bun, electronjs
+
 ```
 {
   // Use IntelliSense to learn about possible attributes.
@@ -97,6 +99,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
         "<node_internals>/**"
       ],
       "program": "${workspaceFolder}/app.js",
+      "cwd": "${workspaceFolder}",
       "args": [
         "--mode=debug",
         "--engine=webnodejs"
@@ -188,6 +191,39 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
       "configurations": [
         "Electron: Main",
         "Electron: Renderer"
+      ]
+    }
+  ]
+}
+```
+
+### nodejs debug with python in virtual environment
+
+```
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Launch Nodejs Program",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "program": "${workspaceFolder}/app.js",
+      "cwd": "${workspaceFolder}",
+      "env": {
+        // "PYTHONPATH": "${workspaceFolder}/.venv/lib/python3.12/site-packages",
+        // "PYTHON_EXECUTABLE": "${workspaceFolder}/.venv/bin/python3",
+        "PYTHONPATH": "/home/{USER}/pyyvenv/lib/python3.12/site-packages",
+        "PYTHON_EXECUTABLE": "/home/{USER}/pyvenv/bin/python3",
+      },
+      "args": [
+        "--mode=debug",
+        "--engine=webnodejs"
       ]
     }
   ]

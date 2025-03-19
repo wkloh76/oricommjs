@@ -232,9 +232,7 @@ module.exports = async (...args) => {
         let output = false;
 
         try {
-          if (type == "object") {
-            if (Array.isArray(input)) type = "array";
-          }
+          if (type == "object" && Array.isArray(input)) type = "array";
 
           switch (type) {
             case "string":

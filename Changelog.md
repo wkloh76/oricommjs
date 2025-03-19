@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Upgrade all package.json dependencies modules latest stable version. Completed on 2025-02-17
+- Update `README.md` new debug method which able nodejs + python in virtual environment. Completed on 2025-03-19
+- Update `handler.js` in engine/utils. Completed on 2025-03-19
 
 ### Deprecated
 
