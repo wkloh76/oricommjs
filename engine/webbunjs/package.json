@@ -1,0 +1,10 @@
+{
+    "name": "webbun",
+    "dependencies": {
+        "@hono/swagger-editor": "1.0.0",
+        "@hono/swagger-ui": "0.5.1",
+        "@hono/zod-openapi": "0.19.2",
+        "bun": "1.2.8",
+        "hono": "4.7.5"
+    }
+}

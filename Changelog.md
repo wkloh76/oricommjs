@@ -10,8 +10,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Summary
 
 - New design for workflow engine which work close with serialize method in both frontend and backend.
+- Establish webbunjs engine.
 
 ### Added
+
+- Simple start up webbunjs engine design. Completed on 2025-04-04
 
 ### Changed
 
