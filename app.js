@@ -597,6 +597,12 @@
       coresetting["log4jsconf"] = rtnconflog.data.config;
     }
 
+    kernel.utils = {
+      ...(await require(sysmodule.path.join(kernel.dir, "utils"))(
+        [sysmodule.path.join(kernel.dir, "utils"), "utils"],
+        [kernel, sysmodule, coresetting]
+      )),
+    };
     let rtn = await startup(null, [kernel, sysmodule, coresetting]);
     if (rtn.code != 0) throw rtn;
     console.log(

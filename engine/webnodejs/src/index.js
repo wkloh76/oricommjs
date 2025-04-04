@@ -21,8 +21,9 @@
 module.exports = async (...args) => {
   return new Promise(async (resolve, reject) => {
     const [params, obj] = args;
+    const [library, sys, cosetting] = obj;
+    const { reaction } = library.utils;
     try {
-      let reaction = await require("./reaction")(params, obj);
       let webserver = await require("./webserver")(params, obj);
 
       let lib = {};

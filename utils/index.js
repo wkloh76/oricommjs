@@ -21,16 +21,18 @@
 module.exports = (...args) => {
   return new Promise(async (resolve, reject) => {
     const [params, obj] = args;
+    const [library, sys, cosetting] = obj;
 
     try {
-      let lib = {
+      library.utils = {
         ...(await require("./utils")(params, obj)),
       };
-      lib["handler"] = await require("./handler")(params, obj);
-      lib["powershell"] = await require("./powershell")(params, obj);
-      lib["intercomm"] = await require("./intercomm")(params, obj);
+      library.utils.handler = await require("./handler")(params, obj);
+      library.utils.powershell = await require("./powershell")(params, obj);
+      library.utils.intercomm = await require("./intercomm")(params, obj);
+      library.utils.reaction = await require("./reaction")(params, obj);
 
-      resolve(lib);
+      resolve(library.utils);
     } catch (error) {
       reject(error);
     }

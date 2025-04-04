@@ -1004,7 +1004,7 @@ module.exports = async (...args) => {
       const sanbox = async (...args) => {
         let [fn, params] = args;
         try {
-          let result = fn.apply(null, params);
+          let result = fn(...params);
           if (result instanceof Promise) {
             result = await result;
             if (result instanceof ReferenceError) throw result;

@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Simple start up webbunjs engine design. Completed on 2025-04-04
+- Migrate `reaction.js` and both `browser` and `reaction` folder content from webnodejs engine to utils. All js file will embeded into `reaction.js` The purpose is this module support all web and desktop engine. Completed on 2025-04-05
 
 ### Changed
 
@@ -26,10 +27,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade engine/sqlmanager dependencies modules `libsql`, `jandas` and `mariadb` to latest version. Completed on 2025-04-04
 - Upgrade engine/webexpress dependencies modules `libsql` and `helmet` to latest version. Completed on 2025-04-04
 - Upgrade atomic/atom/smfetch dependencies modules `got` to latest version. Completed on 2025-04-04
+- `kernel.Utils` object import twice to make sure all parameters updated to apply anywhere at `app.js`. Completed on 2025-04-05
+- Webnodejs engine direct import `reaction.js` module from utils. Completed on 2025-04-05
 
 ### Deprecated
 
 ### Removed
+
+- Remove `reaction.js` and both `browser` and `reaction` folder from webnodejs engine. Completed on 2025-04-05
+- Remove `html-tags` dependencies module from webnodejs engine. Completed on 2025-04-05
 
 ### Fixed
 
