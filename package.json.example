@@ -14,10 +14,10 @@
     "@ltd/j-toml": "1.38.0",
     "@sagold/json-pointer": "7.1.1",
     "dayjs": "1.11.13",
-    "ini": "5.0.0",
-    "yaml": "2.7.0",
+    "yaml": "2.7.1",
     "log4js": "6.9.1",
-    "multer": "1.4.5-lts.1"
+    "multer": "1.4.5-lts.2",
+    "ini": "5.0.0"
   },
   "devDependencies": {
     "@types/bun": "latest"

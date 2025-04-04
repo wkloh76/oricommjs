@@ -2,7 +2,7 @@
 
 ![Static Badge](https://img.shields.io/badge/License-Mulan_PSL_v2-_)
 ![Static Badge](https://img.shields.io/badge/NodeJS-V20_.18_.3-_)
-![Static Badge](https://img.shields.io/badge/BunJS-V1_.2_.2-_)
+![Static Badge](https://img.shields.io/badge/BunJS-V1_.2_.8-_)
 ![Static Badge](https://img.shields.io/badge/ElectronJS-V34_.2_.0-_)
 ![Static Badge](https://img.shields.io/badge/OS-Ubuntu_24-_?style=flat)
 ![Static Badge](https://img.shields.io/badge/OS-Windows_10-_?style=flat)
@@ -233,7 +233,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 ## Launch: Linux console or Window CMD
 
 - NodeJS: node app.js --mode=debug --engine=webnodejs
-- BunJS: Bun app.js --mode=debug --engine=webnodejs
+- BunJS: Bun app.js --mode=debug --engine=webbunjs
 - ElectronJS: electron app.js --mode=debug --engine=deskelectronjs
 
 ## Handle package.json dependencies and devdependencies
