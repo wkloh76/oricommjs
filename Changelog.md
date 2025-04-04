@@ -20,6 +20,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update `handler.js` in engine/utils. Completed on 2025-03-19
 - Upgrade framework dependencies modules `yaml` and `multer` to latest version. Completed on 2025-04-04
 - Update framework and engine `README.md` . Completed on 2025-04-04
+- Upgrade engine/sqlmanager dependencies modules `libsql`, `jandas` and `mariadb` to latest version. Completed on 2025-04-04
+- Upgrade engine/webexpress dependencies modules `libsql` and `helmet` to latest version. Completed on 2025-04-04
+- Upgrade atomic/atom/smfetch dependencies modules `got` to latest version. Completed on 2025-04-04
 
 ### Deprecated
 

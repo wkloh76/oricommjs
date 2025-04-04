@@ -1,11 +1,11 @@
 {
     "name": "sqlmanager",
     "dependencies": {
-        "libsql": "0.4.7",
+        "libsql": "0.5.4",
         "bcrypt": "5.1.1",
         "csv-parser": "3.2.0",
-        "jandas": "1.2.2",
-        "mariadb": "3.4.0",
+        "jandas": "1.2.5",
+        "mariadb": "3.4.1",
         "sql-fmt": "2.1.0"
     }
 }
