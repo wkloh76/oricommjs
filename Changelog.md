@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Upgrade atomic/atom/smfetch dependencies modules `got` to latest version. Completed on 2025-04-04
 - `kernel.Utils` object import twice to make sure all parameters updated to apply anywhere at `app.js`. Completed on 2025-04-05
 - Webnodejs engine direct import `reaction.js` module from utils. Completed on 2025-04-05
+- Change the module export method in `reaction.js` module from utils. Completed on 2025-04-06
+- Update workspaces in `package.json` and `package.json.example`. Completed on 2025-04-06
 
 ### Deprecated
 
@@ -38,6 +40,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Remove `html-tags` dependencies module from webnodejs engine. Completed on 2025-04-05
 
 ### Fixed
+
+- Correction jsdoc document format at `concatobj` function in `utils.js` module from utils. Completed on 2025-04-06
 
 ### Security
 

@@ -757,7 +757,7 @@ module.exports = async (...args) => {
        * @param {Array} args[0] - orireq http request module
        * @param {Array} args[1] - orires http response module
        */
-      lib["onrequest"] = async (...args) => {
+      const onrequest = async (...args) => {
         let [orireq, orires, next] = args;
         let fn;
         try {
@@ -965,7 +965,7 @@ module.exports = async (...args) => {
         }
       };
 
-      lib["onless"] = async (...args) => {
+      const onless = async (...args) => {
         let [orireq, orires] = args;
         let fn;
         try {
@@ -992,7 +992,7 @@ module.exports = async (...args) => {
        * @param {...Object} args - 1 parameters
        * @param {Object} args[0] - oncomponents gui and api modules
        */
-      lib["register"] = (...args) => {
+      const register = (...args) => {
         let [oncomponents] = args;
         for (let [key, val] of Object.entries(oncomponents)) {
           let { api, gui, defaulturl, less } = val;
@@ -1007,7 +1007,9 @@ module.exports = async (...args) => {
 
       resolve({
         ...lib,
-
+        onrequest,
+        onless,
+        register,
         get guiapi() {
           return components;
         },

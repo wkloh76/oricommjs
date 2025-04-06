@@ -951,7 +951,7 @@ module.exports = async (...args) => {
        * Merge or concat base object or array data type
        * @alias module:utils.concatobj
        * @param {...Object} args - 2 parameters
-       * @param {Object||Array} args[0] - type is an object or array type which for referenc to check continue argument data type
+       * @param {Object|Array} args[0] - type is an object or array type which for referenc to check continue argument data type
        * @param {Object|Array} args[1] - param1 is an object or array type which ready for merge or concat.
        * @param {Boolean|Array} args[2] - param2 is an object or array type which ready for merge or concat.
        * @returns {Object} - Return as Object|Array|undefined

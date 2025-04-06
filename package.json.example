@@ -24,6 +24,7 @@
   },
   "workspaces": [
     "engine/*",
-    "atomic/atom/*"
+    "atomic/atom/*",
+    "utils/*"
   ]
 }
