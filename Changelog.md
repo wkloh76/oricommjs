@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2025-04-24
+
+### Summary
+
+- Maintaince task.
+
+### Added
+
+- Add a feature to allow deskelectronjs engine to change page base on internel GUI url. Completed on 2025-04-24
+
+### Changed
+
+- Upgrade framework package.json dependencies. Completed on 2025-04-24
+
+### Deprecated
+
+### Removed
+
+### Fixed
+
+### Security
+
+[1.2.0]: https://github.com/wkloh76/oricommjs/releases/tag/1.2.0
+
 ## [1.1.9] - 2025-01-13
 
 ### Summary

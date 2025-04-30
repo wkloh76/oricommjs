@@ -135,6 +135,10 @@ module.exports = async (...args) => {
               case "init":
                 fn = window;
                 break;
+              case "reroute":
+                fn = reroute;
+                if (!request.param) request.params = {};
+                break;
               case "deskfetch":
               case "deskfetchsync":
                 fn = resfetch;
@@ -186,6 +190,22 @@ module.exports = async (...args) => {
           return;
         } catch (error) {
           return error;
+        }
+      };
+
+      const reroute = async (data) => {
+        try {
+          if (winlist.length == 0) new Error("Cannot find current window!!");
+          let htmlstring = `data:text/html;charset=UTF-8,${encodeURIComponent(
+            data
+          )}`;
+          winlist[0].webContents.loadURL(htmlstring, {
+            baseURLForDataURL: `${registry.el}://resource/`,
+          });
+
+          resolve();
+        } catch (error) {
+          resolve(error);
         }
       };
 

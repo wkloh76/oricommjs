@@ -77,7 +77,7 @@
     request: async (...args) => {
       try {
         let [param] = args;
-        let { async, success, error, ...req } = param;
+        let { async, reroute = false, success, error, ...req } = param;
 
         if (wait_callback?.[req.originalUrl] === undefined) {
           wait_callback[req.originalUrl] = { count: 0 };
@@ -98,7 +98,8 @@
         req["async"] = async;
 
         if (async) {
-          req["channel"] = "deskfetch";
+          if (reroute) req["channel"] = "reroute";
+          else req["channel"] = "deskfetch";
           ipcRenderer.send("deskfetch", req);
         } else {
           req["channel"] = "deskfetchsync";
