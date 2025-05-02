@@ -39,7 +39,7 @@ module.exports = async (...args) => {
     try {
       let lib = {};
       let app = require("express")();
-
+      let sessionval;
       /**
        * Normalize the port
        * @alias module:webserver.normalizePort
@@ -118,8 +118,6 @@ module.exports = async (...args) => {
           // parse an HTML body into a string
           app.use(bodyParser.text(parser.text));
 
-          // Compress all route
-         app.use(compression());
           if (savestore) {
             let dbfile;
             if (store.path == "") dbfile = join(logpath, "./sessions.db3");
@@ -133,8 +131,7 @@ module.exports = async (...args) => {
             }
             setsession.store = new SqliteStore(store);
           }
-
-          app.use(expsession(setsession));
+          sessionval = setsession;
           app.use(cookieParser(setsession.secret));
 
           app.use(flash()); // use connect-flash for flash messages stored in session
@@ -228,6 +225,8 @@ module.exports = async (...args) => {
               app,
             }),
           ]);
+          // Session in the middleware
+          app.use(expsession(sessionval));
           app.use(router.use(reaction["onrequest"]));
           return;
         } catch (error) {

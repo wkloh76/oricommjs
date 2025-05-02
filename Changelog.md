@@ -25,6 +25,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Fix session checking bypass the static file request in `webserver.js` at webnodejs engine. Completed on 2025-05-02
+
 ### Security
 
 [1.2.0]: https://github.com/wkloh76/oricommjs/releases/tag/1.2.0
