@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Upgrade framework package.json dependencies. Completed on 2025-04-24
+- Change success.log from webnodejs engine which will only accept by project api and gui request. Completed on 2025-05-04
 
 ### Deprecated
 

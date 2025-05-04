@@ -108,7 +108,7 @@ module.exports = async (...args) => {
           app.use(require("cors")());
           // app.use(require("helmet")(helmet));
           // Setup server log
-          app.use(sys.loghttp);
+          // app.use(sys.loghttp);
           // parse various different custom JSON types as JSON
           app.use(bodyParser.json(parser.json));
 
@@ -227,7 +227,7 @@ module.exports = async (...args) => {
           ]);
           // Session in the middleware
           app.use(expsession(sessionval));
-          app.use(router.use(reaction["onrequest"]));
+          app.use(router.use([sys.loghttp, reaction["onrequest"]]));
           return;
         } catch (error) {
           return error;
