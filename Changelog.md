@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Remove extra `symbol character` from download function at webnodejs engine. Completed on 2025-05-15
+
 ### Fixed
 
 - Fix session checking bypass the static file request in `webserver.js` at webnodejs engine. Completed on 2025-05-02

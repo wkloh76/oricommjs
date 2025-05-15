@@ -54,7 +54,7 @@ module.exports = async (...args) => {
         if (Object.keys(mimes).includes(ctype))
           content_type = { "Content-Type": mimes[ctype] };
 
-        if (save) disposition = `attachment; ${fname}`;
+        if (save) disposition = `attachment ${fname}`;
         else disposition = "inline";
 
         let headers = {
