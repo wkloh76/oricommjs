@@ -35,6 +35,38 @@ module.exports = async (...args) => {
       let components = { defaulturl: "" };
 
       /**
+       * Download file base on buffer or physical file
+       * @alias module:reaction.downloadproc
+       * @param {...Object} args - 1 parameters
+       * @param {Object} args[0] - res the object for render to frontend
+       * @param {Object} args[1] - file the object for file content and information
+       */
+      const downloadproc = async (...args) => {
+        let [res, file] = args;
+        let { content, filename, save } = file;
+
+        let disposition,
+          fname = "";
+        if (filename != "") fname = `; filename="${filename}"`;
+
+        if (save) disposition = `attachment; ${fname}`;
+        else disposition = "inline";
+        res.set({
+          "Cache-Control": "no-cache",
+          "Content-Disposition": disposition,
+        });
+        if (Buffer.isBuffer(content)) {
+          res.set({
+            "Content-Length": Buffer.byteLength(content).toString(),
+          });
+          res.status(200).send(content);
+        } else {
+          if (fs.existsSync(content)) res.status(200).sendFile(content);
+          else res.status(404).send("File not found");
+        }
+      };
+
+      /**
        * Merge multi css file to be sinlge string and render to frontend
        * @alias module:reaction.mergecss
        * @param {...Object} args - 1 parameters
@@ -88,6 +120,7 @@ module.exports = async (...args) => {
             let {
               options: {
                 css,
+                download,
                 html,
                 injectionjs,
                 js,
@@ -107,6 +140,10 @@ module.exports = async (...args) => {
             let isredirect = handler.check_empty(redirect);
             let isjson = handler.check_empty(json);
             let ishtml = handler.check_empty(html);
+            if (!handler.check_empty(download.content)) {
+              downloadproc(res, download);
+              resolve(rtn);
+            }
             // let iscss = handler.check_empty(options.css);
 
             if (!isredirect) {
@@ -251,7 +288,7 @@ module.exports = async (...args) => {
         if (!handler.check_empty(options.redirect)) return false;
         if (!handler.check_empty(options.json)) return false;
         if (!handler.check_empty(options.html)) return false;
-
+        if (!handler.check_empty(options.download.content)) return false;
         return true;
       };
 
