@@ -166,6 +166,7 @@ export default await (() => {
           error: fault,
           ajax = true,
           option = {},
+          download = false,
         } = param;
 
         let {
@@ -196,6 +197,7 @@ export default await (() => {
                 if (achieve) {
                   let result = {};
                   if (response.redirected) result.redirected = response.url;
+                  else if (download) result.data = await response.blob();
                   else result.data = await response.json();
                   success({
                     status: response.status,
@@ -229,6 +231,8 @@ export default await (() => {
           if (response.ok) {
             if (response.redirected) {
               result.redirected = response.url;
+            } else if (download) {
+              result.data = await response.blob();
             } else {
               let resp = await response.json();
               if (ajax) result.data = await resp;

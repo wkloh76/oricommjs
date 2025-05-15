@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add download object to handler webview options. Completed on 2025-05-15
 - Add download function to webnodejs engine. Completed on 2025-05-15
 - Apply optional `Content-Type` checking to download function at webnodejs engine. Completed on 2025-05-15
+- Add downlod flag to `atomic/atom/smfetch/src/browser/smfetch/atom.js` which return data as blob data type. Completed on 2025-05-15
 
 ### Changed
 
