@@ -105,6 +105,7 @@ module.exports = async (...args) => {
                 css: { atomic: [], locally: [], other: [], remotely: [] },
                 download: {
                   content: "",
+                  ctype: "",
                   filename: "",
                   save: false,
                 },

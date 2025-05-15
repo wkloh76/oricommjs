@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add a feature to allow deskelectronjs engine to change page base on internel GUI url. Completed on 2025-04-24
 - Add download object to handler webview options. Completed on 2025-05-15
 - Add download function to webnodejs engine. Completed on 2025-05-15
+- Apply optional `Content-Type` checking to download function at webnodejs engine. Completed on 2025-05-15
 
 ### Changed
 

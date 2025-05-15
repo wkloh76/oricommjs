@@ -24,6 +24,7 @@ module.exports = async (...args) => {
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
     const { handler, getNestedObject } = library.utils;
+    const mimes = require("./reaction/mimes.json");
     const { fs, path, logger } = sys;
     const { minify } = require("html-minifier-terser");
     const jsdom = require("jsdom");
@@ -43,24 +44,33 @@ module.exports = async (...args) => {
        */
       const downloadproc = async (...args) => {
         let [res, file] = args;
-        let { content, filename, save } = file;
+        let { content, ctype, filename, save } = file;
 
         let disposition,
-          fname = "";
+          fname = "",
+          content_type = {};
         if (filename != "") fname = `; filename="${filename}"`;
+
+        if (Object.keys(mimes).includes(ctype))
+          content_type = { "Content-Type": mimes[ctype] };
 
         if (save) disposition = `attachment; ${fname}`;
         else disposition = "inline";
-        res.set({
+
+        let headers = {
           "Cache-Control": "no-cache",
           "Content-Disposition": disposition,
-        });
+          ...content_type,
+        };
+
         if (Buffer.isBuffer(content)) {
           res.set({
+            ...headers,
             "Content-Length": Buffer.byteLength(content).toString(),
           });
           res.status(200).send(content);
         } else {
+          res.set(headers);
           if (fs.existsSync(content)) res.status(200).sendFile(content);
           else res.status(404).send("File not found");
         }
