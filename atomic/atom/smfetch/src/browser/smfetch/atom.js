@@ -279,6 +279,7 @@ export default await (() => {
         if (param?.success !== undefined) data.success = param.success;
         if (param?.error !== undefined) data.error = param.error;
         if (param?.async !== undefined) async = param.async;
+        if (param?.reroute !== undefined) data.reroute = param.reroute;
 
         if (async) {
           window.fetchapi.request(data);
