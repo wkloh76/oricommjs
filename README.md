@@ -40,8 +40,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
   - utils {handler and powersehll}
 - Choose one engine:
   - appservicejs(NodeJS,Bunjs)
-  - webbunjs (bunJS)
-  - webnodejs (NodeJS,bunJS)
+  - webnodejs (NodeJS)
     - Implement workflow engine which will proper manage the frontend code instead write the code in one html/js file.
   - deskeletronjs (ElectronJS)
     - Implement workflow engine which will proper manage the frontend code instead write the code in one html/js file.

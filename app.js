@@ -348,6 +348,42 @@
           }
         });
       },
+      load_comp: (...args) => {
+        return new Promise(async (resolve, reject) => {
+          const [params, obj] = args;
+          const [pathname, arr_modname, curdir] = params;
+          const [library, sys, cosetting] = obj;
+          const { engine, utils } = library;
+          const { cengine } = engine.compmgr;
+          const { errhandler, handler, import_vcjs } = utils;
+          const { fs, path } = sys;
+          const { join } = path;
+
+          let output = handler.dataformat;
+          try {
+            // let yy = new cengine([modpath, val, curdir], optional);
+            let modules = {};
+            let arr_process = [],
+              arr_name = [];
+            for (let val of arr_modname) {
+              let modpath = join(pathname, val);
+              if (fs.readdirSync(modpath).length > 0) {
+                let module = new cengine([modpath, val, curdir], obj);
+                arr_name.push(val);
+                arr_process.push(module);
+              }
+            }
+            let arrrtn = await Promise.all(arr_process);
+            for (let [idx, val] of Object.entries(arrrtn))
+              modules[arr_name[idx]] = val;
+
+            output.data = modules;
+            resolve(output);
+          } catch (error) {
+            reject(errhandler(error));
+          }
+        });
+      },
       nested_load: (...args) => {
         return new Promise(async (resolve, reject) => {
           const [params, obj] = args;
@@ -541,7 +577,7 @@
             },
             {
               name: "load_components",
-              func: "load",
+              func: "load_comp",
               param: [[obj]],
               pull: [["setting.cosetting.components"]],
               push: [["components"]],

@@ -217,7 +217,7 @@ module.exports = async (...args) => {
           let rtnestablish = establish(setting);
           if (rtnestablish) throw rtnestablish;
           await Promise.all([
-            load_atomic(setting.share.atomic, setting.genernalexcludefile, {
+            load_atomic(setting.share.atomic, setting.general.excludefile, {
               app,
             }),
             load_pubshare(setting.share.public, setting.general.engine.type, {

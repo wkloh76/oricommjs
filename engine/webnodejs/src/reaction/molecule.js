@@ -26,7 +26,7 @@ module.exports = async (...args) => {
     const { fs, path } = sys;
 
     const jsdom = require("jsdom");
-    const htmlTags = require("html-tags");
+    const htmlTags = require("./html-tags.json");
     const basic =
       /\s?<!doctype html>|(<html\b[^>]*>|<body\b[^>]*>|<x-[^>]+>)+/i;
     const full = new RegExp(
