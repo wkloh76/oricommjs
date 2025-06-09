@@ -87,7 +87,7 @@ module.exports = (...args) => {
               lib[val] = await import_cjs(
                 [location, arr_modname, compname],
                 utils,
-                [library, sys, setting]
+                [library, sys, cosetting]
               );
             }
             output.data = lib;

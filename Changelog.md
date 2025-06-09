@@ -33,6 +33,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Fix session checking bypass the static file request in `webserver.js` at webnodejs engine. Completed on 2025-05-02
+- Fix bug in `compmgr` engine. Completed on 2025-06-09
 
 ### Security
 
