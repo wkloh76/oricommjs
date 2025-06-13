@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Upgrade framework package.json dependencies. Completed on 2025-04-24
+- Update `*.toml.example` at sqlmanager engine. Completed on 2025-06-13
+- Apply reroute flag and `window.location` base on redirect url in webfetch function at `smfetch/browser/atom.js`. Completed on 2025-06-13
 
 ### Deprecated
 

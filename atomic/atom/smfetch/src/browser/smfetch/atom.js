@@ -194,9 +194,12 @@ export default await (() => {
           fetch(furl, fdata)
             .then(async (response) => {
               if (response.ok) {
-                if (achieve) {
+                if (param.reroute && response.url != "")
+                  window.location = response.url;
+                else if (achieve) {
                   let result = {};
-                  if (response.redirected) result.redirected = response.url;
+                  if (response.redirected && response.url != "")
+                    window.location = response.url;
                   else if (download) result.data = await response.blob();
                   else result.data = await response.json();
                   success({
@@ -229,8 +232,10 @@ export default await (() => {
             statusText: response.statusText,
           };
           if (response.ok) {
-            if (response.redirected) {
-              result.redirected = response.url;
+            if (param.reroute && response.url != "") {
+              window.location = response.url;
+            } else if (response.redirected && response.url != "") {
+              window.location = response.url;
             } else if (download) {
               result.data = await response.blob();
             } else {

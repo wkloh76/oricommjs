@@ -2,25 +2,27 @@
 [production.sqlite3]
 
 [production.sqlite3.log]
-type = "dateFile"
-keepFileExt = true
-maxLogSize = "50M"
-numBackups = 10
-success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+size = "50m"
+frequency = "daily"
+mkdir = true
+limit = { count = 10, removeOtherLogFiles = true }
+symlink = true
+dateFormat = "yyyy-MM-dd"
 
 [production.sqlite3.db]
+[production.sqlite3.db.group]
 workdb = { path = "", type = "memory" }
 filedb = { path = "", type = "file" }
 
 [production.mariadb]
 
 [production.mariadb.log]
-type = "dateFile"
-keepFileExt = true
-maxLogSize = "50M"
-numBackups = 10
-success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
-
+size = "50m"
+frequency = "daily"
+mkdir = true
+limit = { count = 10, removeOtherLogFiles = true }
+symlink = true
+dateFormat = "yyyy-MM-dd"
 
 [production.mariadb.db]
 workdb = { path = "", port = 3306, host = "127.0.0.1", user = "root", password = "root", database = "mysql", waitForConnections = true, connectionLimit = 10, queueLimit = 0 }
@@ -29,24 +31,27 @@ workdb = { path = "", port = 3306, host = "127.0.0.1", user = "root", password =
 [debug.sqlite3]
 
 [debug.sqlite3.log]
-type = "dateFile"
-keepFileExt = true
-maxLogSize = "50M"
-numBackups = 10
-success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+symlink = true
+size = "50m"
+frequency = "daily"
+mkdir = true
+limit = { count = 10 }
+dateFormat = "yyyy-MM-dd"
 
 [debug.sqlite3.db]
+[debug.sqlite3.db.group]
 workdb = { path = "", type = "memory", backup = "" }
 filedb = { path = "", type = "file", backup = "" }
 
 [debug.mariadb]
 
 [debug.mariadb.log]
-type = "dateFile"
-keepFileExt = true
-maxLogSize = "50M"
-numBackups = 10
-success.layout = { type = "basic", pattern = "%d %p %c %X{user} %m%n" }
+symlink = true
+size = "50m"
+frequency = "daily"
+mkdir = true
+limit = { count = 10 }
+dateFormat = "yyyy-MM-dd"
 
 
 [debug.mariadb.db]
