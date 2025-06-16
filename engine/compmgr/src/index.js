@@ -74,7 +74,8 @@ module.exports = (...args) => {
           const { utils } = library;
           const { dir_module, errhandler, handler, import_cjs, import_vcjs } =
             utils;
-          const { path } = sys;
+          const { fs, path } = sys;
+          const { existsSync } = fs;
           const { join } = path;
           const { excludefile } = cosetting.general;
           let output = handler.dataformat;
@@ -83,12 +84,14 @@ module.exports = (...args) => {
             let lib = {};
             for (let val of curdir) {
               let location = join(pathname, val);
-              let arr_modname = dir_module(location, excludefile);
-              lib[val] = await import_cjs(
-                [location, arr_modname, compname],
-                utils,
-                [library, sys, cosetting]
-              );
+              if (existsSync(location)) {
+                let arr_modname = dir_module(location, excludefile);
+                lib[val] = await import_cjs(
+                  [location, arr_modname, compname],
+                  utils,
+                  [library, sys, cosetting]
+                );
+              }
             }
             output.data = lib;
           } catch (error) {
@@ -154,6 +157,7 @@ module.exports = (...args) => {
           const { dir_module, errhandler, handler, import_cjs, import_vcjs } =
             utils;
           const { fs, path } = sys;
+          const { existsSync } = fs;
           const { join } = path;
           const { excludefile } = cosetting.general;
           let output = handler.dataformat;
@@ -163,64 +167,70 @@ module.exports = (...args) => {
             for (let value of curdir) {
               lib[value] = {};
               let location = join(pathname, value);
-              let arr_modname = dir_module(location, excludefile);
-              let arr_modules = await import_cjs(
-                [location, arr_modname, compname],
-                utils,
-                [library, sys, cosetting]
-              );
-              let { [value]: assets } = components[compname].rules.regulation;
+              if (existsSync(location)) {
+                let arr_modname = dir_module(location, excludefile);
+                let arr_modules = await import_cjs(
+                  [location, arr_modname, compname],
+                  utils,
+                  [library, sys, cosetting]
+                );
+                let { [value]: assets } = components[compname].rules.regulation;
 
-              for (let [modname, RESTAPI] of Object.entries(arr_modules)) {
-                for (let [module_key, module_val] of Object.entries(RESTAPI)) {
-                  if (Object.keys(module_val).length > 0) {
-                    for (let [key, val] of Object.entries(module_val)) {
-                      let url, controller;
-                      let rtn = this.route;
+                for (let [modname, RESTAPI] of Object.entries(arr_modules)) {
+                  for (let [module_key, module_val] of Object.entries(
+                    RESTAPI
+                  )) {
+                    if (Object.keys(module_val).length > 0) {
+                      for (let [key, val] of Object.entries(module_val)) {
+                        let url, controller;
+                        let rtn = this.route;
 
-                      rtn["from"] = val;
-                      rtn["method"] = module_key;
-                      rtn["strict"] = false;
+                        rtn["from"] = val;
+                        rtn["method"] = module_key;
+                        rtn["strict"] = false;
 
-                      if (
-                        assets.none[modname] &&
-                        assets.none[modname].includes(key)
-                      ) {
-                        rtn["name"] = key;
-                        url = key;
-                      } else {
-                        if (!rtn["rules"]) {
-                          Object.keys(assets.nostrict).map((value) => {
-                            if (assets.nostrict[value][modname])
-                              if (
-                                assets.nostrict[value][modname].includes(key)
-                              ) {
-                                rtn["name"] = key;
-                                rtn["rules"] = value;
-                                url = key;
+                        if (
+                          assets.none[modname] &&
+                          assets.none[modname].includes(key)
+                        ) {
+                          rtn["name"] = key;
+                          url = key;
+                        } else {
+                          if (!rtn["rules"]) {
+                            Object.keys(assets.nostrict).map((value) => {
+                              if (assets.nostrict[value][modname])
+                                if (
+                                  assets.nostrict[value][modname].includes(key)
+                                ) {
+                                  rtn["name"] = key;
+                                  rtn["rules"] = value;
+                                  url = key;
+                                }
+                            });
+                          }
+
+                          if (!rtn["rules"]) {
+                            Object.keys(assets.strict).map((value) => {
+                              if (assets.strict[value][modname]) {
+                                if (
+                                  assets.strict[value][modname].includes(key)
+                                ) {
+                                  rtn["name"] = key;
+                                  rtn["rules"] = value;
+                                  rtn["strict"] = true;
+                                  url = key;
+                                }
                               }
-                          });
+                            });
+                          }
                         }
 
-                        if (!rtn["rules"]) {
-                          Object.keys(assets.strict).map((value) => {
-                            if (assets.strict[value][modname]) {
-                              if (assets.strict[value][modname].includes(key)) {
-                                rtn["name"] = key;
-                                rtn["rules"] = value;
-                                rtn["strict"] = true;
-                                url = key;
-                              }
-                            }
-                          });
+                        controller = val;
+                        rtn["url"] = `/${compname}/${modname}/${url}`;
+                        if (rtn?.["url"] && rtn?.["method"]) {
+                          rtn["controller"] = controller;
+                          lib[value][rtn["url"]] = rtn;
                         }
-                      }
-
-                      controller = val;
-                      rtn["url"] = `/${compname}/${modname}/${url}`;
-                      if (rtn?.["url"] && rtn?.["method"]) {
-                        rtn["controller"] = controller;
-                        lib[value][rtn["url"]] = rtn;
                       }
                     }
                   }
