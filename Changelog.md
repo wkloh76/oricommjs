@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Remove extra `symbol character` from download function at webnodejs engine. Completed on 2025-05-15
+- Remove extra folder from components. Completed on 2025-06-24
 
 ### Fixed
 
