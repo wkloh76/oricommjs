@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix session checking bypass the static file request in `webserver.js` at webnodejs engine. Completed on 2025-05-02
 - Fix bug in `compmgr` engine. Completed on 2025-06-09
 - Fix atomic failure inherited from lower level modules. Completes on 2025-06-30
+- Fix missing modules in `gotfetch.js` at `/atomic/atom/smfetch`. Completes on 2025-06-30
 
 ### Security
 

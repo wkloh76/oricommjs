@@ -26,10 +26,13 @@ module.exports = async (...args) => {
     const { utils } = library;
     const { handler } = utils;
     const { fs } = sys;
+    const { createWriteStream } = fs;
     const { default: got } = await import("got");
     const FormData = require("form-data");
     const jsonToFormData = require("@ajoelp/json-to-formdata");
-
+    const stream = require("stream");
+    const { promisify } = require("util");
+    const pipeline = promisify(stream.pipeline);
     try {
       let lib = {};
 
@@ -310,6 +313,7 @@ module.exports = async (...args) => {
 
             tagname = `${location}/${tagname}`;
 
+            console.log(options);
             const downloadStream = got.stream(options);
             const fileWriterStream = createWriteStream(tagname);
 
