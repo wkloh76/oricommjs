@@ -361,7 +361,6 @@
 
           let output = handler.dataformat;
           try {
-            // let yy = new cengine([modpath, val, curdir], optional);
             let modules = {};
             let arr_process = [],
               arr_name = [];
@@ -398,6 +397,7 @@
           try {
             for (let val of general) {
               rtn[val] = await import_cjs(atomic[val], utils, obj);
+              library["atomic"][val] = rtn[val];
             }
             output.data = rtn;
             resolve(output);
@@ -567,7 +567,6 @@
                   "setting.cosetting.general.atomic",
                 ],
               ],
-              push: [["atomic", "lib.library.atomic"]],
             },
             {
               name: "msg_atomic",
