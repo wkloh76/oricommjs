@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Apply optional `Content-Type` checking to download function at webnodejs engine. Completed on 2025-05-15
 - Add downlod flag to `atomic/atom/smfetch/src/browser/smfetch/atom.js` which return data as blob data type. Completed on 2025-05-15
 - Add `compmgr` engine which will manage components project. It will instead the `OricommJS_Components`. Completed on 2025-06-08
+- Add giteapi molecule to atomic. Completed on 2025-06-30
 
 ### Changed
 
