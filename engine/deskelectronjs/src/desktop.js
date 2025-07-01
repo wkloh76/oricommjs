@@ -526,7 +526,8 @@ module.exports = async (...args) => {
 
             intercomm.register("desktopcast", "always", async (...args) => {
               let [param, tabindex = 0] = args;
-              winlist[tabindex].webContents.send("broadcast", param);
+              if (winlist.length > 0)
+                winlist[tabindex].webContents.send("broadcast", param);
             });
 
             await autoupdate.init(setting);

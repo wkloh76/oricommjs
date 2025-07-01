@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add check `winlist` is not empty array on `desktopcast` linstener in `engine/deskelectronjs/src/desktop.js`. Completed on 2025-07-01
+
 ### Changed
 
 - Modify the `load_comp` function in `app.js` so that it ignores component folders that are not relevant to the engine. Completed on 2025-07-01
