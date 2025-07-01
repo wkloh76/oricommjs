@@ -113,27 +113,31 @@ module.exports = (...args) => {
           const { excludefile } = cosetting.general;
           let output = handler.dataformat;
           try {
-            let lib = { rule: {} };
+            let lib = {
+              rule: {},
+              module: {},
+            };
 
             let location = join(pathname, curdir[0]);
-            let rulespath = path.join(location, "rule.json");
-            let arr_modname = dir_module(location, excludefile);
-            let modules = await import_cjs(
-              [location, arr_modname, compname],
-              utils,
-              [library, sys, cosetting]
-            );
+            if (existsSync(location)) {
+              let rulespath = path.join(location, "rule.json");
+              let arr_modname = dir_module(location, excludefile);
+              let modules = await import_cjs(
+                [location, arr_modname, compname],
+                utils,
+                [library, sys, cosetting]
+              );
 
-            for (let [, val] of Object.entries(modules)) {
-              lib["module"] = { ...lib["module"], ...val };
+              for (let [, val] of Object.entries(modules)) {
+                lib["module"] = { ...lib["module"], ...val };
+              }
+              if (existsSync(rulespath))
+                lib["rule"] = JSON.parse(readFileSync(rulespath));
             }
-
             lib["regulation"] = {
               api: { strict: {}, nostrict: {}, none: {} },
               gui: { strict: {}, nostrict: {}, none: {} },
             };
-            if (existsSync(rulespath))
-              lib["rule"] = JSON.parse(readFileSync(rulespath));
 
             Object.keys(lib["rule"]).map((value) => {
               lib["regulation"]["api"]["strict"][value] = {};
