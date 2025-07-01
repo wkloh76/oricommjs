@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Modify the `load_comp` function in `app.js` so that it ignores component folders that are not relevant to the engine. Completed on 2025-07-01
+- Support directly import module from api/gui controller folder when `index.js` not exist at `engine/compmgr`. Completed on 2025-07-01
 
 ### Deprecated
 

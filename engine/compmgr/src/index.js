@@ -173,10 +173,9 @@ module.exports = (...args) => {
               let location = join(pathname, value);
               if (existsSync(location)) {
                 let arr_modname = dir_module(location, excludefile);
-                let arr_modules = await import_cjs(
+                let arr_modules = await this.import_module(
                   [location, arr_modname, compname],
-                  utils,
-                  [library, sys, cosetting]
+                  obj
                 );
                 let { [value]: assets } = components[compname].rules.regulation;
 
@@ -247,6 +246,60 @@ module.exports = (...args) => {
           } finally {
             return output;
           }
+        };
+
+        import_module = (...args) => {
+          return new Promise(async (resolve, reject) => {
+            const [list, obj, optional] = args;
+            const [pathname, arr_modname, curdir] = list;
+            const [library, sys] = obj;
+            const { utils } = library;
+            const { errhandler, mergeDeep } = utils;
+            const { fs, path } = sys;
+            const { existsSync, import_cjs, readdirSync } = fs;
+            const { join } = path;
+
+            try {
+              let modules = {};
+              let arr_process = [],
+                arr_name = [];
+              for (let val of arr_modname) {
+                let modpath = join(pathname, val);
+                let module;
+                if (existsSync(join(modpath, "index.js"))) {
+                  module = require(join(modpath, "index.js"), "utf8")(
+                    [modpath, val, curdir],
+                    obj
+                  );
+                  arr_name.push(val);
+                  arr_process.push(module);
+                } else {
+                  let jsfiles = readdirSync(join(modpath, "controller"));
+                  for (let jsfile of jsfiles) {
+                    module = require(join(
+                      modpath,
+                      "controller",
+                      jsfile
+                    ), "utf8")([modpath, val, curdir], obj);
+                    arr_name.push(val);
+                    arr_process.push(module);
+                  }
+                }
+              }
+              let arrrtn = await Promise.all(arr_process);
+              for (let [idx, val] of Object.entries(arrrtn)) {
+                if (!modules[arr_name[idx]]) modules[arr_name[idx]] = val;
+                else
+                  modules[arr_name[idx]] = mergeDeep(
+                    modules[arr_name[idx]],
+                    val
+                  );
+              }
+              resolve(modules);
+            } catch (error) {
+              reject(errhandler(error));
+            }
+          });
         };
 
         /**
