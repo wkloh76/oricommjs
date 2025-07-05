@@ -40,7 +40,8 @@ module.exports = async (...args) => {
         if (datatype(content) == "string") {
           rtn = headers;
           content.split(",").forEach((element) => {
-            rtn[element[0]] = element[1];
+            let arr = element.split(":");
+            rtn[arr[0]] = arr[1];
           });
         }
         return rtn;
@@ -82,8 +83,8 @@ module.exports = async (...args) => {
         try {
           let options = {
             method: "GET",
-            url: `${param.webapi}/api/v1/org${param.category}/repos`,
-            ...combine_header(param.auth, param.headers),
+            url: `${param.webapi}/api/v1/orgs${param.category}/repos`,
+            headers: combine_header(param.auth, param.headers),
             timeout: 10000,
           };
           output = await smfetch.request(options);
