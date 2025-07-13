@@ -114,5 +114,10 @@
     },
   });
 
+  contextBridge.exposeInMainWorld("electron_session", {
+    checkSession: () => ipcRenderer.invoke("validate-session"),
+    onSessionExpired: (callback) => ipcRenderer.on("session-expired", callback),
+  });
+
   window.addEventListener("DOMContentLoaded", async () => {});
 })();

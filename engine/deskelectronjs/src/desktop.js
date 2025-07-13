@@ -36,16 +36,30 @@ module.exports = async (...args) => {
       net,
       protocol,
       screen,
+      session,
     } = require("electron");
     const { minify } = require("html-minifier-terser");
     const url = require("url");
+    const crypto = require("crypto");
 
     try {
       let lib = {};
       let winlist = [];
       let reglist = {};
-      let reaction;
+      let reaction, sessopt;
       let registry = { el: "deskelectron", winshare: {} };
+
+      ipcMain.handle("validate-session", async () => {
+        const [cookie] = await session.defaultSession.cookies.get({
+          name: "electron_session",
+        });
+        if (!cookie || cookie.expirationDate * 1000 <= Date.now()) {
+          await session.defaultSession.clearStorageData();
+          winlist[0].webContents.send("session-expired");
+          return false;
+        }
+        return true;
+      });
 
       const register = (...args) => {
         let [config, fn] = args;
@@ -76,6 +90,16 @@ module.exports = async (...args) => {
         return new Promise(async (resolve) => {
           let [event, request] = args;
           let output;
+          [request["session"]] = await session.defaultSession.cookies.get({
+            name: "electron_session",
+          });
+          if (!request["session"]) {
+            await setupSession();
+            [request["session"]] = await session.defaultSession.cookies.get({
+              name: "electron_session",
+            });
+          }
+
           try {
             let fn, redirected;
             let response = {
@@ -91,6 +115,7 @@ module.exports = async (...args) => {
                   {
                     originalUrl: url,
                     params: {},
+                    session: request["session"],
                   },
                   response
                 );
@@ -152,7 +177,7 @@ module.exports = async (...args) => {
                 fn = window;
                 break;
               case "reroute":
-                redirected = reroute;             
+                redirected = reroute;
               case "deskfetch":
               case "deskfetchsync":
                 fn = resfetch;
@@ -212,10 +237,11 @@ module.exports = async (...args) => {
           let htmlstring = `data:text/html;charset=UTF-8,${encodeURIComponent(
             data
           )}`;
+
           winlist[0].webContents.loadURL(htmlstring, {
             baseURLForDataURL: `${registry.el}://resource/`,
           });
-
+          await setupSession();
           resolve();
         } catch (error) {
           resolve(error);
@@ -265,6 +291,20 @@ module.exports = async (...args) => {
             }
           }
         }
+      };
+
+      const setupSession = async () => {
+        const ses = session.defaultSession;
+        await ses.clearStorageData();
+        await ses.cookies.set({
+          url: "http://localhost",
+          name: "electron_session",
+          value: crypto.randomBytes(32).toString("hex"),
+          expirationDate:
+            Math.floor(Date.now() / 1000) + sessopt.expireAfterSeconds,
+          httpOnly: sessopt.cookieOptions.httpOnly,
+          secure: sessopt.encryptionKey,
+        });
       };
 
       /**
@@ -398,6 +438,7 @@ module.exports = async (...args) => {
               win.loadFile(join(pathname, "browser", "./main.html"));
           }
 
+          await setupSession();
           win.on("close", async (e) => {
             e.preventDefault(); // Prevent default no matter what.
 
@@ -426,7 +467,7 @@ module.exports = async (...args) => {
             });
           });
 
-          win.once("ready-to-show", () => {
+          win.once("ready-to-show", async () => {
             win.show();
             if (winopt.openDevTools) win.webContents.openDevTools();
 
@@ -489,6 +530,8 @@ module.exports = async (...args) => {
           let { deskelectronjs } = setting;
           let { reaction: reactionjs, autoupdate } = obj;
           reaction = reactionjs;
+          sessopt = setting.deskelectronjs.session;
+
           try {
             let ongoing;
             if (setting.args.project && setting.args.project != "")
