@@ -77,7 +77,7 @@ module.exports = async (...args) => {
           let [event, request] = args;
           let output;
           try {
-            let fn;
+            let fn, redirected;
             let response = {
               locals: {},
               setHeader: function (...args) {
@@ -86,8 +86,24 @@ module.exports = async (...args) => {
               status: function (...args) {
                 return this;
               },
-              redirect: function (url) {
-                console.log(url);
+              redirect: async function (url) {
+                let result = reaction["onredirect"](
+                  {
+                    originalUrl: url,
+                    params: {},
+                  },
+                  response
+                );
+                if (result instanceof Promise) {
+                  result = await result;
+                  if (result instanceof ReferenceError) throw result;
+                }
+
+                result = redirected.apply(null, [result.data]);
+                if (result instanceof Promise) {
+                  result = await result;
+                  if (result instanceof ReferenceError) throw result;
+                }
                 return;
               },
               json: async function (data) {
@@ -136,9 +152,7 @@ module.exports = async (...args) => {
                 fn = window;
                 break;
               case "reroute":
-                fn = reroute;
-                if (!request.param) request.params = {};
-                break;
+                redirected = reroute;             
               case "deskfetch":
               case "deskfetchsync":
                 fn = resfetch;
@@ -156,7 +170,6 @@ module.exports = async (...args) => {
           }
         });
       };
-
       /**
        * Initialize
        * @alias module:window.init
