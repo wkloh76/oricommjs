@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix `engine/compmgr` when missing rules folder in components will failure to load api,gui modules. Completed on 2025-07-01
 - Fix `guiapi` function failure split when rules regulation variable is undefined at `engine/compmgr`. Completed on 2025-07-05
 - Fix session not store when after redirect next page at deskelectronjs engine. Completed on 2025-07-16
+- Fix missing session parameter that will be passed on next page render in Deskelectronjs engine. Completed on 2025-07-16
 
 ### Security
 

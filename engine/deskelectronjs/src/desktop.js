@@ -185,12 +185,12 @@ module.exports = async (...args) => {
             request["session"] = ses_data;
             delete request["session"].value;
             request["session"] = { ...request["session"], ...extract };
+            cache = undefined;
           } else {
             let extract = JSON.parse(ses_data.value);
             request["session"] = ses_data;
             delete request["session"].value;
             request["session"] = { ...request["session"], ...extract };
-            cache = undefined;
           }
 
           try {
@@ -666,7 +666,7 @@ module.exports = async (...args) => {
             });
 
             await autoupdate.init(setting);
-            ses = session.defaultSession;
+            ses = session.fromPartition("persist:my-session");
             await onfetch(null, {
               method: "GET",
               originalUrl: ongoing.defaulturl,

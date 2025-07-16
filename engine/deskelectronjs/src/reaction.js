@@ -82,7 +82,7 @@ module.exports = async (...args) => {
       const processEnd = (...args) => {
         return new Promise(async (resolve, reject) => {
           const { JSDOM } = jsdom;
-          let [res] = args;
+          let [res, sess] = args;
           try {
             let {
               options: {
@@ -191,7 +191,8 @@ module.exports = async (...args) => {
               res.status(status).send(
                 await minify(dom.serialize(), {
                   collapseWhitespace: true,
-                })
+                }),
+                sess
               );
             } else {
               throw {
@@ -691,7 +692,7 @@ module.exports = async (...args) => {
             orires.locals.render.options.redirect = redirect;
           } else throw { code: 404, message: "Page not found" };
 
-          let rtn = await processEnd(orires);
+          let rtn = await processEnd(orires, orireq.session);
           if (rtn.code !== 0) throw rtn;
         } catch (error) {
           orires.locals = { render: handler.webview };
@@ -734,7 +735,7 @@ module.exports = async (...args) => {
           else errmsg += JSON.stringify(errmessage);
           logerr(errmsg);
 
-          let result_catch = await processEnd(orires);
+          let result_catch = await processEnd(orires, orireq.session);
           if (result_catch.code != 0) {
             let msg = "onrquest catch error:";
             if (result_catch.stack) msg += result_catch.stack;
