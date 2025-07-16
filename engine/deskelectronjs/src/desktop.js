@@ -24,7 +24,14 @@ module.exports = async (...args) => {
     const [params, obj] = args;
     const [pathname, curdir] = params;
     const [library, sys, cosetting] = obj;
-    const { datatype, dir_module, intercomm } = library.utils;
+    const {
+      arr_diffidx,
+      datatype,
+      dir_module,
+      errhandler,
+      handler,
+      intercomm,
+    } = library.utils;
     const { existsSync } = sys.fs;
     const { join } = sys.path;
 
@@ -46,7 +53,7 @@ module.exports = async (...args) => {
       let lib = {};
       let winlist = [];
       let reglist = {};
-      let reaction, sessopt;
+      let reaction, sessopt, ses, cache;
       let registry = { el: "deskelectron", winshare: {} };
 
       ipcMain.handle("validate-session", async () => {
@@ -86,18 +93,104 @@ module.exports = async (...args) => {
         }
       };
 
+      // Add object to session storage
+      const add_session = async (key, value) => {
+        try {
+          ses.cookies.remove("http://localhost", key);
+          await ses.cookies.set({
+            url: `http://localhost`,
+            name: key,
+            value: JSON.stringify(value),
+            expirationDate:
+              Math.floor(Date.now() / 1000) + sessopt.expireAfterSeconds,
+            httpOnly: sessopt.cookieOptions.httpOnly,
+            secure: sessopt.encryptionKey,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      // Retrieve object from session
+      const get_session = async (key) => {
+        let [data] = await ses.cookies.get({
+          url: `http://localhost`,
+          name: key,
+        });
+        return data;
+      };
+
+      // Add object to session storage
+      const renew_session = async (key, value) => {
+        try {
+          let extract = {};
+          for (let [k, v] of Object.entries(value)) {
+            if (
+              !"domain expirationDate hostOnly httpOnly name path sameSite secure session"
+                .split(" ")
+                .includes(k)
+            )
+              extract[k] = v;
+          }
+          ses.cookies.remove("http://localhost", key);
+          await ses.cookies.set({
+            url: `http://localhost`,
+            name: key,
+            value: JSON.stringify(extract),
+            expirationDate:
+              Math.floor(Date.now() / 1000) + sessopt.expireAfterSeconds,
+            httpOnly: sessopt.cookieOptions.httpOnly,
+            secure: sessopt.encryptionKey,
+          });
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      const update_session = async (...args) => {
+        const [key, sess_data] = args;
+        let output = handler.dataformat;
+        try {
+          let sess = await get_session(key);
+          if (sess && sess_data) {
+            let result = arr_diffidx(Object.keys(sess_data), Object.keys(sess));
+            if (result.data.length > 0) {
+              let extraData = {};
+              for (let v of result.data)
+                if (v.from == "source") extraData[v.value] = sess_data[v.value];
+              await add_session("session_data", extraData);
+            }
+          }
+        } catch (error) {
+          output = errhandler(error);
+        } finally {
+          return output;
+        }
+      };
+
       const onfetch = (...args) => {
         return new Promise(async (resolve) => {
           let [event, request] = args;
           let output;
-          [request["session"]] = await session.defaultSession.cookies.get({
-            name: "electron_session",
-          });
-          if (!request["session"]) {
-            await setupSession();
-            [request["session"]] = await session.defaultSession.cookies.get({
-              name: "electron_session",
-            });
+          // 使用示例
+          let ses_data = await get_session("session_data");
+          if (!ses_data && !cache) {
+            await add_session("session_data", {});
+            request["session"] = await get_session("session_data");
+            delete request["session"].value;
+          } else if (!ses_data && cache) {
+            await renew_session("session_data", cache);
+            ses_data = await get_session("session_data");
+            let extract = JSON.parse(ses_data.value);
+            request["session"] = ses_data;
+            delete request["session"].value;
+            request["session"] = { ...request["session"], ...extract };
+          } else {
+            let extract = JSON.parse(ses_data.value);
+            request["session"] = ses_data;
+            delete request["session"].value;
+            request["session"] = { ...request["session"], ...extract };
+            cache = undefined;
           }
 
           try {
@@ -110,12 +203,11 @@ module.exports = async (...args) => {
               status: function (...args) {
                 return this;
               },
-              redirect: async function (url) {
-                let result = reaction["onredirect"](
+              redirect: async function (url, sess) {
+                let result = await reaction["onredirect"](
                   {
                     originalUrl: url,
                     params: {},
-                    session: request["session"],
                   },
                   response
                 );
@@ -124,11 +216,12 @@ module.exports = async (...args) => {
                   if (result instanceof ReferenceError) throw result;
                 }
 
-                result = redirected.apply(null, [result.data]);
+                result = redirected.apply(null, [sess, result.data]);
                 if (result instanceof Promise) {
                   result = await result;
                   if (result instanceof ReferenceError) throw result;
                 }
+                await update_session("session_data", sess);
                 return;
               },
               json: async function (data) {
@@ -144,33 +237,34 @@ module.exports = async (...args) => {
                 if (result instanceof Promise) {
                   result = await result;
                 }
-                resolve(output);
+                return;
               },
-              send: async function (url) {
+              send: async function (url, sess) {
                 let result = fn.apply(null, [url]);
                 if (result instanceof Promise) {
                   result = await result;
                   if (result instanceof ReferenceError) throw result;
                 }
-                resolve(output);
+                await update_session("session_data", sess);
+                return;
               },
               end: function (...args) {
                 return;
               },
             };
 
-            function window(url) {
+            const window = (url) => {
               intercomm.fire("deskinit", ["data", url]);
               return;
-            }
+            };
 
-            function resfetch(data) {
+            const resfetch = (data) => {
               if (request.async) {
                 event.reply(`resfetchapi`, data);
                 return;
               } else output = [null, data];
               return;
-            }
+            };
 
             switch (request.channel) {
               case "init":
@@ -231,7 +325,7 @@ module.exports = async (...args) => {
         }
       };
 
-      const reroute = async (data) => {
+      const reroute = async (sess, data) => {
         try {
           if (winlist.length == 0) new Error("Cannot find current window!!");
           let htmlstring = `data:text/html;charset=UTF-8,${encodeURIComponent(
@@ -241,7 +335,7 @@ module.exports = async (...args) => {
           winlist[0].webContents.loadURL(htmlstring, {
             baseURLForDataURL: `${registry.el}://resource/`,
           });
-          await setupSession();
+          cache = sess;
           resolve();
         } catch (error) {
           resolve(error);
@@ -291,20 +385,6 @@ module.exports = async (...args) => {
             }
           }
         }
-      };
-
-      const setupSession = async () => {
-        const ses = session.defaultSession;
-        await ses.clearStorageData();
-        await ses.cookies.set({
-          url: "http://localhost",
-          name: "electron_session",
-          value: crypto.randomBytes(32).toString("hex"),
-          expirationDate:
-            Math.floor(Date.now() / 1000) + sessopt.expireAfterSeconds,
-          httpOnly: sessopt.cookieOptions.httpOnly,
-          secure: sessopt.encryptionKey,
-        });
       };
 
       /**
@@ -438,7 +518,6 @@ module.exports = async (...args) => {
               win.loadFile(join(pathname, "browser", "./main.html"));
           }
 
-          await setupSession();
           win.on("close", async (e) => {
             e.preventDefault(); // Prevent default no matter what.
 
@@ -587,6 +666,7 @@ module.exports = async (...args) => {
             });
 
             await autoupdate.init(setting);
+            ses = session.defaultSession;
             await onfetch(null, {
               method: "GET",
               originalUrl: ongoing.defaulturl,

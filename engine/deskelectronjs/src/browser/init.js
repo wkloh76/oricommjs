@@ -102,7 +102,8 @@
           else req["channel"] = "deskfetch";
           ipcRenderer.send("deskfetch", req);
         } else {
-          req["channel"] = "deskfetchsync";
+          if (reroute) req["channel"] = "reroute";
+          else req["channel"] = "deskfetchsync";
           return decodeapi.apply(
             null,
             await ipcRenderer.invoke("deskfetchsync", req)
