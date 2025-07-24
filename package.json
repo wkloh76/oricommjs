@@ -2,7 +2,7 @@
   "name": "oricommjs",
   "productName": "OriCommJS Framework",
   "homepage": "",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "CommonJS framework architecture design suite for all console, web and desktop applications",
   "repository": "",
   "main": "app.js",
