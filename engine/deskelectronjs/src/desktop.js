@@ -204,10 +204,13 @@ module.exports = async (...args) => {
                 return this;
               },
               redirect: async function (url, sess) {
+                let session = {};
+                if (Object.keys(sess).length != 0) session = { ...sess };
                 let result = await reaction["onredirect"](
                   {
                     originalUrl: url,
                     params: {},
+                    session,
                   },
                   response
                 );
