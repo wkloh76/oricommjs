@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Redesign data passing from frontend request to backend and date return at deskelectronjs engine. Completed on 2025-07-25
+
 ### Deprecated
 
 ### Removed

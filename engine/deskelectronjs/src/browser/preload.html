@@ -315,10 +315,10 @@
 
   async function checkSession() {
     const valid = await window.electron_session.checkSession()
-    if (!valid) {
-      document.getElementById('session-alert').classList.add('active')
-      setTimeout(() => location.reload(), 5000)
-    }
+    // if (!valid) {
+    //   document.getElementById('session-alert').classList.add('active')
+    //   setTimeout(() => location.reload(), 5000)
+    // }
   }
 
   function resetTimer() {
@@ -327,7 +327,8 @@
   }
 
   window.electron_session.onSessionExpired(() => {
-    document.getElementById('session-expired').classList.add('active')
+    // document.getElementById('session-expired').classList.add('active')
+    // console.log("expired")
   })
 
 document.addEventListener('mousemove', resetTimer)

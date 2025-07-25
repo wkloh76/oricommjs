@@ -77,7 +77,7 @@
     request: async (...args) => {
       try {
         let [param] = args;
-        let { async, reroute = false, success, error, ...req } = param;
+        let { async = false, reroute = false, success, error, ...req } = param;
 
         if (wait_callback?.[req.originalUrl] === undefined) {
           wait_callback[req.originalUrl] = { count: 0 };
@@ -96,14 +96,13 @@
         if (success) wait_callback[req.baseUrl]["success"] = success;
         if (error) wait_callback[req.baseUrl]["error"] = error;
         req["async"] = async;
-
+        req["reroute"] = false;
+        if (reroute) req["reroute"] = reroute;
         if (async) {
-          if (reroute) req["channel"] = "reroute";
-          else req["channel"] = "deskfetch";
+          req["channel"] = "deskfetch";
           ipcRenderer.send("deskfetch", req);
         } else {
-          if (reroute) req["channel"] = "reroute";
-          else req["channel"] = "deskfetchsync";
+          req["channel"] = "deskfetchsync";
           return decodeapi.apply(
             null,
             await ipcRenderer.invoke("deskfetchsync", req)

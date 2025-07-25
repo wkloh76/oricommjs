@@ -1,9 +1,8 @@
 # OriCommJS
 
 ![Static Badge](https://img.shields.io/badge/License-Mulan_PSL_v2-_)
-![Static Badge](https://img.shields.io/badge/NodeJS-V20_.16_.0-_)
-![Static Badge](https://img.shields.io/badge/BunJS-V1_.1_.7-_)
-![Static Badge](https://img.shields.io/badge/ElectronJS-V32_.1_.2-_)
+![Static Badge](https://img.shields.io/badge/NodeJS-V20_.19_.2-_)
+![Static Badge](https://img.shields.io/badge/ElectronJS-V34_.2_.0-_)
 ![Static Badge](https://img.shields.io/badge/OS-Ubuntu_24-_?style=flat)
 ![Static Badge](https://img.shields.io/badge/OS-Windows_10-_?style=flat)
 ![GitHub Release](https://img.shields.io/github/v/release/wkloh76/oricommjs)
@@ -13,7 +12,6 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 ## Idea
 
 - The `webnodejs` engine is a web server designed based on the expressjs framework. It can runs on bith NodeJS and BunJS
-- The `webbunjs` engine is a web server designed based on the bunrest framework. It can runs BunJS
 - The `deskelectronjs` engine is a desktop application designed to be executed only through ElectronJS.
 - The `appservicejs` engine is non-GUI application desgined which can directlly run in pc background service or executed from Linux console or Windows CMD. It can runs on bith NodeJS and BunJS
 - Reusable or reappliable modules are one of the design features of the framework to avoid duplicating code everywhere and wasting resources.
@@ -110,43 +108,7 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
       "localRoot": "${workspaceFolder}",
       "remoteRoot": "/usr/share/prj/project",
       "protocol": "inspector"
-    },
-    {
-      "type": "bun",
-      "request": "launch",
-      "name": "Debug Bun File",
-      "program": "app.js",
-      "cwd": "${workspaceFolder}",
-      "args": [
-        "--mode=debug",
-        "--engine=webnodejs"
-      ],
-      "stopOnEntry": false,
-      "watchMode": false,
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "type": "bun",
-      "request": "launch",
-      "name": "Run Bun File",
-      "program": "app.js",
-      "cwd": "${workspaceFolder}",
-      "args": [
-        "--mode=debug",
-        "--engine=webnodejs"
-      ],
-      "noDebug": true,
-      "watchMode": false,
-      "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "type": "bun",
-      "request": "attach",
-      "name": "Attach Bun",
-      "url": "ws://localhost:6499/",
-      "stopOnEntry": false,
-      "internalConsoleOptions": "neverOpen"
-    },
+    },    
     {
       "name": "Electron: Main",
       "type": "node",
@@ -196,7 +158,6 @@ A JavaScript project framework that provides an engine to handle desktop, web, a
 ## Launch: Linux console or Window CMD
 
 - NodeJS: node app.js --mode=debug --engine=webnodejs
-- BunJS: Bun app.js --mode=debug --engine=webnodejs
 - ElectronJS: electron app.js --mode=debug --engine=deskelectronjs
 
 ## Handle package.json dependencies and devdependencies

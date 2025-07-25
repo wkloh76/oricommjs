@@ -171,8 +171,7 @@ module.exports = async (...args) => {
       const onfetch = (...args) => {
         return new Promise(async (resolve) => {
           let [event, request] = args;
-          let output;
-          // 使用示例
+
           let ses_data = await get_session("session_data");
           if (!ses_data && !cache) {
             await add_session("session_data", {});
@@ -194,7 +193,7 @@ module.exports = async (...args) => {
           }
 
           try {
-            let fn, redirected;
+            let ans;
             let response = {
               locals: {},
               setHeader: function (...args) {
@@ -219,16 +218,12 @@ module.exports = async (...args) => {
                   if (result instanceof ReferenceError) throw result;
                 }
 
-                result = redirected.apply(null, [sess, result.data]);
-                if (result instanceof Promise) {
-                  result = await result;
-                  if (result instanceof ReferenceError) throw result;
-                }
+                reroute(sess, result.data);
                 await update_session("session_data", sess);
                 return;
               },
               json: async function (data) {
-                let renderer = {
+                ans = {
                   baseUrl: request.baseUrl,
                   render: {
                     status: 200,
@@ -236,18 +231,15 @@ module.exports = async (...args) => {
                     options: { json: data },
                   },
                 };
-                let result = fn.apply(null, [renderer]);
-                if (result instanceof Promise) {
-                  result = await result;
-                }
                 return;
               },
               send: async function (url, sess) {
-                let result = fn.apply(null, [url]);
-                if (result instanceof Promise) {
-                  result = await result;
-                  if (result instanceof ReferenceError) throw result;
-                }
+                intercomm.fire("deskinit", ["data", url]);
+                await update_session("session_data", sess);
+                return;
+              },
+              rendererr: async function (url, sess) {
+                reroute(sess, url);
                 await update_session("session_data", sess);
                 return;
               },
@@ -256,28 +248,9 @@ module.exports = async (...args) => {
               },
             };
 
-            const window = (url) => {
-              intercomm.fire("deskinit", ["data", url]);
-              return;
-            };
-
-            const resfetch = (data) => {
-              if (request.async) {
-                event.reply(`resfetchapi`, data);
-                return;
-              } else output = [null, data];
-              return;
-            };
-
             switch (request.channel) {
-              case "init":
-                fn = window;
-                break;
-              case "reroute":
-                redirected = reroute;
               case "deskfetch":
               case "deskfetchsync":
-                fn = resfetch;
                 if (!request.param) request.params = {};
                 break;
             }
@@ -286,6 +259,14 @@ module.exports = async (...args) => {
             if (result instanceof Promise) {
               result = await result;
               if (result instanceof ReferenceError) throw result;
+            }
+
+            if (ans) {
+              if (request.channel == "deskfetch") {
+                result = null;
+                event.reply(`resfetchapi`, ans);
+                resolve();
+              } else resolve([null, ans]);
             }
           } catch (error) {
             resolve(error);
@@ -328,20 +309,21 @@ module.exports = async (...args) => {
         }
       };
 
-      const reroute = async (sess, data) => {
+      const reroute = (sess, data) => {
+        let output = handler.dataformat;
         try {
           if (winlist.length == 0) new Error("Cannot find current window!!");
           let htmlstring = `data:text/html;charset=UTF-8,${encodeURIComponent(
             data
           )}`;
-
           winlist[0].webContents.loadURL(htmlstring, {
             baseURLForDataURL: `${registry.el}://resource/`,
           });
           cache = sess;
-          resolve();
         } catch (error) {
-          resolve(error);
+          output = errhandler(error);
+        } finally {
+          return output;
         }
       };
 

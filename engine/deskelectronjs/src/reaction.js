@@ -98,6 +98,7 @@ module.exports = async (...args) => {
                 redirect,
               },
               status,
+              rendererr,
               view,
             } = res.locals.render;
             let rtn = handler.dataformat;
@@ -188,12 +189,20 @@ module.exports = async (...args) => {
               if (rtnimport_js) throw rtnimport_js;
               let rtnimport_less = molecule.import_less(document, less, params);
               if (rtnimport_less) throw rtnimport_less;
-              res.status(status).send(
-                await minify(dom.serialize(), {
-                  collapseWhitespace: true,
-                }),
-                sess
-              );
+              if (!rendererr)
+                res.status(status).send(
+                  await minify(dom.serialize(), {
+                    collapseWhitespace: true,
+                  }),
+                  sess
+                );
+              else
+                res.status(status).rendererr(
+                  await minify(dom.serialize(), {
+                    collapseWhitespace: true,
+                  }),
+                  sess
+                );
             } else {
               throw {
                 message:
@@ -734,7 +743,7 @@ module.exports = async (...args) => {
           if (typeof errmessage == "string") errmsg += errmessage;
           else errmsg += JSON.stringify(errmessage);
           logerr(errmsg);
-
+          orires.locals.render.rendererr = true;
           let result_catch = await processEnd(orires, orireq.session);
           if (result_catch.code != 0) {
             let msg = "onrquest catch error:";
