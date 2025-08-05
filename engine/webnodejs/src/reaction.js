@@ -157,7 +157,7 @@ module.exports = async (...args) => {
             // let iscss = handler.check_empty(options.css);
 
             if (!isredirect) {
-              res.redirect(301, redirect);
+              res.status(301).json({ redirect });
               resolve(rtn);
             } else if (!isjson) {
               res.status(status).json(json);
