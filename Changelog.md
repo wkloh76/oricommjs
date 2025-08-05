@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fix session not pass to onredict funcion in `reaction.js` at deskelectronjs engine
 - Fix browser redirect both atom/smfetch and engine/webnodejs issue. Completed on 2025-08-05
+- Fix RESTFUL API GET parameter issue in `atom/smfetch/src/gotfetch.js`. Completed on 2025-08-06
 
 ### Security
 

@@ -82,10 +82,15 @@ module.exports = async (...args) => {
             )}`;
             break;
           case "GET":
-            if (options?.["datatype"] === undefined)
-              output["url"] = `${options.url}?${options.data}`;
-            else if (options["datatype"] === "qs")
-              output["searchParams"] = new URLSearchParams(options.data);
+            if (options.data !== undefined) {
+              if (typeof options.data == "object")
+                output["searchParams"] = new URLSearchParams(
+                  JSON.parse(JSON.stringify(options.data))
+                ).toString();
+              else if (typeof options.data == "string")
+                output["url"] = `${options.url}?${options.data}`;
+            } else output["url"] = options.url;
+
             break;
 
           case "HEAD":
@@ -313,7 +318,6 @@ module.exports = async (...args) => {
 
             tagname = `${location}/${tagname}`;
 
-            console.log(options);
             const downloadStream = got.stream(options);
             const fileWriterStream = createWriteStream(tagname);
 
