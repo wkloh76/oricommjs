@@ -189,6 +189,12 @@ export default await (() => {
           reqdata,
         });
 
+        if (data.headers)
+          data.headers = {
+            ...data.headers,
+            "X-Requested-With": "XMLHttpRequest",
+          };
+        else data.headers = { "X-Requested-With": "XMLHttpRequest" };
         let { url: furl, ...fdata } = data;
         if (async) {
           fetch(furl, fdata)

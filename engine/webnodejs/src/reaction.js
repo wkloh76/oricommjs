@@ -157,7 +157,8 @@ module.exports = async (...args) => {
             // let iscss = handler.check_empty(options.css);
 
             if (!isredirect) {
-              res.status(301).json({ redirect });
+              if (res.isfetchreq) res.status(301).json({ redirect });
+              else res.redirect(301, redirect);
               resolve(rtn);
             } else if (!isjson) {
               res.status(status).json(json);
@@ -442,6 +443,9 @@ module.exports = async (...args) => {
       lib["onrequest"] = async (...args) => {
         let [orireq, orires, next] = args;
         let fn;
+        orires.isfetchreq =
+          orireq.get("X-Requested-With") === "XMLHttpRequest" ||
+          orireq.get("Accept")?.includes("application/json");
         try {
           //Resolve web page caching across all browsers
           //https://stackoverflow.com/questions/49547/how-do-we-control-web-page-caching-across-all-browsers
@@ -592,7 +596,6 @@ module.exports = async (...args) => {
             orires.locals = { render: handler.webview };
             orires.locals.render.options.redirect = redirect;
           } else throw { code: 404, message: "Page not found" };
-
           let rtn = await processEnd(orires);
           if (rtn.code !== 0) throw rtn;
         } catch (error) {
@@ -635,7 +638,6 @@ module.exports = async (...args) => {
           if (typeof errmessage == "string") errmsg += errmessage;
           else errmsg += JSON.stringify(errmessage);
           logerr(errmsg);
-
           let result_catch = await processEnd(orires);
           if (result_catch.code != 0) {
             let msg = "onrquest catch error:";
