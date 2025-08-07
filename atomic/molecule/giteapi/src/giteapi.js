@@ -26,8 +26,7 @@ module.exports = async (...args) => {
     const { atomic, utils } = library;
     const { atom } = atomic;
     const { smfetch } = atom;
-    const { datatype, errhandler, handler } = utils;
-    const { fs, path } = sys;
+    const { datatype, errhandler, handler, objpick } = utils;
 
     try {
       let lib = {};
@@ -60,7 +59,7 @@ module.exports = async (...args) => {
             headers: {
               Authorization: auth,
             },
-            timeout: 10000,
+            timeout: 30000,
           };
           let rtn = await smfetch.request(options);
           if (!rtn.code) {
@@ -85,7 +84,7 @@ module.exports = async (...args) => {
             method: "GET",
             url: `${param.webapi}/api/v1/orgs${param.category}/repos`,
             headers: combine_header(param.auth, param.headers),
-            timeout: 10000,
+            timeout: 30000,
           };
           output = await smfetch.request(options);
         } catch (error) {
@@ -99,13 +98,15 @@ module.exports = async (...args) => {
         const [param] = args;
         let output = handler.dataformat;
         try {
+          let api = "";
+          if (param.api == "gitea") api = "/api/v1/repos";
           if (!param.optional) param.optional = "";
           else param.optional = `${param.optional}`;
           let options = {
             method: "GET",
-            url: `${param.webapi}/api/v1/repos${param.category}/${param.repos}/releases${param.optional}`,
-            ...combine_header(param.auth, param.headers),
-            timeout: 10000,
+            url: `${param.webapi}${api}${param.category}/${param.repos}/releases${param.optional}`,
+            headers: combine_header(param.auth, param.headers),
+            timeout: 30000,
           };
           output = await smfetch.request(options);
         } catch (error) {
@@ -124,11 +125,50 @@ module.exports = async (...args) => {
             location: `${param.location}`,
             target: `${param.tagname}.tar.gz`,
             headers: param.auth,
-            timeout: 10000,
+            timeout: 30000,
           };
           output = await smfetch.download(options);
         } catch (error) {
           output = errhandler(error);
+        } finally {
+          return output;
+        }
+      };
+
+      lib.get_repos_rawfile = async (...args) => {
+        let [param, repositories, cond] = args;
+        let output = handler.dataformat;
+        try {
+          const sanbox = async () => {
+            let output;
+            try {
+              let api = "";
+              if (param.api == "gitea") api = "/api/v1/repos";
+              if (!param.optional) param.optional = "";
+              else param.optional = `${param.optional}`;
+              let options = {
+                method: "GET",
+                url: `${param.webapi}${api}${param.category}/${param.repos}/raw/${param.file}`,
+                headers: combine_header(param.auth, param.headers),
+                timeout: 30000,
+                data: `ref=${param.tagname}`,
+              };
+
+              let rtn = await smfetch.request(options);
+              if (!rtn.code) output = rtn;
+            } catch (error) {
+            } finally {
+              return output;
+            }
+          };
+          let data = await sanbox();
+          repositories[cond.repokey][param.tagname] = {};
+          if (data)
+            repositories[cond.repokey][param.tagname] = objpick(
+              data,
+              cond.picker
+            );
+        } catch (error) {
         } finally {
           return output;
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2024   Loh Wah Kiang
+ * Copyright (c) 2025   Loh Wah Kiang
  *
  * openGauss is licensed under Mulan PSL v2.
  * You can use this software according to the terms and conditions of the Mulan PSL v2.

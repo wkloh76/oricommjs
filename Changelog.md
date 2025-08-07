@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Redesign data passing from frontend request to backend and date return at deskelectronjs engine. Completed on 2025-07-25
 - Improve redirect both atom/smfetch and engine/webnodejs which will determite the request from browser or fetchapi. Completed on 2025-08-06
+- Improve giteapi in atomic/molecule. Completed on 2025-08-07
 
 ### Deprecated
 
