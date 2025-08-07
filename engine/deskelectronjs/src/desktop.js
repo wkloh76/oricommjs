@@ -120,6 +120,14 @@ module.exports = async (...args) => {
         return data;
       };
 
+      const remove_session = async (key) => {
+        try {
+          ses.cookies.remove("http://localhost", key);
+          cache = undefined;
+        } catch (error) {
+          console.log(error);
+        }
+      };
       // Add object to session storage
       const renew_session = async (key, value) => {
         try {
@@ -175,7 +183,13 @@ module.exports = async (...args) => {
           let ses_data = await get_session("session_data");
           if (!ses_data && !cache) {
             await add_session("session_data", {});
-            request["session"] = await get_session("session_data");
+            request["session"] = {
+              ...(await get_session("session_data")),
+              clear_session: function () {
+                remove_session("session_data");
+                return;
+              },
+            };
             delete request["session"].value;
           } else if (!ses_data && cache) {
             await renew_session("session_data", cache);
@@ -183,13 +197,27 @@ module.exports = async (...args) => {
             let extract = JSON.parse(ses_data.value);
             request["session"] = ses_data;
             delete request["session"].value;
-            request["session"] = { ...request["session"], ...extract };
+            request["session"] = {
+              ...request["session"],
+              ...extract,
+              clear_session: function () {
+                remove_session("session_data");
+                return;
+              },
+            };
             cache = undefined;
           } else {
             let extract = JSON.parse(ses_data.value);
             request["session"] = ses_data;
             delete request["session"].value;
-            request["session"] = { ...request["session"], ...extract };
+            request["session"] = {
+              ...request["session"],
+              ...extract,
+              clear_session: function () {
+                remove_session("session_data");
+                return;
+              },
+            };
           }
 
           try {

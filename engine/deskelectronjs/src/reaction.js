@@ -548,8 +548,21 @@ module.exports = async (...args) => {
        * @param {Array} args[1] - orires http response module
        */
       lib["onrequest"] = async (...args) => {
-        let [orireq, orires, next] = args;
+        let [{ session: _session, ...customObj }, orires, next] = args;
+        let { clear_session, ...session } = _session;
+        let orireq;
         let fn;
+
+        if (session) {
+          customObj["session"] = {
+            ...session,
+            destroy() {
+              clear_session();
+              if (this) for (let k of Object.keys(this)) delete this[k];
+            },
+          };
+        }
+        orireq = customObj;
         try {
           //Resolve web page caching across all browsers
           //https://stackoverflow.com/questions/49547/how-do-we-control-web-page-caching-across-all-browsers
